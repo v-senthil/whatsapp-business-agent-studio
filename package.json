@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p ${PORT:-3000} -H 0.0.0.0",
+    "deploy:start": "npm ci --include=dev && npm run build && npm run start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },

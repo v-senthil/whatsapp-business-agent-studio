@@ -54,6 +54,39 @@ The token you paste on `/login` must be a long-lived user access token with, at 
 
 Generate it via [Meta Business Suite → System User → Access Tokens](https://business.facebook.com/settings/system-users).
 
+## Deploying to Zoho Catalyst AppSail
+
+AppSail runs the ZIP you upload with a single startup command — it does **not** run a separate build step. Configure it like this:
+
+**Startup command:**
+
+```
+npm run deploy:start
+```
+
+That expands to `npm ci --include=dev && npm run build && npm run start`, so dependencies are installed, `.next` is produced, and `next start` serves the app.
+
+**Port:** any positive integer AppSail lets you pick. The `start` script binds `next start` to `-p ${PORT:-3000} -H 0.0.0.0`, so as long as AppSail sets `PORT` in the environment (or you keep the field at `3000`), it will listen where AppSail expects.
+
+**Environment variables** (set in the AppSail dashboard, not in the ZIP):
+
+```
+SESSION_SECRET=<32+ char random>
+META_API_BASE=https://api.facebook.com
+GRAPH_API_BASE=https://graph.facebook.com/v20.0
+# Optional, only if this app is a Meta webhook callback:
+# META_APP_SECRET=
+# META_WEBHOOK_VERIFY_TOKEN=
+```
+
+Do **not** upload `.env.local` in the ZIP. The `.gitignore` already excludes it — make sure your ZIP does too.
+
+**What NOT to do:** don't set the startup command to `npm run dev`. That's the Next.js dev server (hot reload, no build). Also don't run `npm start` without a prior build — you'll see `.next` not found errors.
+
+**Cold start:** the first boot after upload takes ~1–2 minutes (npm install + next build). Subsequent restarts on the same instance are faster if AppSail keeps `node_modules` and `.next` cached; if it re-extracts the ZIP each time, expect the full ~1–2 min on every restart.
+
+**If you want fast starts,** upload a ZIP that already contains a prebuilt `.next/` folder and `node_modules/`, and set the startup command to just `npm start`. Trade-off: much bigger ZIP.
+
 ## User flow
 
 1. **`/login`** — paste an access token. Verified server-side against `GET /me` on the Graph API before the session cookie is issued.
