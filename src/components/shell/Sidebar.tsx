@@ -21,6 +21,7 @@ import {
   RadioTower,
   Settings,
   Sparkles,
+  TerminalSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
@@ -71,6 +72,7 @@ function groups(entityId: string): NavGroup[] {
     {
       heading: "Advanced",
       items: [
+        { href: `${base}/playground`, label: "API playground", icon: TerminalSquare },
         { href: `${base}/events`, label: "Agent events", icon: Bell },
         { href: `${base}/webhooks`, label: "Webhooks", icon: RadioTower },
         { href: `${base}/thread-control`, label: "Thread control", icon: PhoneOff },
