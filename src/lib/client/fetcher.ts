@@ -10,9 +10,32 @@ interface FetchOpts {
   headers?: Record<string, string>;
 }
 
+// Read-only mode — set by a small syncer component that watches the session query.
+// When true, any non-GET/HEAD/OPTIONS request against /api/meta/* is refused
+// client-side. Server routes are the real authority, but this gives instant
+// feedback and prevents accidental mutations while the app is in an "eyes only"
+// state.
+let readOnlyMode = false;
+const READ_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+export function setReadOnlyMode(v: boolean) { readOnlyMode = v; }
+export function isReadOnlyMode() { return readOnlyMode; }
+
+export class ReadOnlyError extends Error {
+  constructor() {
+    super("Read-only mode is enabled. Turn it off from the account menu to make changes.");
+    this.name = "ReadOnlyError";
+  }
+}
+
 export async function fetcher<T = unknown>(url: string, opts: FetchOpts = {}): Promise<T> {
+  const method = (opts.method ?? "GET").toUpperCase();
+  // Only guard writes against Meta endpoints; session PATCH etc. are allowed
+  // because they're how the user toggles the mode itself.
+  if (readOnlyMode && !READ_METHODS.has(method) && url.startsWith("/api/meta/")) {
+    throw new ReadOnlyError();
+  }
   const init: RequestInit = {
-    method: opts.method ?? "GET",
+    method,
     headers: { ...(opts.headers ?? {}) },
     signal: opts.signal,
     credentials: "same-origin",

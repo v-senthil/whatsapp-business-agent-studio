@@ -39,6 +39,7 @@ export async function DELETE() {
 const patchSchema = z.object({
   lastEntityId: z.string().optional(),
   lastBusinessId: z.string().optional(),
+  readOnly: z.boolean().optional(),
 });
 
 export async function PATCH(req: Request) {
@@ -49,6 +50,7 @@ export async function PATCH(req: Request) {
   if (!parsed.success) return NextResponse.json({ title: "Invalid body", detail: "Bad patch" }, { status: 400 });
   if (parsed.data.lastEntityId !== undefined) session.lastEntityId = parsed.data.lastEntityId;
   if (parsed.data.lastBusinessId !== undefined) session.lastBusinessId = parsed.data.lastBusinessId;
+  if (parsed.data.readOnly !== undefined) session.readOnly = parsed.data.readOnly;
   await session.save();
   return NextResponse.json({ ok: true });
 }

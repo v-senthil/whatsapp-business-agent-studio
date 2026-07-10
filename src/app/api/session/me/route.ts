@@ -10,5 +10,7 @@ export async function GET() {
     authenticated: true,
     user: { id: session.userId, name: session.userName },
     lastEntityId: session.lastEntityId ?? null,
+    lastBusinessId: session.lastBusinessId ?? null,
+    readOnly: !!session.readOnly,
   });
 }

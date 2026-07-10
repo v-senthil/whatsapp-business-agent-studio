@@ -8,6 +8,7 @@ export interface SessionData {
   userName?: string;
   lastEntityId?: string;
   lastBusinessId?: string;
+  readOnly?: boolean;
 }
 
 export const sessionOptions: SessionOptions = {

@@ -2,7 +2,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, User } from "lucide-react";
+import { Check, Eye, EyeOff, LogOut, User } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,6 +16,7 @@ import {
 import { EntityPicker } from "@/components/shell/EntityPicker";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { usePhoneDetails } from "@/lib/client/hooks/useDiscovery";
+import { useSession, usePatchSession } from "@/lib/client/hooks/useSession";
 
 interface HeaderProps {
   user?: { id?: string; name?: string };
@@ -24,10 +26,20 @@ interface HeaderProps {
 export function Header({ user, entityId }: HeaderProps) {
   const router = useRouter();
   const phone = usePhoneDetails(entityId);
+  const session = useSession();
+  const patch = usePatchSession();
+  const readOnly = !!session.data?.readOnly;
 
   async function logout() {
     await fetch("/api/session", { method: "DELETE" });
     router.replace("/login");
+  }
+
+  function toggleReadOnly() {
+    patch.mutate(
+      { readOnly: !readOnly },
+      { onSuccess: () => toast.success(readOnly ? "Read-only mode off" : "Read-only mode on") },
+    );
   }
 
   const primaryLabel = phone.data?.display_phone_number ?? entityId ?? "Select phone number";
@@ -52,6 +64,12 @@ export function Header({ user, entityId }: HeaderProps) {
             <DropdownMenuItem asChild>
               <Link href="/home">Change phone number</Link>
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={toggleReadOnly}>
+              {readOnly ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+              <span className="flex-1">{readOnly ? "Enable writes" : "Read-only mode"}</span>
+              {readOnly && <Check className="h-3.5 w-3.5" />}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout} className="text-destructive">
               <LogOut className="h-4 w-4" /> Sign out
             </DropdownMenuItem>
