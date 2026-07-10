@@ -8,5 +8,8 @@ next-env.d.ts
 .vercel
 tsconfig.tsbuildinfo
 
+# Deployment bundles created locally
+*.zip
+
 # Local reference material (Meta's API docs) — not for public redistribution
 Meta Docs/
