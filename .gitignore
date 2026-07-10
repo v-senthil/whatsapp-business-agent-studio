@@ -6,6 +6,7 @@ next-env.d.ts
 .DS_Store
 *.log
 .vercel
+tsconfig.tsbuildinfo
 
 # Local reference material (Meta's API docs) — not for public redistribution
 Meta Docs/
