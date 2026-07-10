@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { ConnectorForm } from "@/components/connectors/ConnectorForm";
+import { ConnectorHealth } from "@/components/connectors/ConnectorHealth";
 import { ErrorState } from "@/components/common/ErrorState";
 import { useConnector, useDeleteConnector, useUpdateConnector } from "@/lib/client/hooks/useConnectors";
 import type { ConnectorInput } from "@/lib/schemas/connector";
@@ -61,6 +62,7 @@ export default function ConnectorDetailPage({ params }: { params: Promise<{ enti
           <CardContent><p className="text-sm">{data.connection_status.error_message}</p></CardContent>
         </Card>
       )}
+      <ConnectorHealth entityId={entityId} connectorId={connectorId} />
       {update.error && <ErrorState error={update.error} />}
       <ConnectorForm
         initial={data as unknown as ConnectorInput}
