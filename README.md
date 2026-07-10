@@ -61,10 +61,10 @@ AppSail runs the ZIP you upload with a single startup command — it does **not*
 **Startup command:**
 
 ```
-bash start.sh
+sh start.sh
 ```
 
-(or equivalently `npm run deploy:start`, which just calls the same script.)
+(or equivalently `npm run deploy:start`, which just calls the same script. The script is POSIX-compliant so it also runs under `dash`, `ash`, and `bash`.)
 
 The script does three things, in order: **(1)** install dependencies — `npm ci` if `package-lock.json` is in the ZIP, otherwise `npm install`; **(2)** run `next build` (which also regenerates `public/openapi.json` from the YAML via the `prebuild` hook); **(3)** `next start` on `$PORT` bound to `0.0.0.0`. It exits fast on any failure and logs each phase so AppSail's log viewer stays readable.
 
