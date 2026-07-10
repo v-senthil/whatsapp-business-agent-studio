@@ -61,12 +61,16 @@ AppSail runs the ZIP you upload with a single startup command — it does **not*
 **Startup command:**
 
 ```
-npm run deploy:start
+bash start.sh
 ```
 
-That expands to `npm ci --include=dev && npm run build && npm run start`, so dependencies are installed, `.next` is produced, and `next start` serves the app.
+(or equivalently `npm run deploy:start`, which just calls the same script.)
 
-**Port:** any positive integer AppSail lets you pick. The `start` script binds `next start` to `-p ${PORT:-3000} -H 0.0.0.0`, so as long as AppSail sets `PORT` in the environment (or you keep the field at `3000`), it will listen where AppSail expects.
+The script does three things, in order: **(1)** install dependencies — `npm ci` if `package-lock.json` is in the ZIP, otherwise `npm install`; **(2)** run `next build` (which also regenerates `public/openapi.json` from the YAML via the `prebuild` hook); **(3)** `next start` on `$PORT` bound to `0.0.0.0`. It exits fast on any failure and logs each phase so AppSail's log viewer stays readable.
+
+**Port:** any positive integer AppSail lets you pick. The script binds `next start` to `-p ${PORT:-3000} -H 0.0.0.0`, so as long as AppSail sets `PORT` in the environment (or you keep the field at `3000`), it listens where AppSail expects.
+
+**Make sure `package-lock.json` is in your ZIP.** Without it, `npm ci` fails with `EUSAGE`. The script falls back to `npm install` automatically, but that's slower and non-deterministic. If you're building the ZIP with the macOS Finder "Compress" or a similar tool, verify `package-lock.json` isn't excluded.
 
 **Environment variables** (set in the AppSail dashboard, not in the ZIP):
 
