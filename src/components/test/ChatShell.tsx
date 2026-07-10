@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils/cn";
 import { useAgentTest } from "@/lib/client/hooks/useAgentTest";
 import type { AgentTestResponse } from "@/types/eval";
+import { SaveScenarioButton } from "@/components/test/SaveScenarioButton";
 
 interface Msg {
   role: "user" | "agent";
@@ -90,6 +91,7 @@ export function ChatShell({ entityId }: { entityId: string }) {
             <RefreshCw className="h-3 w-3" /> New conversation
           </Button>
         )}
+        <SaveScenarioButton entityId={entityId} turns={messages} conversationId={conversationId} />
       </div>
 
       <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">

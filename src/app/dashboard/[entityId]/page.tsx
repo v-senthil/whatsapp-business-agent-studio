@@ -9,6 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ErrorState } from "@/components/common/ErrorState";
 import { useEligibility, useSettings } from "@/lib/client/hooks/useSettings";
 import { CopyButton } from "@/components/common/CopyButton";
+import { AgentConfigActions } from "@/components/config/AgentConfigActions";
 
 export default function EntityOverviewPage({ params }: { params: Promise<{ entityId: string }> }) {
   const { entityId } = use(params);
@@ -29,9 +30,18 @@ export default function EntityOverviewPage({ params }: { params: Promise<{ entit
 
   return (
     <div className="space-y-6 py-4">
-      <div>
-        <h1 className="text-2xl font-semibold">Agent overview</h1>
-        <p className="text-sm text-muted-foreground">Phone number ID: <code className="font-mono">{entityId}</code></p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">Agent overview</h1>
+          <p className="text-sm text-muted-foreground">Phone number ID: <code className="font-mono">{entityId}</code></p>
+        </div>
+        <AgentConfigActions
+          entityId={entityId}
+          onImportComplete={() => {
+            eligibility.refetch();
+            settings.refetch();
+          }}
+        />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

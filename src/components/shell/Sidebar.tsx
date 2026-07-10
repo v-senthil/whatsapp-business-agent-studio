@@ -8,6 +8,7 @@ import {
   BookOpen,
   BookText,
   Bot,
+  Clapperboard,
   ClipboardCheck,
   FileText,
   Globe,
@@ -17,6 +18,7 @@ import {
   MessageSquare,
   PhoneOff,
   Plug,
+  RadioTower,
   Settings,
   Sparkles,
 } from "lucide-react";
@@ -63,12 +65,14 @@ function groups(entityId: string): NavGroup[] {
       items: [
         { href: `${base}/evals`, label: "Evals", icon: ClipboardCheck },
         { href: `${base}/test`, label: "Test chat", icon: MessageSquare },
+        { href: `${base}/scenarios`, label: "Scenarios", icon: Clapperboard },
       ],
     },
     {
       heading: "Advanced",
       items: [
         { href: `${base}/events`, label: "Agent events", icon: Bell },
+        { href: `${base}/webhooks`, label: "Webhooks", icon: RadioTower },
         { href: `${base}/thread-control`, label: "Thread control", icon: PhoneOff },
       ],
     },
