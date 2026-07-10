@@ -1,0 +1,23 @@
+export const qk = {
+  session: () => ["session"] as const,
+  discovery: {
+    wabas: (bizId: string) => ["discovery", "wabas", bizId] as const,
+    phones: (wabaId: string) => ["discovery", "phones", wabaId] as const,
+  },
+  eligibility: (e: string) => ["entity", e, "eligibility"] as const,
+  settings: (e: string, a?: string) => ["entity", e, "settings", a ?? "all"] as const,
+  businessInfo: (e: string) => ["entity", e, "business_info"] as const,
+  skills: (e: string) => ["entity", e, "skills"] as const,
+  skill: (e: string, s: string) => ["entity", e, "skills", s] as const,
+  files: (e: string) => ["entity", e, "knowledge", "files"] as const,
+  websites: (e: string) => ["entity", e, "knowledge", "websites"] as const,
+  faqs: (e: string) => ["entity", e, "knowledge", "faqs"] as const,
+  allowlist: (e: string) => ["entity", e, "allowlist"] as const,
+  connectors: (e: string) => ["entity", e, "connectors"] as const,
+  connector: (e: string, c: string) => ["entity", e, "connectors", c] as const,
+  tools: (e: string, c: string) => ["entity", e, "connectors", c, "tools"] as const,
+  tool: (e: string, c: string, t: string) => ["entity", e, "connectors", c, "tools", t] as const,
+  connectorLogs: (e: string, c: string) => ["entity", e, "connectors", c, "logs"] as const,
+  evalCases: (e: string) => ["entity", e, "evals", "cases"] as const,
+  evalJob: (e: string, j: string) => ["entity", e, "evals", "jobs", j] as const,
+};

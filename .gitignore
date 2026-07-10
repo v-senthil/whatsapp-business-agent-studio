@@ -1,0 +1,11 @@
+node_modules
+.next
+.env.local
+.env*.local
+next-env.d.ts
+.DS_Store
+*.log
+.vercel
+
+# Local reference material (Meta's API docs) — not for public redistribution
+Meta Docs/
