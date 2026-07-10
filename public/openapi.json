@@ -1,0 +1,4499 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Meta Business Agent Platform",
+    "version": "2.0.0",
+    "description": "OpenAPI specification for the Meta Business Agent Platform APIs used by the WABIZAgent application. Covers onboarding, agent configuration (settings, business info, skills, knowledge files, websites, FAQs, allowlist), connectors and their tools, evaluation, agent test, agent events, and thread control. All endpoints under `/{entity_id}/...` accept `X-API-Version: 2.0.0`. The thread control endpoint under `/business/whatsapp/phone_numbers/...` uses `X-API-Version: 1.0.0`."
+  },
+  "servers": [
+    {
+      "url": "https://api.facebook.com"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Onboarding",
+      "description": "Eligibility check, onboarding a new agent, and agent settings."
+    },
+    {
+      "name": "Settings",
+      "description": "Read and update AI agent settings."
+    },
+    {
+      "name": "Business Info",
+      "description": "Structured business information used as knowledge."
+    },
+    {
+      "name": "Skills",
+      "description": "AI skill definitions applied by the agent."
+    },
+    {
+      "name": "Knowledge Files",
+      "description": "Files uploaded to the agent knowledge base."
+    },
+    {
+      "name": "Knowledge Websites",
+      "description": "Websites crawled into the agent knowledge base."
+    },
+    {
+      "name": "Knowledge FAQs",
+      "description": "Frequently asked questions used as knowledge."
+    },
+    {
+      "name": "Allowlist",
+      "description": "Consumer phone numbers allowlisted for the agent."
+    },
+    {
+      "name": "Connectors",
+      "description": "External API connectors for the agent."
+    },
+    {
+      "name": "Connector Credentials",
+      "description": "Endpoints to upsert connector credentials (API key, OAuth, mTLS)."
+    },
+    {
+      "name": "Connector Logs",
+      "description": "Error logs and stats for a connector."
+    },
+    {
+      "name": "Tools",
+      "description": "Connector tools that the agent can invoke."
+    },
+    {
+      "name": "Evaluation",
+      "description": "Agent evaluation cases, jobs, details, and summaries."
+    },
+    {
+      "name": "Agent Test",
+      "description": "Send a test message directly to the agent pipeline."
+    },
+    {
+      "name": "Agent Events",
+      "description": "Trigger and poll asynchronous agent events."
+    },
+    {
+      "name": "Thread Control",
+      "description": "WhatsApp Cloud API thread control endpoints."
+    }
+  ],
+  "paths": {
+    "/{entity_id}/agent_eligibility": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Onboarding"
+        ],
+        "operationId": "getAgentEligibility",
+        "summary": "Check whether an entity is eligible for the business AI agent.",
+        "responses": {
+          "200": {
+            "description": "Eligibility result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EligibilityResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_onboarding": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Onboarding"
+        ],
+        "operationId": "createAgentOnboarding",
+        "summary": "Trigger AI agent onboarding for a channel.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "channel",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Channel"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Onboarding triggered.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_config/settings": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Settings"
+        ],
+        "operationId": "getAgentSettings",
+        "summary": "Retrieve AI agent settings for the entity.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "agent_id",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Optional agent ID to target a specific configuration."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of AI settings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AgentSettings"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Settings"
+        ],
+        "operationId": "updateAgentSettings",
+        "summary": "Create or fully replace AI agent settings.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "agent_id",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Optional agent ID to target a specific configuration."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentSettingsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated AI settings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentSettings"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_config/business_info": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Business Info"
+        ],
+        "operationId": "getBusinessInfo",
+        "summary": "Retrieve business information.",
+        "responses": {
+          "200": {
+            "description": "Current business information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Business Info"
+        ],
+        "operationId": "updateBusinessInfo",
+        "summary": "Create or replace business information.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusinessInfo"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated business information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Business Info"
+        ],
+        "operationId": "resetBusinessInfo",
+        "summary": "Reset business info to defaults.",
+        "responses": {
+          "200": {
+            "description": "Default business info after reset.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_config/skills": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Skills"
+        ],
+        "operationId": "listSkills",
+        "summary": "List all AI skills.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "agent_id",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Optional settings ID to filter skills."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of all skills.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Skill"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Skills"
+        ],
+        "operationId": "createSkill",
+        "summary": "Create a new AI skill.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "agent_id",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Optional settings ID under which to create the skill."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SkillRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The newly created skill.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Skill"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_config/skills/{skill_id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        },
+        {
+          "in": "path",
+          "name": "skill_id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "The unique identifier of the skill."
+        }
+      ],
+      "get": {
+        "tags": [
+          "Skills"
+        ],
+        "operationId": "getSkill",
+        "summary": "Retrieve a specific AI skill.",
+        "responses": {
+          "200": {
+            "description": "The requested skill.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Skill"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Skills"
+        ],
+        "operationId": "updateSkill",
+        "summary": "Update a specific AI skill.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SkillRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated skill.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Skill"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Skills"
+        ],
+        "operationId": "deleteSkill",
+        "summary": "Delete a specific AI skill.",
+        "responses": {
+          "204": {
+            "description": "Skill successfully deleted."
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_config/files": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Knowledge Files"
+        ],
+        "operationId": "listKnowledgeFiles",
+        "summary": "List all knowledge base files.",
+        "responses": {
+          "200": {
+            "description": "List of files.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/KnowledgeFile"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Knowledge Files"
+        ],
+        "operationId": "uploadKnowledgeFile",
+        "summary": "Upload a new file to the knowledge base.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file_name",
+                  "file"
+                ],
+                "properties": {
+                  "file_name": {
+                    "type": "string",
+                    "description": "The display name of the uploaded file."
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The file contents. Max 100 MB. Supported types include .pdf, .doc, .docx, .png, .jpg, .jpeg, and (when enabled) .csv and .xlsx."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Uploaded file metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeFile"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_config/files/{file_id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        },
+        {
+          "in": "path",
+          "name": "file_id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "The unique identifier of the file."
+        }
+      ],
+      "get": {
+        "tags": [
+          "Knowledge Files"
+        ],
+        "operationId": "getKnowledgeFile",
+        "summary": "Retrieve knowledge file metadata.",
+        "responses": {
+          "200": {
+            "description": "File metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeFile"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Knowledge Files"
+        ],
+        "operationId": "deleteKnowledgeFile",
+        "summary": "Delete a knowledge file.",
+        "responses": {
+          "204": {
+            "description": "File deleted."
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_config/websites": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Knowledge Websites"
+        ],
+        "operationId": "listKnowledgeWebsites",
+        "summary": "List all crawled website entries.",
+        "responses": {
+          "200": {
+            "description": "List of website crawl entries.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/KnowledgeWebsite"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Knowledge Websites"
+        ],
+        "operationId": "createKnowledgeWebsite",
+        "summary": "Add a website URL to be crawled.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "url"
+                ],
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "New website crawl entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeWebsite"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_config/websites/{website_id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        },
+        {
+          "in": "path",
+          "name": "website_id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "The unique identifier of the website crawl entry."
+        }
+      ],
+      "get": {
+        "tags": [
+          "Knowledge Websites"
+        ],
+        "operationId": "getKnowledgeWebsite",
+        "summary": "Retrieve a website crawl entry.",
+        "responses": {
+          "200": {
+            "description": "The requested crawl entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeWebsite"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Knowledge Websites"
+        ],
+        "operationId": "updateKnowledgeWebsite",
+        "summary": "Update a website crawl entry.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "url"
+                ],
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated crawl entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KnowledgeWebsite"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Knowledge Websites"
+        ],
+        "operationId": "deleteKnowledgeWebsite",
+        "summary": "Delete a website crawl entry.",
+        "responses": {
+          "204": {
+            "description": "Website crawl entry deleted."
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_config/faq": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Knowledge FAQs"
+        ],
+        "operationId": "listFaqs",
+        "summary": "List all FAQ entries.",
+        "responses": {
+          "200": {
+            "description": "A list of FAQ entries.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Faq"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Knowledge FAQs"
+        ],
+        "operationId": "createFaq",
+        "summary": "Add an FAQ entry.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FaqRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Newly created FAQ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Faq"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_config/faq/{faq_id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        },
+        {
+          "in": "path",
+          "name": "faq_id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "The unique identifier of the FAQ entry."
+        }
+      ],
+      "get": {
+        "tags": [
+          "Knowledge FAQs"
+        ],
+        "operationId": "getFaq",
+        "summary": "Retrieve a specific FAQ entry.",
+        "responses": {
+          "200": {
+            "description": "The requested FAQ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Faq"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Knowledge FAQs"
+        ],
+        "operationId": "updateFaq",
+        "summary": "Update a FAQ entry.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FaqRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated FAQ.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Faq"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Knowledge FAQs"
+        ],
+        "operationId": "deleteFaq",
+        "summary": "Delete a FAQ entry.",
+        "responses": {
+          "204": {
+            "description": "FAQ deleted."
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_config/allowlist": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Allowlist"
+        ],
+        "operationId": "listAllowlistEntries",
+        "summary": "Retrieve all allowlisted consumer phone numbers.",
+        "responses": {
+          "200": {
+            "description": "List of allowlist entries.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AllowlistEntry"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Allowlist"
+        ],
+        "operationId": "createAllowlistEntry",
+        "summary": "Add a phone number to the allowlist.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "consumer_phone_number"
+                ],
+                "properties": {
+                  "consumer_phone_number": {
+                    "type": "string",
+                    "description": "Consumer phone number in E.164 format.",
+                    "example": "+15551234567"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "New allowlist entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AllowlistEntry"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_config/allowlist/{entry_id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        },
+        {
+          "in": "path",
+          "name": "entry_id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "The unique identifier of the allowlist entry."
+        }
+      ],
+      "delete": {
+        "tags": [
+          "Allowlist"
+        ],
+        "operationId": "deleteAllowlistEntry",
+        "summary": "Remove a specific allowlist entry.",
+        "responses": {
+          "204": {
+            "description": "Allowlist entry deleted."
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_connectors": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Connectors"
+        ],
+        "operationId": "listConnectors",
+        "summary": "List all connectors for the entity.",
+        "responses": {
+          "200": {
+            "description": "List of connectors.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Connector"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Connectors"
+        ],
+        "operationId": "createConnector",
+        "summary": "Create a new connector.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectorRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Newly created connector.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connector"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_connectors/{connector_id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        },
+        {
+          "$ref": "#/components/parameters/ConnectorId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Connectors"
+        ],
+        "operationId": "getConnector",
+        "summary": "Retrieve a specific connector.",
+        "responses": {
+          "200": {
+            "description": "The requested connector.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connector"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Connectors"
+        ],
+        "operationId": "updateConnector",
+        "summary": "Update a specific connector.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectorRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated connector.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connector"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Connectors"
+        ],
+        "operationId": "deleteConnector",
+        "summary": "Delete a specific connector.",
+        "responses": {
+          "204": {
+            "description": "Connector deleted."
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_connectors/{connector_id}/upsertApiKey": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        },
+        {
+          "$ref": "#/components/parameters/ConnectorId"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Connector Credentials"
+        ],
+        "operationId": "upsertConnectorApiKey",
+        "summary": "Set or rotate API key credentials for a connector.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "api_key_config"
+                ],
+                "properties": {
+                  "api_key_config": {
+                    "$ref": "#/components/schemas/ApiKeyAuthConfig"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated connector with new API key metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connector"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_connectors/{connector_id}/upsertOAuth": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        },
+        {
+          "$ref": "#/components/parameters/ConnectorId"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Connector Credentials"
+        ],
+        "operationId": "upsertConnectorOAuth",
+        "summary": "Set or rotate OAuth 2.0 client credentials for a connector.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "oauth_config"
+                ],
+                "properties": {
+                  "oauth_config": {
+                    "$ref": "#/components/schemas/OAuth2ClientCredentialsAuthConfig"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated connector with OAuth credential metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connector"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_connectors/{connector_id}/upsertCertificate": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        },
+        {
+          "$ref": "#/components/parameters/ConnectorId"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Connector Credentials"
+        ],
+        "operationId": "upsertConnectorCertificate",
+        "summary": "Upload or rotate the mTLS client certificate for a connector.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "client_certificate",
+                  "client_key"
+                ],
+                "properties": {
+                  "client_certificate": {
+                    "type": "string",
+                    "description": "PEM-encoded client certificate."
+                  },
+                  "client_key": {
+                    "type": "string",
+                    "description": "PEM-encoded private key (PKCS8, RSA, or EC)."
+                  },
+                  "ca_certificate": {
+                    "type": "string",
+                    "description": "Optional PEM-encoded CA certificate."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated connector with mTLS certificate metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connector"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_connectors/{connector_id}/logs": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        },
+        {
+          "$ref": "#/components/parameters/ConnectorId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Connector Logs"
+        ],
+        "operationId": "listConnectorLogs",
+        "summary": "Retrieve connector error logs, optionally aggregated with stats.",
+        "description": "Time range (end_time - start_time) must not exceed 7 days. Logs are only available for the last 7 days.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "start_time",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Start Unix timestamp (seconds). Defaults to 24 hours ago."
+          },
+          {
+            "in": "query",
+            "name": "end_time",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "End Unix timestamp (seconds). Defaults to now."
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 100
+            }
+          },
+          {
+            "in": "query",
+            "name": "tool_id",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Optional tool ID to filter logs."
+          },
+          {
+            "in": "query",
+            "name": "include_stats",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "in": "query",
+            "name": "summary_only",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "in": "query",
+            "name": "top_n",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Log entries or failure patterns, with optional statistics.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectorLogsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_connectors/{connector_id}/tools": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        },
+        {
+          "$ref": "#/components/parameters/ConnectorId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Tools"
+        ],
+        "operationId": "listConnectorTools",
+        "summary": "List all tools for the connector.",
+        "responses": {
+          "200": {
+            "description": "A list of tools.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tool"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Tools"
+        ],
+        "operationId": "createConnectorTool",
+        "summary": "Create a new tool for the connector.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Newly created tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tool"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_connectors/{connector_id}/tools/{tool_id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        },
+        {
+          "$ref": "#/components/parameters/ConnectorId"
+        },
+        {
+          "in": "path",
+          "name": "tool_id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "The unique identifier of the tool."
+        }
+      ],
+      "get": {
+        "tags": [
+          "Tools"
+        ],
+        "operationId": "getConnectorTool",
+        "summary": "Retrieve a specific tool.",
+        "responses": {
+          "200": {
+            "description": "The requested tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tool"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Tools"
+        ],
+        "operationId": "updateConnectorTool",
+        "summary": "Update a specific tool.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tool"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Tools"
+        ],
+        "operationId": "deleteConnectorTool",
+        "summary": "Delete a specific tool.",
+        "responses": {
+          "204": {
+            "description": "Tool deleted."
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_connectors/{connector_id}/tools/{tool_id}/run": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        },
+        {
+          "$ref": "#/components/parameters/ConnectorId"
+        },
+        {
+          "in": "path",
+          "name": "tool_id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "The unique identifier of the tool."
+        }
+      ],
+      "post": {
+        "tags": [
+          "Tools"
+        ],
+        "operationId": "runConnectorTool",
+        "summary": "Execute a tool action.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "input": {
+                    "type": "string",
+                    "description": "JSON-encoded input payload for the tool action. Defaults to an empty object."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool execution result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "output",
+                    "status"
+                  ],
+                  "properties": {
+                    "output": {
+                      "type": "string",
+                      "description": "JSON-encoded response from the tool execution."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Execution status: success or error."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent-eval/cases": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Evaluation"
+        ],
+        "operationId": "listEvalCases",
+        "summary": "List all evaluation case configurations.",
+        "responses": {
+          "200": {
+            "description": "List of eval cases.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "eval_cases"
+                  ],
+                  "properties": {
+                    "eval_cases": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/EvalCase"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent-eval/run": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Evaluation"
+        ],
+        "operationId": "startEvalRun",
+        "summary": "Submit an evaluation job across the given eval cases.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "eval_case_ids",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated list of eval case IDs."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Combo evaluation job configuration. Currently accepts an empty object."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Acknowledgment that the job was accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "job_id",
+                    "status"
+                  ],
+                  "properties": {
+                    "job_id": {
+                      "type": "string",
+                      "description": "The unique identifier for the created evaluation job."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Initial job status (e.g. QUEUED / PENDING)."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Evaluation"
+        ],
+        "operationId": "getEvalRun",
+        "summary": "Poll the status of a previously submitted evaluation job.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current job status and results (if completed).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvalJob"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent-eval/details": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Evaluation"
+        ],
+        "operationId": "getEvalDetails",
+        "summary": "Retrieve per-conversation evaluation results.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "eval_ids",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated list of evaluation IDs."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The requested evaluations.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "evaluations"
+                  ],
+                  "properties": {
+                    "evaluations": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/EvalDetail"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent-eval/summary": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Evaluation"
+        ],
+        "operationId": "getEvalSummary",
+        "summary": "Retrieve aggregated insight reports.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "summary_ids",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated list of summary IDs."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of insight reports.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "insights"
+                  ],
+                  "properties": {
+                    "insights": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/EvalSummary"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_test": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Agent Test"
+        ],
+        "operationId": "runAgentTest",
+        "summary": "Send a test message directly to the AI agent pipeline.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "user_msg"
+                ],
+                "properties": {
+                  "user_msg": {
+                    "type": "string",
+                    "description": "The text content of the test message."
+                  },
+                  "conversation_id": {
+                    "type": "string",
+                    "description": "Identifier for multi-turn conversations. Reuse the value from a previous response to continue the same conversation."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Agent test response and metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentTestResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_event": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Agent Events"
+        ],
+        "operationId": "sendAgentEvent",
+        "summary": "Trigger an agent action asynchronously.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "to",
+                  "event"
+                ],
+                "properties": {
+                  "to": {
+                    "type": "string",
+                    "description": "Consumer phone number in E.164 format."
+                  },
+                  "event": {
+                    "type": "object",
+                    "required": [
+                      "type",
+                      "description",
+                      "payload"
+                    ],
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "description": "Partner-defined event identifier (max 256 chars)."
+                      },
+                      "description": {
+                        "type": "string",
+                        "description": "Human-readable description (max 1024 chars)."
+                      },
+                      "payload": {
+                        "type": "string",
+                        "description": "Opaque JSON string passed to the agent (max 4096 chars)."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Acknowledgment that the event was accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "\"accepted\" when the event is enqueued."
+                    },
+                    "agent_event_id": {
+                      "type": "string",
+                      "description": "The ID of the recorded agent event."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{entity_id}/agent_event/{agent_event_id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/EntityId"
+        },
+        {
+          "$ref": "#/components/parameters/ApiVersion2"
+        },
+        {
+          "in": "path",
+          "name": "agent_event_id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "The ID of the agent event."
+        }
+      ],
+      "get": {
+        "tags": [
+          "Agent Events"
+        ],
+        "operationId": "getAgentEvent",
+        "summary": "Retrieve the processing status of a previously submitted agent event.",
+        "responses": {
+          "200": {
+            "description": "The current status of the agent event.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentEventStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/business/whatsapp/phone_numbers/{phone_number_id}/thread_control": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "phone_number_id",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "description": "WhatsApp Business Account Phone Number ID."
+        },
+        {
+          "in": "header",
+          "name": "X-API-Version",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "1.0.0"
+            ],
+            "default": "1.0.0"
+          },
+          "description": "This endpoint uses `X-API-Version: 1.0.0` (not 2.0.0 like the rest of the Agent Platform API)."
+        }
+      ],
+      "post": {
+        "tags": [
+          "Thread Control"
+        ],
+        "operationId": "releaseThreadControl",
+        "summary": "Release thread control for a consumer conversation.",
+        "description": "Uses `X-API-Version: 1.0.0`. Requires that the caller currently holds thread control. Only the `release` action is supported today.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "messaging_product",
+                  "action"
+                ],
+                "properties": {
+                  "messaging_product": {
+                    "type": "string",
+                    "enum": [
+                      "whatsapp"
+                    ]
+                  },
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "pass",
+                      "release"
+                    ],
+                    "description": "Currently only `release` is supported; it hands the conversation back to Meta Business Agent as the automatic responder. `pass` is reserved for future use."
+                  },
+                  "to": {
+                    "type": "string",
+                    "description": "Consumer identifier (phone number or WhatsApp ID) whose thread control is being transferred."
+                  },
+                  "recipient": {
+                    "type": "string",
+                    "description": "Business-scoped user ID of the consumer. Accepted but not yet wired; provide `to` instead."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Thread control action result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "messaging_product"
+                  ],
+                  "properties": {
+                    "messaging_product": {
+                      "type": "string",
+                      "enum": [
+                        "whatsapp"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "parameters": {
+      "EntityId": {
+        "in": "path",
+        "name": "entity_id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "The entity ID for the Meta Business Agent. Typically the WhatsApp Business Phone Number ID."
+      },
+      "ApiVersion2": {
+        "in": "header",
+        "name": "X-API-Version",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "2.0.0"
+          ],
+          "default": "2.0.0"
+        },
+        "description": "Agent Platform API version. Must be `2.0.0`."
+      },
+      "ConnectorId": {
+        "in": "path",
+        "name": "connector_id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "The unique identifier of the connector."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "description": "Standard error payload.",
+        "required": [
+          "title",
+          "detail"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer"
+          }
+        }
+      },
+      "Channel": {
+        "type": "string",
+        "description": "Messaging channel.",
+        "enum": [
+          "email",
+          "instagram",
+          "line",
+          "messenger",
+          "sms",
+          "tiktok",
+          "unknown",
+          "webchat",
+          "whatsapp"
+        ]
+      },
+      "EligibilityResponse": {
+        "type": "object",
+        "required": [
+          "is_eligible"
+        ],
+        "properties": {
+          "is_eligible": {
+            "type": "boolean",
+            "description": "Whether the entity is eligible for the business AI agent."
+          }
+        }
+      },
+      "OnboardingResponse": {
+        "type": "object",
+        "required": [
+          "agent_id"
+        ],
+        "properties": {
+          "agent_id": {
+            "type": "string",
+            "description": "The ID of the new agent settings entity."
+          }
+        }
+      },
+      "Rollout": {
+        "type": "object",
+        "required": [
+          "enabled"
+        ],
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the AI agent is currently enabled."
+          }
+        }
+      },
+      "Handoff": {
+        "type": "object",
+        "required": [
+          "enabled"
+        ],
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether handoff to a human agent is enabled."
+          },
+          "message": {
+            "type": "string",
+            "description": "Message shown to the user when a handoff occurs."
+          }
+        }
+      },
+      "Followup": {
+        "type": "object",
+        "required": [
+          "enabled"
+        ],
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "followup_interval_in_seconds": {
+            "type": "integer",
+            "enum": [
+              0,
+              300,
+              900,
+              1800,
+              3600,
+              7200,
+              28800,
+              86400
+            ],
+            "description": "Inactivity period before a followup message is sent."
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "AgentSettings": {
+        "type": "object",
+        "description": "AI agent settings for a channel.",
+        "required": [
+          "agent_id",
+          "channel",
+          "rollout"
+        ],
+        "properties": {
+          "agent_id": {
+            "type": "string"
+          },
+          "channel": {
+            "$ref": "#/components/schemas/Channel"
+          },
+          "rollout": {
+            "$ref": "#/components/schemas/Rollout"
+          },
+          "handoff": {
+            "$ref": "#/components/schemas/Handoff"
+          },
+          "followup": {
+            "$ref": "#/components/schemas/Followup"
+          },
+          "ai_audience": {
+            "type": "string",
+            "enum": [
+              "EVERYONE",
+              "ALLOWLISTED_ONLY"
+            ],
+            "description": "Controls which consumers the AI agent responds to. Only supported for WhatsApp entities."
+          }
+        }
+      },
+      "AgentSettingsRequest": {
+        "type": "object",
+        "description": "Request body for creating or updating agent settings.",
+        "properties": {
+          "rollout": {
+            "$ref": "#/components/schemas/Rollout"
+          },
+          "handoff": {
+            "$ref": "#/components/schemas/Handoff"
+          },
+          "followup": {
+            "$ref": "#/components/schemas/Followup"
+          },
+          "ai_audience": {
+            "type": "string",
+            "enum": [
+              "EVERYONE",
+              "ALLOWLISTED_ONLY"
+            ]
+          }
+        }
+      },
+      "ContactInfo": {
+        "type": "object",
+        "description": "Contact and location details for the business.",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "hours_of_operation": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          }
+        }
+      },
+      "BusinessInfo": {
+        "type": "object",
+        "description": "Structured business information used as agent knowledge.",
+        "properties": {
+          "payment_method": {
+            "type": "string"
+          },
+          "return_policy": {
+            "type": "string"
+          },
+          "purchase_info": {
+            "type": "string"
+          },
+          "delivery_and_shipping": {
+            "type": "string"
+          },
+          "business_description": {
+            "type": "string"
+          },
+          "contact_info": {
+            "$ref": "#/components/schemas/ContactInfo"
+          }
+        }
+      },
+      "SkillRequest": {
+        "type": "object",
+        "description": "Request body for creating or updating a skill.",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Human-readable name. Max 64 characters. Lowercase letters, digits, and hyphens; must not start or end with a hyphen."
+          },
+          "description": {
+            "type": "string",
+            "description": "When to apply this skill. Max 1024 characters."
+          },
+          "skill": {
+            "type": "string",
+            "description": "Instruction body for the AI. Max 20000 characters."
+          }
+        }
+      },
+      "Skill": {
+        "type": "object",
+        "description": "An AI skill.",
+        "required": [
+          "id",
+          "skill",
+          "channel"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "skill": {
+            "type": "string"
+          },
+          "channel": {
+            "$ref": "#/components/schemas/Channel"
+          },
+          "created_at": {
+            "type": "integer",
+            "description": "Unix timestamp when the skill was created."
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "KnowledgeFile": {
+        "type": "object",
+        "description": "Metadata for a file in the agent knowledge base.",
+        "required": [
+          "id",
+          "file_name"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "file_name": {
+            "type": "string"
+          }
+        }
+      },
+      "KnowledgeWebsite": {
+        "type": "object",
+        "description": "A website crawl entry in the agent knowledge base.",
+        "required": [
+          "id",
+          "url"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "crawl_status": {
+            "type": "string",
+            "description": "e.g. \"pending\", \"in_progress\", \"completed\", \"failed\"."
+          },
+          "pages_crawled": {
+            "type": "integer"
+          },
+          "last_crawled_at": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "integer"
+          }
+        }
+      },
+      "FaqRequest": {
+        "type": "object",
+        "description": "Request body for creating or updating an FAQ entry.",
+        "required": [
+          "question",
+          "answer"
+        ],
+        "properties": {
+          "question": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "answer": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "metadata": {
+            "type": "string"
+          }
+        }
+      },
+      "Faq": {
+        "type": "object",
+        "description": "A FAQ entry.",
+        "required": [
+          "id",
+          "question",
+          "answer"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "question": {
+            "type": "string"
+          },
+          "answer": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      },
+      "AllowlistEntry": {
+        "type": "object",
+        "description": "A consumer allowlist entry.",
+        "required": [
+          "id",
+          "consumer_phone_number"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "consumer_phone_number": {
+            "type": "string",
+            "description": "Consumer WhatsApp phone number in E.164 format."
+          }
+        }
+      },
+      "ApiKeyParam": {
+        "type": "object",
+        "required": [
+          "field_name",
+          "value"
+        ],
+        "properties": {
+          "field_name": {
+            "type": "string",
+            "description": "Header, query parameter, or body field name."
+          },
+          "value": {
+            "type": "string",
+            "description": "Secret value for this API key field."
+          },
+          "prefix": {
+            "type": "string",
+            "description": "Optional value prefix, such as `Bearer ` (with trailing space)."
+          }
+        }
+      },
+      "ApiKeyAuthConfig": {
+        "type": "object",
+        "description": "API key configuration. Provide when `auth_type` is `API_KEY`.",
+        "properties": {
+          "headers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiKeyParam"
+            }
+          },
+          "query_params": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiKeyParam"
+            }
+          },
+          "body_params": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiKeyParam"
+            }
+          }
+        }
+      },
+      "OAuth2ClientCredentialsAuthConfig": {
+        "type": "object",
+        "description": "OAuth 2.0 client credentials configuration.",
+        "required": [
+          "token_url",
+          "scopes_to_request",
+          "client_id",
+          "client_secret"
+        ],
+        "properties": {
+          "token_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "scopes_to_request": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "token_request_content_type": {
+            "type": "string",
+            "enum": [
+              "application/x-www-form-urlencoded",
+              "application/json"
+            ],
+            "default": "application/x-www-form-urlencoded"
+          },
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "UserAuthInjectionConfig": {
+        "type": "object",
+        "description": "Configuration for injecting user auth tokens into tool requests.",
+        "required": [
+          "location",
+          "field_name"
+        ],
+        "properties": {
+          "location": {
+            "type": "string",
+            "enum": [
+              "headers",
+              "query",
+              "body",
+              "path"
+            ]
+          },
+          "field_name": {
+            "type": "string"
+          },
+          "prefix": {
+            "type": "string"
+          }
+        }
+      },
+      "ConnectionStatus": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "CONNECTED",
+              "PENDING_OAUTH",
+              "DISCONNECTED",
+              "ERROR"
+            ],
+            "description": "Current connection status. Some deployments also emit `ACTIVE` / `EXPIRED`; treat unknown values as `ERROR`."
+          },
+          "error_message": {
+            "type": "string"
+          }
+        }
+      },
+      "MtlsConfig": {
+        "type": "object",
+        "description": "mTLS certificate metadata (private key is never exposed).",
+        "required": [
+          "has_certificate"
+        ],
+        "properties": {
+          "has_certificate": {
+            "type": "boolean"
+          },
+          "fingerprint": {
+            "type": "string"
+          },
+          "expires_at": {
+            "type": "integer"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "client_certificate": {
+            "type": "string"
+          },
+          "ca_certificate": {
+            "type": "string"
+          }
+        }
+      },
+      "ConnectorAuthConfig": {
+        "type": "object",
+        "description": "Discriminated auth configuration for a connector.",
+        "properties": {
+          "api_key": {
+            "$ref": "#/components/schemas/ApiKeyAuthConfig"
+          },
+          "oauth2_client_credentials": {
+            "$ref": "#/components/schemas/OAuth2ClientCredentialsAuthConfig"
+          }
+        }
+      },
+      "ConnectorRequest": {
+        "type": "object",
+        "description": "Request body for creating or updating a connector.",
+        "required": [
+          "name",
+          "description",
+          "base_url",
+          "auth_type"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Display name of the connector."
+          },
+          "description": {
+            "type": "string",
+            "description": "What this connector integrates with and its purpose."
+          },
+          "base_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Base URL of the external API."
+          },
+          "auth_type": {
+            "type": "string",
+            "enum": [
+              "API_KEY",
+              "OAUTH2_CLIENT_CREDENTIALS",
+              "MTLS"
+            ],
+            "description": "Authentication type. `MTLS` uses the `upsertCertificate` endpoint to provide the client certificate."
+          },
+          "auth_config": {
+            "$ref": "#/components/schemas/ConnectorAuthConfig"
+          },
+          "user_auth_injection_config": {
+            "$ref": "#/components/schemas/UserAuthInjectionConfig"
+          },
+          "requires_certificate": {
+            "type": "boolean",
+            "description": "Whether this connector requires mTLS client certificate."
+          }
+        }
+      },
+      "Connector": {
+        "type": "object",
+        "description": "A configured connector.",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "base_url",
+          "auth_type",
+          "connection_status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "base_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "auth_type": {
+            "type": "string",
+            "enum": [
+              "API_KEY",
+              "OAUTH2_CLIENT_CREDENTIALS",
+              "MTLS"
+            ]
+          },
+          "auth_config": {
+            "$ref": "#/components/schemas/ConnectorAuthConfig"
+          },
+          "mtls_config": {
+            "$ref": "#/components/schemas/MtlsConfig"
+          },
+          "connection_status": {
+            "$ref": "#/components/schemas/ConnectionStatus"
+          },
+          "user_auth_injection_config": {
+            "$ref": "#/components/schemas/UserAuthInjectionConfig"
+          }
+        }
+      },
+      "ConnectorLogEntry": {
+        "type": "object",
+        "description": "A single connector log entry or aggregated failure pattern.",
+        "properties": {
+          "event_time": {
+            "type": "string",
+            "description": "ISO 8601 timestamp of when the error event occurred."
+          },
+          "failure_code_name": {
+            "type": "string",
+            "description": "Human-readable failure code name."
+          },
+          "error_message": {
+            "type": "string"
+          },
+          "tool_name": {
+            "type": "string"
+          },
+          "occurrences": {
+            "type": "integer",
+            "description": "Occurrence count when `summary_only` mode is enabled."
+          },
+          "last_seen": {
+            "type": "string",
+            "description": "ISO 8601 timestamp of the most recent occurrence (summary_only mode)."
+          }
+        }
+      },
+      "ConnectorLogStats": {
+        "type": "object",
+        "description": "Aggregate statistics for the queried time window.",
+        "required": [
+          "start_count",
+          "success_count",
+          "exception_count",
+          "success_rate",
+          "avg_latency_s",
+          "p95_latency_s",
+          "p99_latency_s",
+          "time_window_seconds"
+        ],
+        "properties": {
+          "start_count": {
+            "type": "integer"
+          },
+          "success_count": {
+            "type": "integer"
+          },
+          "exception_count": {
+            "type": "integer"
+          },
+          "success_rate": {
+            "type": "number"
+          },
+          "avg_latency_s": {
+            "type": "number"
+          },
+          "p95_latency_s": {
+            "type": "number"
+          },
+          "p99_latency_s": {
+            "type": "number"
+          },
+          "time_window_seconds": {
+            "type": "integer"
+          }
+        }
+      },
+      "ConnectorLogsResponse": {
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConnectorLogEntry"
+            }
+          },
+          "stats": {
+            "$ref": "#/components/schemas/ConnectorLogStats"
+          }
+        }
+      },
+      "ToolParameterBinding": {
+        "type": "object",
+        "description": "Agent-owned binding for a parameter node.",
+        "required": [
+          "kind"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "default",
+              "macro"
+            ]
+          },
+          "value": {
+            "type": "string",
+            "description": "Typed literal, required when `kind = \"default\"`."
+          },
+          "macro": {
+            "type": "string",
+            "enum": [
+              "WHATSAPP_PHONE_NUMBER",
+              "WHATSAPP_IDENTITY_HASH",
+              "WHATSAPP_CURRENT_STATUS_ID"
+            ]
+          }
+        }
+      },
+      "ToolParameterNode": {
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "string",
+              "integer",
+              "number",
+              "boolean"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "binding": {
+            "$ref": "#/components/schemas/ToolParameterBinding"
+          }
+        }
+      },
+      "ToolBodyNode": {
+        "type": "object",
+        "description": "A schema node for a JSON request body.",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "object",
+              "array",
+              "string",
+              "integer",
+              "number",
+              "boolean"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "required": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Required properties for `object` type nodes."
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Child fields for `object` nodes."
+          },
+          "items": {
+            "type": "string",
+            "description": "BodyNode element schema for `array` nodes (string-encoded)."
+          },
+          "binding": {
+            "$ref": "#/components/schemas/ToolParameterBinding"
+          }
+        }
+      },
+      "ToolBodyDefinition": {
+        "type": "object",
+        "description": "Request body definition for a tool.",
+        "required": [
+          "content_type",
+          "params"
+        ],
+        "properties": {
+          "content_type": {
+            "type": "string",
+            "enum": [
+              "application/json"
+            ]
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ToolBodyNode"
+            }
+          },
+          "required": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "RequestDefinition": {
+        "type": "object",
+        "description": "Outbound HTTP request definition for a tool.",
+        "required": [
+          "method",
+          "path"
+        ],
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "GET",
+              "POST",
+              "PUT",
+              "DELETE",
+              "PATCH"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "description": "Request path template with `{placeholder}` path parameters."
+          },
+          "path_parameters": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ToolParameterNode"
+            }
+          },
+          "query_parameters": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ToolParameterNode"
+            }
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ToolParameterNode"
+            }
+          },
+          "body": {
+            "$ref": "#/components/schemas/ToolBodyDefinition"
+          }
+        }
+      },
+      "UserAuthActionConfig": {
+        "type": "object",
+        "description": "Response extraction config for login/refresh user-auth actions.",
+        "required": [
+          "user_action_tool_type",
+          "user_auth_token_path"
+        ],
+        "properties": {
+          "user_action_tool_type": {
+            "type": "string",
+            "enum": [
+              "auth",
+              "refresh"
+            ]
+          },
+          "user_auth_token_path": {
+            "type": "string"
+          },
+          "refresh_token_path": {
+            "type": "string"
+          },
+          "expires_at_path": {
+            "type": "string"
+          },
+          "expires_at_type": {
+            "type": "string",
+            "enum": [
+              "absolute",
+              "relative_seconds"
+            ]
+          }
+        }
+      },
+      "ToolRequest": {
+        "type": "object",
+        "description": "Request body for creating or updating a connector tool.",
+        "required": [
+          "name",
+          "description",
+          "request_definition",
+          "user_auth_required"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Stable tool/action key, visible to the agent."
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of when to use this tool."
+          },
+          "request_definition": {
+            "$ref": "#/components/schemas/RequestDefinition"
+          },
+          "user_auth_required": {
+            "type": "boolean",
+            "description": "Whether to inject stored user auth into the outbound request."
+          },
+          "user_auth_action_config": {
+            "$ref": "#/components/schemas/UserAuthActionConfig"
+          }
+        }
+      },
+      "Tool": {
+        "type": "object",
+        "description": "A connector tool.",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "request_definition",
+          "user_auth_required"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "request_definition": {
+            "$ref": "#/components/schemas/RequestDefinition"
+          },
+          "user_auth_required": {
+            "type": "boolean"
+          },
+          "user_auth_action_config": {
+            "$ref": "#/components/schemas/UserAuthActionConfig"
+          }
+        }
+      },
+      "EvalCase": {
+        "type": "object",
+        "description": "An evaluation case configuration.",
+        "required": [
+          "id",
+          "scenario"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "scenario": {
+            "type": "string",
+            "description": "Free-form text defining the task and constraints."
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "max_turns": {
+            "type": "integer"
+          },
+          "success_criteria": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "EvalProgress": {
+        "type": "object",
+        "required": [
+          "completed",
+          "total",
+          "current_stage"
+        ],
+        "properties": {
+          "completed": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          },
+          "current_stage": {
+            "type": "string",
+            "description": "Pipeline stage: simulation, evaluation, insights, or done."
+          }
+        }
+      },
+      "EvalJobResult": {
+        "type": "object",
+        "description": "Full result payload when the job status is COMPLETED / SUCCEEDED.",
+        "required": [
+          "summary_id",
+          "summary",
+          "creation_time",
+          "update_time"
+        ],
+        "properties": {
+          "summary_id": {
+            "type": "string"
+          },
+          "avg_conversation_score": {
+            "type": "number"
+          },
+          "avg_turn_score": {
+            "type": "number"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "highlights": {
+            "type": "string"
+          },
+          "top_failure_categories": {
+            "type": "string"
+          },
+          "eval_ids_by_score": {
+            "type": "string"
+          },
+          "creation_time": {
+            "type": "integer"
+          },
+          "update_time": {
+            "type": "integer"
+          }
+        }
+      },
+      "EvalJobError": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "failed_case_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "EvalJob": {
+        "type": "object",
+        "description": "Status and (when completed) result of a combo evaluation job.",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "job_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "RUNNING",
+              "SUCCEEDED",
+              "FAILED"
+            ],
+            "description": "Normalized job status. The API also uses `QUEUED` and `COMPLETED` in some responses — clients should treat `QUEUED` as `PENDING` and `COMPLETED` as `SUCCEEDED`."
+          },
+          "progress": {
+            "$ref": "#/components/schemas/EvalProgress"
+          },
+          "result": {
+            "$ref": "#/components/schemas/EvalJobResult"
+          },
+          "error": {
+            "$ref": "#/components/schemas/EvalJobError"
+          }
+        }
+      },
+      "EvalDetail": {
+        "type": "object",
+        "description": "Per-conversation evaluation result.",
+        "required": [
+          "id",
+          "per_turn_labels",
+          "reasons",
+          "creation_time",
+          "update_time"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "score": {
+            "type": "integer"
+          },
+          "per_turn_labels": {
+            "type": "string"
+          },
+          "reasons": {
+            "type": "string"
+          },
+          "custom_success_criteria": {
+            "type": "string"
+          },
+          "eval_case_id": {
+            "type": "string"
+          },
+          "transcript": {
+            "type": "string"
+          },
+          "creation_time": {
+            "type": "integer"
+          },
+          "update_time": {
+            "type": "integer"
+          }
+        }
+      },
+      "EvalSummary": {
+        "type": "object",
+        "description": "Aggregate insight report across evaluated conversations.",
+        "required": [
+          "id",
+          "summary",
+          "creation_time",
+          "update_time"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "avg_conversation_score": {
+            "type": "number"
+          },
+          "avg_turn_score": {
+            "type": "number"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "highlights": {
+            "type": "string"
+          },
+          "top_failure_categories": {
+            "type": "string"
+          },
+          "eval_ids_by_score": {
+            "type": "string"
+          },
+          "creation_time": {
+            "type": "integer"
+          },
+          "update_time": {
+            "type": "integer"
+          }
+        }
+      },
+      "AgentTestResponse": {
+        "type": "object",
+        "description": "Response from running an agent test.",
+        "required": [
+          "message_id",
+          "agent_response",
+          "conversation_id"
+        ],
+        "properties": {
+          "message_id": {
+            "type": "string"
+          },
+          "agent_response": {
+            "type": "string"
+          },
+          "conversation_id": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "integer"
+          },
+          "handoff_reason": {
+            "type": "string"
+          },
+          "no_response_reason": {
+            "type": "string",
+            "description": "Reason the agent produced no response, e.g. `ELIGIBILITY_CHECK_FAILED`."
+          },
+          "quick_replies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "product_variant_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "AgentEventStatus": {
+        "type": "object",
+        "description": "Current processing status of an agent event.",
+        "required": [
+          "status",
+          "event_type",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "request_received",
+              "processing",
+              "sent",
+              "failed",
+              "skipped",
+              "success"
+            ]
+          },
+          "event_type": {
+            "type": "string",
+            "description": "Partner-defined event identifier supplied at submit time."
+          },
+          "error_message": {
+            "type": "string"
+          },
+          "skipped_reason": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "description": "ISO 8601 timestamp when the event was received."
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "ISO 8601 timestamp when the event status was last updated."
+          }
+        }
+      }
+    }
+  }
+}

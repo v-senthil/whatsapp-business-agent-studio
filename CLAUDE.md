@@ -116,7 +116,9 @@ Why Zudoku and not Stoplight Elements: (1) dark mode is native — no CSS class 
 
 Self-hosting details: Zudoku's `main.js` is a tiny loader that imports ~180 chunk files. They're all vendored under `public/vendor/zudoku/`. If you upgrade Zudoku, re-download from `https://cdn.zudoku.dev/latest/main.js` and recursively fetch every relative `./*.js` import — a `zsh` loop that greps for `"./…\\.js"` and downloads works (see git history for the exact script).
 
-`openapi.yaml` covers every Meta Business Agent Platform endpoint — keep it in sync when adding new endpoints (path, method, `operationId`, request/response schemas). Sidebar link sits at the bottom, below all resource groups.
+**OpenAPI spec pipeline:** `public/openapi.yaml` is the human-editable source of truth. Zudoku's standalone fetcher rejects YAML (throws `ZudokuError: Unexpected error` from its `Ir.fetch`), so `public/openapi.json` is a generated artifact. The `prebuild` npm hook (and the explicit `npm run openapi:build`) regenerates `openapi.json` from the YAML via `scripts/openapi-yaml-to-json.mjs`. If you edit the YAML, either run `npm run openapi:build` or let `next build` do it. Both files are checked into git so `npm run dev` without a prior build still serves a valid JSON.
+
+Sidebar link sits at the bottom, below all resource groups.
 
 ## Conventions
 

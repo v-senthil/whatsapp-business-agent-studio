@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/openapi-yaml-to-json.mjs",
     "build": "next build",
     "start": "next start -p ${PORT:-3000} -H 0.0.0.0",
     "deploy:start": "npm ci --include=dev && npm run build && npm run start",
+    "openapi:build": "node scripts/openapi-yaml-to-json.mjs",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },
@@ -56,6 +58,7 @@
     "eslint-config-next": "15.1.4",
     "postcss": "^8",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5"
+    "typescript": "^5",
+    "yaml": "^2.9.0"
   }
 }

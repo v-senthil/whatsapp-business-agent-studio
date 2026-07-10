@@ -8,7 +8,7 @@ export default function ApiDocsClient() {
       <link rel="stylesheet" href="/vendor/zudoku/zudoku.css" />
       <Script type="module" src="/vendor/zudoku/main.js" strategy="afterInteractive" />
       <div
-        data-api-url="/openapi.yaml"
+        data-api-url="/openapi.json"
         className="h-full min-h-0 flex-1 overflow-hidden"
         style={{ height: "100%", display: "block" }}
       />
