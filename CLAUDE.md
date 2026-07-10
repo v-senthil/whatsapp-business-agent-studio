@@ -118,6 +118,8 @@ Self-hosting details: Zudoku's `main.js` is a tiny loader that imports ~180 chun
 
 **OpenAPI spec pipeline:** `public/openapi.yaml` is the human-editable source of truth. Zudoku's standalone fetcher rejects YAML (throws `ZudokuError: Unexpected error` from its `Ir.fetch`), so `public/openapi.json` is a generated artifact. The `prebuild` npm hook (and the explicit `npm run openapi:build`) regenerates `openapi.json` from the YAML via `scripts/openapi-yaml-to-json.mjs`. If you edit the YAML, either run `npm run openapi:build` or let `next build` do it. Both files are checked into git so `npm run dev` without a prior build still serves a valid JSON.
 
+**Zudoku URL must be absolute.** Zudoku's loader (`Rp` in `createServer-*.js`) only treats a `data-api-url` string as a URL if it contains `"://"`. A relative path like `/openapi.json` is silently interpreted as a YAML *literal*, which parses to a string (not an object) and throws `GraphQLError: Unsupported schema input: /openapi.json`. `ApiDocsClient.tsx` sets `data-api-url` to `${window.location.origin}/openapi.json` via a `useEffect` after mount, and defers Zudoku's `<Script>` until that attribute is set (a `useState` gate). Do NOT change back to a relative URL.
+
 Sidebar link sits at the bottom, below all resource groups.
 
 ## Conventions
