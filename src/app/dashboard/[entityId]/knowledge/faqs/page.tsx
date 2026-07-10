@@ -3,7 +3,7 @@ import { Fragment, use, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { BookOpen, Plus, Trash2 } from "lucide-react";
+import { BookOpen, Plus, Trash2, Upload } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,15 +14,23 @@ import { LoadingButton } from "@/components/common/LoadingButton";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
-import { faqSchema, type FaqInput } from "@/lib/schemas/knowledge";
+import { BulkImportDialog } from "@/components/common/BulkImportDialog";
+import { ExportCsvButton } from "@/components/common/ExportCsvButton";
+import { faqRowSchema, faqSchema, type FaqInput } from "@/lib/schemas/knowledge";
 import { useCreateFaq, useDeleteFaq, useFaqs } from "@/lib/client/hooks/useKnowledge";
 
 export default function FaqsPage({ params }: { params: Promise<{ entityId: string }> }) {
   const { entityId } = use(params);
-  const { data, isLoading, error } = useFaqs(entityId);
+  const { data, isLoading, error, refetch } = useFaqs(entityId);
   const create = useCreateFaq(entityId);
   const del = useDeleteFaq(entityId);
   const [expanded, setExpanded] = useState<string | null>(null);
+
+  const exportRows = (data ?? []).map((f) => ({
+    question: f.question,
+    answer: f.answer,
+    metadata: f.metadata ? JSON.stringify(f.metadata) : "",
+  }));
 
   const FAQ_EMPTY: FaqInput = { question: "", answer: "", metadata: "" };
   const form = useForm<FaqInput>({ resolver: zodResolver(faqSchema), defaultValues: FAQ_EMPTY });
@@ -37,6 +45,19 @@ export default function FaqsPage({ params }: { params: Promise<{ entityId: strin
 
   return (
     <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <ExportCsvButton filename="faqs.csv" columns={["question", "answer", "metadata"]} rows={exportRows} />
+        <BulkImportDialog
+          trigger={<Button variant="outline"><Upload className="h-4 w-4" /> Import CSV</Button>}
+          title="Import FAQs from CSV"
+          description="Each row becomes a new FAQ. The metadata column is optional JSON."
+          columns={["question", "answer", "metadata"]}
+          sampleHref="/samples/faqs.csv"
+          rowSchema={faqRowSchema}
+          submit={(row) => create.mutateAsync(row)}
+          onComplete={() => refetch()}
+        />
+      </div>
       <Card>
         <CardHeader><CardTitle>Add FAQ</CardTitle></CardHeader>
         <form onSubmit={submit}>

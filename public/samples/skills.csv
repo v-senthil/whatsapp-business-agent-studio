@@ -1,0 +1,3 @@
+title,description,skill
+warm-greeting,"Trigger when the customer sends their first message in a session.","When a customer sends their first message: warmly greet them by name if you have it, briefly introduce yourself as an AI agent for the business, and ask how you can help today."
+handoff-to-human,"Use when the customer explicitly asks for a human agent, is upset, or the topic is outside your knowledge.","If the customer asks for a human, expresses frustration, or the question is outside your scope: acknowledge their request, tell them a human will follow up, and stop responding on that topic."
