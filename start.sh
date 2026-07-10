@@ -1,20 +1,17 @@
 #!/bin/sh
 # start.sh — one-shot deploy entrypoint for Zoho Catalyst AppSail (and any
 # other host that runs a single startup command). POSIX-compliant so it runs
-# under /bin/sh (dash/ash) as well as bash. Handles:
-#   1. Install dependencies — npm ci when the lockfile is present (fast,
-#      deterministic), falls back to npm install if npm ci fails or if the
-#      lockfile is missing.
-#   2. Build — next build (also regenerates public/openapi.json via prebuild).
-#   3. Start — next start on $PORT (or 3000), bound to 0.0.0.0.
+# under /bin/sh (dash/ash) as well as bash.
+#
+# Optimized for AppSail's startup timeout by SKIPPING install and build when
+# the ZIP already contains node_modules and .next. Ship a pre-built bundle
+# (see scripts/build-deploy-zip.sh) and this script finishes in ~2 seconds.
 
 set -eu
 
 log() { printf '[start.sh] %s\n' "$*"; }
 
 dump_npm_debug() {
-  # Print the last npm debug log so the deploy log viewer shows the real error
-  # instead of just the "log path" hint.
   latest="$(ls -t /tmp/_logs/*.log 2>/dev/null | head -1 || true)"
   if [ -n "$latest" ] && [ -f "$latest" ]; then
     log "--- npm debug log tail ($latest) ---"
@@ -27,26 +24,26 @@ log "Node $(node --version) · npm $(npm --version)"
 log "cwd: $(pwd)"
 log "PORT=${PORT:-3000}"
 
-# Force NODE_ENV=development during install so devDependencies (needed by
-# `next build`) are installed even if the host set NODE_ENV=production.
 export NODE_ENV=development
 
 # ---- 1. Install ---------------------------------------------------------
-install_ok=0
-if [ -f "package-lock.json" ]; then
+if [ -d "node_modules" ] && [ -x "node_modules/.bin/next" ]; then
+  log "node_modules present (next binary found) — skipping install"
+elif [ -f "package-lock.json" ]; then
   log "package-lock.json present — trying npm ci"
-  if npm ci --include=dev --no-audit --no-fund --loglevel=error; then
-    install_ok=1
-  else
+  if ! npm ci --include=dev --no-audit --no-fund --loglevel=error; then
     log "npm ci failed — falling back to npm install"
-    log "  (usually means the lockfile is out of sync with package.json)"
     dump_npm_debug
     rm -rf node_modules
+    if ! npm install --include=dev --no-audit --no-fund --loglevel=error; then
+      log "npm install failed"
+      dump_npm_debug
+      exit 1
+    fi
   fi
-fi
-
-if [ "$install_ok" -eq 0 ]; then
-  log "Running npm install"
+else
+  log "Neither node_modules nor package-lock.json — running full npm install"
+  log "  (this is slow — pre-build your deploy ZIP to avoid the AppSail timeout)"
   if ! npm install --include=dev --no-audit --no-fund --loglevel=error; then
     log "npm install failed"
     dump_npm_debug
@@ -55,8 +52,8 @@ if [ "$install_ok" -eq 0 ]; then
 fi
 
 # ---- 2. Build -----------------------------------------------------------
-if [ -d ".next" ]; then
-  log ".next already present — skipping build (delete to force rebuild)"
+if [ -d ".next" ] && [ -f ".next/BUILD_ID" ]; then
+  log ".next/BUILD_ID present — skipping build"
 else
   log "Running next build"
   npm run build
@@ -65,4 +62,4 @@ fi
 # ---- 3. Start -----------------------------------------------------------
 export NODE_ENV=production
 log "Starting next server on 0.0.0.0:${PORT:-3000}"
-exec npx next start -p "${PORT:-3000}" -H 0.0.0.0
+exec node_modules/.bin/next start -p "${PORT:-3000}" -H 0.0.0.0

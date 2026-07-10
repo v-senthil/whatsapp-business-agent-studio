@@ -56,23 +56,29 @@ Generate it via [Meta Business Suite → System User → Access Tokens](https://
 
 ## Deploying to Zoho Catalyst AppSail
 
-AppSail runs the ZIP you upload with a single startup command — it does **not** run a separate build step. Configure it like this:
+AppSail kills the process if the startup command doesn't bind a port within a short timeout (~15–30s). A cold `npm install + next build` takes 1–2 minutes, so **pre-build the ZIP locally** — the deployed script then only has to `next start`, which is a couple of seconds.
 
-**Startup command:**
+### 1. Build the deploy ZIP locally
+
+From the project root:
 
 ```
-sh start.sh
+sh scripts/build-deploy-zip.sh
 ```
 
-(or equivalently `npm run deploy:start`, which just calls the same script. The script is POSIX-compliant so it also runs under `dash`, `ash`, and `bash`.)
+That runs `npm ci` + `npm run build`, prunes dev dependencies, and produces a `deploy.zip` containing `node_modules/`, `.next/`, all source, and the `start.sh` entrypoint. The ZIP will be a few hundred MB — that's expected.
 
-The script does three things, in order: **(1)** install dependencies — `npm ci` if `package-lock.json` is in the ZIP, otherwise `npm install`; **(2)** run `next build` (which also regenerates `public/openapi.json` from the YAML via the `prebuild` hook); **(3)** `next start` on `$PORT` bound to `0.0.0.0`. It exits fast on any failure and logs each phase so AppSail's log viewer stays readable.
+### 2. Upload to AppSail
 
-**Port:** any positive integer AppSail lets you pick. The script binds `next start` to `-p ${PORT:-3000} -H 0.0.0.0`, so as long as AppSail sets `PORT` in the environment (or you keep the field at `3000`), it listens where AppSail expects.
+- Upload `deploy.zip`.
+- Startup command: `sh start.sh`
+- Port: `3000` (or whatever AppSail routes to — the script also honors `$PORT`).
 
-**Make sure `package-lock.json` is in your ZIP.** Without it, `npm ci` fails with `EUSAGE`. The script falls back to `npm install` automatically, but that's slower and non-deterministic. If you're building the ZIP with the macOS Finder "Compress" or a similar tool, verify `package-lock.json` isn't excluded.
+`start.sh` detects the pre-built `node_modules/` and `.next/`, skips install and build, and jumps straight to `next start`. It falls back to full install + build if anything is missing, so it still works with a source-only ZIP — just too slowly for AppSail's startup timeout.
 
-**Environment variables** (set in the AppSail dashboard, not in the ZIP):
+### 3. Environment variables
+
+Set in the AppSail dashboard, **not** in the ZIP:
 
 ```
 SESSION_SECRET=<32+ char random>
@@ -83,13 +89,15 @@ GRAPH_API_BASE=https://graph.facebook.com/v20.0
 # META_WEBHOOK_VERIFY_TOKEN=
 ```
 
-Do **not** upload `.env.local` in the ZIP. The `.gitignore` already excludes it — make sure your ZIP does too.
+Do **not** upload `.env.local`. `.gitignore` already excludes it; make sure your ZIP does too.
 
-**What NOT to do:** don't set the startup command to `npm run dev`. That's the Next.js dev server (hot reload, no build). Also don't run `npm start` without a prior build — you'll see `.next` not found errors.
+### Common failure modes
 
-**Cold start:** the first boot after upload takes ~1–2 minutes (npm install + next build). Subsequent restarts on the same instance are faster if AppSail keeps `node_modules` and `.next` cached; if it re-extracts the ZIP each time, expect the full ~1–2 min on every restart.
-
-**If you want fast starts,** upload a ZIP that already contains a prebuilt `.next/` folder and `node_modules/`, and set the startup command to just `npm start`. Trade-off: much bigger ZIP.
+- **`sh: 1: next: not found`** — you uploaded a source-only ZIP without `node_modules/`. Run `sh scripts/build-deploy-zip.sh` to make a pre-built one.
+- **`npm error code EUSAGE`** — `npm ci` couldn't find `package-lock.json`. The script now falls back to `npm install`, but pre-building is faster.
+- **Process restarts every 10–15 seconds** — AppSail's startup timeout is killing you mid-install. Pre-build fixes this.
+- **`Illegal option -o pipefail`** — the runtime uses `dash`, not `bash`. Fixed: the script is POSIX-compliant.
+- **Startup command `npm run dev`** — wrong; that's the Next.js dev server. Use `sh start.sh`.
 
 ## User flow
 
