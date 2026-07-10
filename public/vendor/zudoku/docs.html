@@ -9,25 +9,26 @@
       html, body { margin: 0; padding: 0; height: 100%; background: #0a0a0a; }
       #zudoku-root { min-height: 100vh; }
     </style>
+  </head>
+  <body>
+    <div id="zudoku-root"></div>
     <script>
       // Zudoku's Rp parser only treats data-api-url as a URL if it contains "://".
-      // Set an absolute URL BEFORE the module script runs so the parser recognizes it.
-      // The classic script tag below is deferred? No — no defer attr — so it runs
-      // synchronously as the parser reaches it, which is before the module below.
+      // Runs synchronously right after the div is parsed — before the deferred
+      // ES module below reads the attribute.
       (function () {
         var el = document.getElementById("zudoku-root");
+        if (!el) return;
         el.setAttribute("data-api-url", window.location.origin + "/openapi.json");
-        // Sync the docs theme with the parent app if we're embedded via iframe.
+        // Match parent theme if we're inside a same-origin iframe.
         try {
-          var parentTheme = window.parent && window.parent.document
-            && window.parent.document.documentElement.classList.contains("dark");
-          if (parentTheme) document.documentElement.classList.add("dark");
+          if (window.parent && window.parent !== window
+              && window.parent.document.documentElement.classList.contains("dark")) {
+            document.documentElement.classList.add("dark");
+          }
         } catch (_) { /* cross-origin — ignore */ }
       })();
     </script>
     <script type="module" src="/vendor/zudoku/main.js"></script>
-  </head>
-  <body>
-    <div id="zudoku-root"></div>
   </body>
 </html>
