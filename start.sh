@@ -1,13 +1,16 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # start.sh — one-shot deploy entrypoint for Zoho Catalyst AppSail (and any
-# other host that runs a single startup command). Handles:
+# other host that runs a single startup command). POSIX-compliant so it runs
+# under /bin/sh (dash/ash) as well as bash. Handles:
 #   1. Install dependencies — npm ci when the lockfile is present (fast,
 #      deterministic), npm install otherwise (works even if the ZIP omitted
 #      package-lock.json, which is what killed the previous deploy).
 #   2. Build — next build (also regenerates public/openapi.json via prebuild).
 #   3. Start — next start on $PORT (or 3000), bound to 0.0.0.0.
 
-set -euo pipefail
+# Fail fast on any error, and on unset variables. `pipefail` is bash-only, so
+# it's intentionally omitted — we don't pipe anything load-bearing here.
+set -eu
 
 log() { printf '[start.sh] %s\n' "$*"; }
 
