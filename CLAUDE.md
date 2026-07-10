@@ -110,7 +110,13 @@ Container is `flex min-h-0 flex-1 flex-col`; only the inner message list scrolls
 Small form posting to `/business/whatsapp/phone_numbers/{entity_id}/thread_control`. Path is fixed under `business/whatsapp/…`, not per-entity — the hook builds the URL manually rather than via `metaUrl()`. Requires `X-API-Version: 1.0.0` (Meta doc explicitly), so the hook passes `headers: { "X-API-Version": "1.0.0" }` to override the proxy's default. `to` is required; `recipient` is optional per the doc ("accepted but not yet wired").
 
 ### API reference (`/api-docs`)
-`src/app/api-docs/page.tsx` (server) + `ApiDocsClient.tsx` (client). Renders `public/openapi.yaml` via **Stoplight Elements web-components build** loaded from unpkg (`@stoplight/elements@9.0.23`, `web-components.min.js` + `styles.min.css`). The React build of Stoplight Elements is incompatible with React 19 (calls the removed `ReactDOM.render`), so we intentionally use the web-components entry — do NOT switch to `import { API } from "@stoplight/elements"` until they support React 19. `openapi.yaml` covers every Meta Business Agent Platform endpoint; keep it in sync when adding new endpoints (path, method, `operationId`, request/response schemas). Sidebar link sits at the bottom, below all resource groups.
+`src/app/api-docs/page.tsx` (server) + `ApiDocsClient.tsx` (client). Renders `public/openapi.yaml` via **Zudoku's standalone build**, self-hosted at `public/vendor/zudoku/`. The client just drops a `<script type="module" src="/vendor/zudoku/main.js">` + `<link rel="stylesheet" href="/vendor/zudoku/zudoku.css">` and mounts a `<div data-api-url="/openapi.yaml" />`. Zudoku bootstraps itself into that div at load time.
+
+Why Zudoku and not Stoplight Elements: (1) dark mode is native — no CSS class hacks; (2) modern typography and layout; (3) Stoplight's React build is broken on React 19 (calls the removed `ReactDOM.render`) and we were only using their web-components fallback, which is a dead-end. Zudoku's standalone bundle is React-19-safe because it carries its own React runtime.
+
+Self-hosting details: Zudoku's `main.js` is a tiny loader that imports ~180 chunk files. They're all vendored under `public/vendor/zudoku/`. If you upgrade Zudoku, re-download from `https://cdn.zudoku.dev/latest/main.js` and recursively fetch every relative `./*.js` import — a `zsh` loop that greps for `"./…\\.js"` and downloads works (see git history for the exact script).
+
+`openapi.yaml` covers every Meta Business Agent Platform endpoint — keep it in sync when adding new endpoints (path, method, `operationId`, request/response schemas). Sidebar link sits at the bottom, below all resource groups.
 
 ## Conventions
 
