@@ -10,6 +10,7 @@ import { ErrorState } from "@/components/common/ErrorState";
 import { useEligibility, useSettings } from "@/lib/client/hooks/useSettings";
 import { CopyButton } from "@/components/common/CopyButton";
 import { AgentConfigActions } from "@/components/config/AgentConfigActions";
+import { OnboardingChecklist } from "@/components/overview/OnboardingChecklist";
 
 export default function EntityOverviewPage({ params }: { params: Promise<{ entityId: string }> }) {
   const { entityId } = use(params);
@@ -43,6 +44,8 @@ export default function EntityOverviewPage({ params }: { params: Promise<{ entit
           }}
         />
       </div>
+
+      <OnboardingChecklist entityId={entityId} />
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
