@@ -3,6 +3,7 @@ import "@/app/globals.css";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ReadOnlySync } from "@/components/providers/ReadOnlySync";
+import { DevDrawerMount } from "@/components/dev/DevDrawerMount";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <ReadOnlySync />
             <TooltipProvider delayDuration={200}>
               {children}
+              <DevDrawerMount />
               <Toaster />
             </TooltipProvider>
           </QueryProvider>

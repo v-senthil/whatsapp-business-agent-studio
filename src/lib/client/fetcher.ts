@@ -1,6 +1,7 @@
 "use client";
 
 import { MetaApiError, type MetaApiErrorShape } from "@/lib/api/errors";
+import { record, updateCall } from "@/lib/client/api-log";
 
 interface FetchOpts {
   method?: string;
@@ -10,11 +11,6 @@ interface FetchOpts {
   headers?: Record<string, string>;
 }
 
-// Read-only mode — set by a small syncer component that watches the session query.
-// When true, any non-GET/HEAD/OPTIONS request against /api/meta/* is refused
-// client-side. Server routes are the real authority, but this gives instant
-// feedback and prevents accidental mutations while the app is in an "eyes only"
-// state.
 let readOnlyMode = false;
 const READ_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 export function setReadOnlyMode(v: boolean) { readOnlyMode = v; }
@@ -29,24 +25,48 @@ export class ReadOnlyError extends Error {
 
 export async function fetcher<T = unknown>(url: string, opts: FetchOpts = {}): Promise<T> {
   const method = (opts.method ?? "GET").toUpperCase();
-  // Only guard writes against Meta endpoints; session PATCH etc. are allowed
-  // because they're how the user toggles the mode itself.
   if (readOnlyMode && !READ_METHODS.has(method) && url.startsWith("/api/meta/")) {
     throw new ReadOnlyError();
   }
+  const headers: Record<string, string> = { ...(opts.headers ?? {}) };
+  if (opts.json !== undefined) headers["Content-Type"] = "application/json";
+
+  const callId = typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random()}`;
+  const start = Date.now();
+  record({
+    id: callId,
+    ts: start,
+    method,
+    url,
+    requestHeaders: headers,
+    requestBody: opts.json ?? (opts.formData ? "[multipart FormData]" : undefined),
+  });
+
   const init: RequestInit = {
     method,
-    headers: { ...(opts.headers ?? {}) },
+    headers,
     signal: opts.signal,
     credentials: "same-origin",
   };
-  if (opts.json !== undefined) {
-    (init.headers as Record<string, string>)["Content-Type"] = "application/json";
-    init.body = JSON.stringify(opts.json);
-  } else if (opts.formData) {
-    init.body = opts.formData;
+  if (opts.json !== undefined) init.body = JSON.stringify(opts.json);
+  else if (opts.formData) init.body = opts.formData;
+
+  let res: Response;
+  try {
+    res = await fetch(url, init);
+  } catch (e) {
+    updateCall(callId, {
+      duration_ms: Date.now() - start,
+      ok: false,
+      error: { title: "Network error", detail: e instanceof Error ? e.message : String(e) },
+    });
+    throw e;
   }
-  const res = await fetch(url, init);
+
+  const duration_ms = Date.now() - start;
+
   if (!res.ok) {
     let body: MetaApiErrorShape;
     try {
@@ -54,14 +74,33 @@ export async function fetcher<T = unknown>(url: string, opts: FetchOpts = {}): P
     } catch {
       body = { title: `HTTP ${res.status}`, detail: res.statusText };
     }
+    updateCall(callId, {
+      duration_ms,
+      status: res.status,
+      ok: false,
+      responseBody: body,
+      error: { title: body.title ?? `HTTP ${res.status}`, detail: body.detail ?? res.statusText },
+    });
     if (res.status === 401) {
       window.dispatchEvent(new CustomEvent("wabiz:unauthenticated"));
     }
     throw new MetaApiError(res.status, body);
   }
+
   const ct = res.headers.get("content-type") ?? "";
-  if (ct.includes("application/json")) return (await res.json()) as T;
-  return (await res.text()) as unknown as T;
+  let parsed: unknown;
+  if (ct.includes("application/json")) {
+    parsed = await res.json();
+  } else {
+    parsed = await res.text();
+  }
+  updateCall(callId, {
+    duration_ms,
+    status: res.status,
+    ok: true,
+    responseBody: parsed,
+  });
+  return parsed as T;
 }
 
 export function metaUrl(entityId: string, path: string, query?: Record<string, string | undefined>): string {
