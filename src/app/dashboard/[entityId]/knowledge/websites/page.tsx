@@ -22,9 +22,10 @@ export default function WebsitesPage({ params }: { params: Promise<{ entityId: s
   const create = useCreateWebsite(entityId);
   const del = useDeleteWebsite(entityId);
 
-  const form = useForm<WebsiteInput>({ resolver: zodResolver(websiteSchema), defaultValues: { url: "" } });
+  const EMPTY: WebsiteInput = { url: "" };
+  const form = useForm<WebsiteInput>({ resolver: zodResolver(websiteSchema), defaultValues: EMPTY });
   const submit = form.handleSubmit(async (v) => {
-    try { await create.mutateAsync(v); form.reset(); toast.success("Website added"); } catch { /* shown */ }
+    try { await create.mutateAsync(v); form.reset(EMPTY); toast.success("Website added"); } catch { /* shown */ }
   });
 
   return (
@@ -62,7 +63,7 @@ export default function WebsitesPage({ params }: { params: Promise<{ entityId: s
                     <TableCell className="text-muted-foreground">{w.status ?? "—"}</TableCell>
                     <TableCell className="text-right">
                       <ConfirmDialog
-                        trigger={<Button variant="ghost" size="icon"><Trash2 className="h-4 w-4" /></Button>}
+                        trigger={<Button variant="ghost" size="icon" aria-label="Remove website"><Trash2 className="h-4 w-4" /></Button>}
                         title="Remove website?"
                         confirmLabel="Remove"
                         onConfirm={async () => { await del.mutateAsync(w.id); toast.success("Removed"); }}

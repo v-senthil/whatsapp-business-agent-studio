@@ -113,7 +113,7 @@ export function FileUploader({ entityId, onDone }: Props) {
                 {item.status === "error" && <p className="mt-1 text-xs text-destructive">{item.error}</p>}
                 {item.status === "done" && <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-400">Uploaded</p>}
               </div>
-              <Button type="button" variant="ghost" size="icon" onClick={() => cancel(item.id)}><X className="h-4 w-4" /></Button>
+              <Button type="button" variant="ghost" size="icon" aria-label={`Cancel upload of ${item.file.name}`} onClick={() => cancel(item.id)}><X className="h-4 w-4" /></Button>
             </li>
           ))}
         </ul>

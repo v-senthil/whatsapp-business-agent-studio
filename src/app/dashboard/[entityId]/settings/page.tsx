@@ -6,15 +6,25 @@ import { toast } from "sonner";
 import { Save } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/common/FormField";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadingButton } from "@/components/common/LoadingButton";
 import { ErrorState } from "@/components/common/ErrorState";
-import { settingsSchema, type SettingsInput } from "@/lib/schemas/settings";
+import { FOLLOWUP_INTERVALS, settingsSchema, type FollowupInterval, type SettingsInput } from "@/lib/schemas/settings";
 import { useSettings, useUpdateSettings } from "@/lib/client/hooks/useSettings";
 import type { AgentSettings } from "@/types/meta";
+
+const INTERVAL_LABEL: Record<FollowupInterval, string> = {
+  0: "Disabled (0)",
+  300: "5 minutes",
+  900: "15 minutes",
+  1800: "30 minutes",
+  3600: "1 hour",
+  7200: "2 hours",
+  28800: "8 hours",
+  86400: "24 hours",
+};
 
 function pickFirst(data: unknown): AgentSettings | undefined {
   if (!data) return undefined;
@@ -43,12 +53,16 @@ export default function SettingsPage({ params }: { params: Promise<{ entityId: s
 
   useEffect(() => {
     if (!first) return;
+    const rawInterval = first.followup?.followup_interval_in_seconds;
+    const interval: FollowupInterval = (FOLLOWUP_INTERVALS as readonly number[]).includes(rawInterval ?? 900)
+      ? (rawInterval as FollowupInterval)
+      : 900;
     form.reset({
       rollout: { enabled: first.rollout?.enabled ?? false },
       handoff: { enabled: first.handoff?.enabled ?? false, message: first.handoff?.message ?? "" },
       followup: {
         enabled: first.followup?.enabled ?? false,
-        followup_interval_in_seconds: first.followup?.followup_interval_in_seconds ?? 900,
+        followup_interval_in_seconds: interval,
         message: first.followup?.message ?? "",
       },
       ai_audience: first.ai_audience ?? "EVERYONE",
@@ -120,8 +134,18 @@ export default function SettingsPage({ params }: { params: Promise<{ entityId: s
               onCheckedChange={(v) => form.setValue("followup.enabled", v, { shouldDirty: true })}
             />
           </div>
-          <Field label="Interval (seconds)" htmlFor="followup-int" hint="60 – 86400">
-            <Input id="followup-int" type="number" min={60} max={86400} {...form.register("followup.followup_interval_in_seconds", { valueAsNumber: true })} />
+          <Field label="Inactivity interval" hint="How long the customer must be silent before the agent follows up.">
+            <Select
+              value={String(form.watch("followup.followup_interval_in_seconds") ?? 900)}
+              onValueChange={(v) => form.setValue("followup.followup_interval_in_seconds", Number(v) as FollowupInterval, { shouldDirty: true })}
+            >
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {FOLLOWUP_INTERVALS.map((s) => (
+                  <SelectItem key={s} value={String(s)}>{INTERVAL_LABEL[s]}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Field>
           <Field label="Follow-up message" htmlFor="followup-msg">
             <Textarea id="followup-msg" rows={3} {...form.register("followup.message")} />

@@ -47,7 +47,7 @@ export default function FilesPage({ params }: { params: Promise<{ entityId: stri
                     <TableCell className="text-muted-foreground">{f.size ? `${Math.round(f.size / 1024)} KB` : "—"}</TableCell>
                     <TableCell className="text-right">
                       <ConfirmDialog
-                        trigger={<Button variant="ghost" size="icon"><Trash2 className="h-4 w-4" /></Button>}
+                        trigger={<Button variant="ghost" size="icon" aria-label={`Delete ${f.file_name}`}><Trash2 className="h-4 w-4" /></Button>}
                         title={`Delete ${f.file_name}?`}
                         confirmLabel="Delete"
                         onConfirm={async () => { await del.mutateAsync(f.id); toast.success("Deleted"); }}

@@ -38,7 +38,13 @@ export function OAuth2Fields<T extends FieldValues>({ control, prefix = "auth_co
           <Field label="Client secret" required error={fieldState.error?.message}>
             <div className="flex gap-2">
               <Input type={reveal ? "text" : "password"} {...field} />
-              <Button type="button" variant="outline" size="icon" onClick={() => setReveal((r) => !r)}>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                aria-label={reveal ? "Hide client secret" : "Show client secret"}
+                onClick={() => setReveal((r) => !r)}
+              >
                 {reveal ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
             </div>

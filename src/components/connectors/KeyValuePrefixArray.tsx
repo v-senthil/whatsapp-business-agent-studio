@@ -33,7 +33,7 @@ export function KeyValuePrefixArray<TFormValues extends FieldValues>({ control, 
             name={`${name}.${i}.prefix` as never}
             render={({ field }) => <Input placeholder="prefix" {...field} />}
           />
-          <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)}><Trash2 className="h-4 w-4" /></Button>
+          <Button type="button" variant="ghost" size="icon" aria-label="Remove entry" onClick={() => remove(i)}><Trash2 className="h-4 w-4" /></Button>
         </div>
       ))}
       <Button

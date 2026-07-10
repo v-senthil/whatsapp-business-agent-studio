@@ -5,7 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAgentEventStatus } from "@/lib/client/hooks/useAgentEvent";
 import type { AgentEventStatus } from "@/types/agent-event";
 
-const VARIANT: Record<AgentEventStatus, { variant: "secondary" | "success" | "destructive" | "warning"; icon: React.ComponentType<{ className?: string }> }> = {
+type Meta = { variant: "secondary" | "success" | "destructive" | "warning"; icon: React.ComponentType<{ className?: string }> };
+const VARIANT: Record<AgentEventStatus, Meta> = {
   request_received: { variant: "secondary", icon: Clock },
   processing: { variant: "secondary", icon: Loader2 },
   sent: { variant: "secondary", icon: CheckCircle2 },
@@ -13,6 +14,7 @@ const VARIANT: Record<AgentEventStatus, { variant: "secondary" | "success" | "de
   failed: { variant: "destructive", icon: XCircle },
   skipped: { variant: "warning", icon: AlertCircle },
 };
+const FALLBACK: Meta = { variant: "secondary", icon: Clock };
 
 interface Props {
   entityId: string;
@@ -24,7 +26,7 @@ interface Props {
 export function AgentEventRow({ entityId, eventId, submittedType, submittedTo }: Props) {
   const q = useAgentEventStatus(entityId, eventId);
   const status = q.data?.status;
-  const meta = status ? VARIANT[status] : { variant: "secondary" as const, icon: Clock };
+  const meta = (status && VARIANT[status]) || FALLBACK;
   const Icon = meta.icon;
   const spinning = status === "processing" || status === "request_received" || q.isPending;
 

@@ -26,9 +26,9 @@ export default function ApiDocsClient() {
   return (
     <>
       {/* Stoplight Elements web-component build (React-independent) */}
-      <link rel="stylesheet" href="https://unpkg.com/@stoplight/elements@9.0.23/styles.min.css" />
+      <link rel="stylesheet" href="/vendor/stoplight/styles.min.css" />
       <Script
-        src="https://unpkg.com/@stoplight/elements@9.0.23/web-components.min.js"
+        src="/vendor/stoplight/web-components.min.js"
         strategy="afterInteractive"
       />
       <div

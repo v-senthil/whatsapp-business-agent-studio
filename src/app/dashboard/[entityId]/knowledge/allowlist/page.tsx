@@ -74,7 +74,7 @@ export default function AllowlistPage({ params }: { params: Promise<{ entityId: 
                     <TableCell className="font-mono text-xs">{e.consumer_phone_number}</TableCell>
                     <TableCell className="text-right">
                       <ConfirmDialog
-                        trigger={<Button variant="ghost" size="icon"><Trash2 className="h-4 w-4" /></Button>}
+                        trigger={<Button variant="ghost" size="icon" aria-label="Remove entry"><Trash2 className="h-4 w-4" /></Button>}
                         title="Remove entry?" confirmLabel="Remove"
                         onConfirm={async () => { await del.mutateAsync(e.id); toast.success("Removed"); }}
                       />

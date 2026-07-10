@@ -70,11 +70,18 @@ export default function FaqsPage({ params }: { params: Promise<{ entityId: strin
               <TableBody>
                 {data.map((f) => (
                   <Fragment key={f.id}>
-                    <TableRow onClick={() => setExpanded(expanded === f.id ? null : f.id)} className="cursor-pointer">
+                    <TableRow
+                      onClick={() => setExpanded(expanded === f.id ? null : f.id)}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpanded(expanded === f.id ? null : f.id); } }}
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={expanded === f.id}
+                      className="cursor-pointer"
+                    >
                       <TableCell className="font-medium">{f.question}</TableCell>
                       <TableCell className="text-right">
                         <ConfirmDialog
-                          trigger={<Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}><Trash2 className="h-4 w-4" /></Button>}
+                          trigger={<Button variant="ghost" size="icon" aria-label="Delete FAQ" onClick={(e) => e.stopPropagation()}><Trash2 className="h-4 w-4" /></Button>}
                           title="Delete FAQ?"
                           confirmLabel="Delete"
                           onConfirm={async () => { await del.mutateAsync(f.id); toast.success("Deleted"); }}

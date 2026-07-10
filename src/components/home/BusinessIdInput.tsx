@@ -71,7 +71,7 @@ export function BusinessIdInput({ initialBusinessId, activeBusinessId, onChange 
               {dirty ? "Load WABAs" : "Loaded"}
             </Button>
             {activeBusinessId && (
-              <Button variant="outline" size="icon" onClick={clear} title="Clear">
+              <Button variant="outline" size="icon" aria-label="Clear business ID" onClick={clear} title="Clear">
                 <RotateCcw className="h-4 w-4" />
               </Button>
             )}

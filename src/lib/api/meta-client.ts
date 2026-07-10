@@ -15,6 +15,11 @@ export async function metaFetch(token: string, path: string, search: string, ini
   headers.delete("cookie");
   headers.delete("connection");
 
+  // Retrying with a streamed body (multipart uploads etc.) is impossible —
+  // the source stream has already been consumed by the first attempt.
+  const bodyIsStream = init.body instanceof ReadableStream;
+  const maxAttempts = bodyIsStream ? 1 : 3;
+
   let attempt = 0;
   while (true) {
     const res = await fetch(url, {
@@ -26,15 +31,18 @@ export async function metaFetch(token: string, path: string, search: string, ini
       // @ts-expect-error - Node fetch supports duplex for streaming
       duplex: init.body ? "half" : undefined,
     });
-    if (res.status !== 429 || attempt >= 2) return res;
+    attempt++;
+    if (res.status !== 429 || attempt >= maxAttempts) return res;
     const retry = Number(res.headers.get("retry-after") ?? "1");
     await new Promise((r) => setTimeout(r, Math.min(retry, 5) * 1000));
-    attempt++;
   }
 }
 
 export async function graphFetch(token: string, pathAndQuery: string): Promise<Response> {
-  const sep = pathAndQuery.includes("?") ? "&" : "?";
-  const url = `${env.GRAPH_API_BASE}/${pathAndQuery}${sep}access_token=${encodeURIComponent(token)}`;
-  return fetch(url, { cache: "no-store" });
+  // Prefer Authorization header over ?access_token= to avoid the token
+  // leaking into upstream logs, error pages, or Referer headers.
+  return fetch(`${env.GRAPH_API_BASE}/${pathAndQuery}`, {
+    cache: "no-store",
+    headers: { Authorization: `Bearer ${token}` },
+  });
 }

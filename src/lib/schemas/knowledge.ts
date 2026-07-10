@@ -15,6 +15,6 @@ export type FaqInput = z.infer<typeof faqSchema>;
 export const allowlistSchema = z.object({
   consumer_phone_number: z
     .string()
-    .regex(/^\+?[1-9]\d{7,14}$/, "Must be E.164 format, e.g. +15551234567"),
+    .regex(/^\+[1-9]\d{7,14}$/, "Must be E.164 format, e.g. +15551234567"),
 });
 export type AllowlistInput = z.infer<typeof allowlistSchema>;

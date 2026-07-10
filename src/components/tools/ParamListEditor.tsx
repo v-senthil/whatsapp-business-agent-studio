@@ -51,7 +51,7 @@ export function ParamListEditor<TFormValues extends FieldValues>({ control, name
                 </Select>
               )}
             />
-            <Button type="button" variant="ghost" size="icon" onClick={() => remove(i)}><Trash2 className="h-4 w-4" /></Button>
+            <Button type="button" variant="ghost" size="icon" aria-label="Remove parameter" onClick={() => remove(i)}><Trash2 className="h-4 w-4" /></Button>
           </div>
           <Controller
             control={control}

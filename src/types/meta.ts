@@ -1,11 +1,13 @@
-export interface MetaApiError {
-  title: string;
-  detail: string;
-  type?: string;
-  status?: number;
-}
-
-export type Channel = "whatsapp" | "messenger" | "instagram" | "tiktok" | "line";
+export type Channel =
+  | "email"
+  | "instagram"
+  | "line"
+  | "messenger"
+  | "sms"
+  | "tiktok"
+  | "unknown"
+  | "webchat"
+  | "whatsapp";
 
 export type AiAudience = "EVERYONE" | "ALLOWLISTED_ONLY";
 

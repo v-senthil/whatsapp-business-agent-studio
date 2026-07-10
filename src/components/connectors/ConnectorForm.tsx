@@ -108,7 +108,7 @@ export function ConnectorForm({ initial, loading, submitLabel = "Save", onSubmit
           />
           {authType === "API_KEY" && <ApiKeyFields control={form.control as never} />}
           {authType === "OAUTH2_CLIENT_CREDENTIALS" && <OAuth2Fields control={form.control as never} />}
-          {authType === "MTLS" && <MtlsFields control={form.control as never} />}
+          {authType === "MTLS" && <MtlsFields />}
         </CardContent>
       </Card>
 

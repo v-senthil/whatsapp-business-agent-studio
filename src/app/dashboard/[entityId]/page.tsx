@@ -91,7 +91,7 @@ export default function EntityOverviewPage({ params }: { params: Promise<{ entit
               settingsList.map((s, i) => {
                 const it = s as { agent_id?: string; channel?: string };
                 return (
-                  <div key={i} className="flex items-center gap-3 rounded-md border p-3">
+                  <div key={it.agent_id ?? `agent-${i}`} className="flex items-center gap-3 rounded-md border p-3">
                     <div className="min-w-0 flex-1">
                       <div className="text-sm font-medium capitalize">{it.channel ?? "unknown"}</div>
                       <div className="flex items-center gap-1">

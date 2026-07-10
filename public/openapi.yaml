@@ -1630,7 +1630,7 @@ components:
     Channel:
       type: string
       description: Messaging channel.
-      enum: [whatsapp, messenger, instagram, tiktok, line]
+      enum: [email, instagram, line, messenger, sms, tiktok, unknown, webchat, whatsapp]
 
     EligibilityResponse:
       type: object
