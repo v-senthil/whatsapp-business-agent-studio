@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/common/FormField";
 import { Separator } from "@/components/ui/separator";
+import { fetcher } from "@/lib/client/fetcher";
 
 interface EntityPickerProps {
   currentEntityId?: string;
@@ -22,11 +23,7 @@ export function EntityPicker({ currentEntityId, primaryLabel, secondaryLabel }: 
 
   const select = React.useCallback(
     async (id: string) => {
-      await fetch("/api/session", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lastEntityId: id }),
-      });
+      await fetcher("/api/session", { method: "PATCH", json: { lastEntityId: id } });
       setOpen(false);
       router.push(`/dashboard/${id}`);
     },
@@ -58,7 +55,12 @@ export function EntityPicker({ currentEntityId, primaryLabel, secondaryLabel }: 
                 value={manualId}
                 onChange={(e) => setManualId(e.target.value)}
                 placeholder="e.g. 123456789012345"
-                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (manualId.trim()) select(manualId.trim()); } }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+                    e.preventDefault();
+                    if (manualId.trim()) select(manualId.trim());
+                  }
+                }}
               />
               <Button type="button" size="sm" disabled={!manualId.trim()} onClick={() => select(manualId.trim())}>
                 Go

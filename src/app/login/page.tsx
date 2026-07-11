@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Field } from "@/components/common/FormField";
 import { LoadingButton } from "@/components/common/LoadingButton";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
+import { fetcher } from "@/lib/client/fetcher";
+import { MetaApiError } from "@/lib/api/errors";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,21 +22,18 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/session", {
+      const data = await fetcher<{ user?: { name?: string } }>("/api/session", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
+        json: { token },
       });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({ detail: "Login failed" }));
-        setError(body.detail ?? "Invalid token");
-        return;
-      }
-      const data = await res.json();
       toast.success(`Welcome ${data.user?.name ?? ""}`);
       router.replace("/home");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      if (err instanceof MetaApiError) {
+        setError(err.detail ?? err.title ?? "Invalid token");
+      } else {
+        setError(err instanceof Error ? err.message : "Login failed");
+      }
     } finally {
       setLoading(false);
     }

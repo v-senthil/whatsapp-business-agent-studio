@@ -26,7 +26,11 @@ export class ReadOnlyError extends Error {
 
 export async function fetcher<T = unknown>(url: string, opts: FetchOpts = {}): Promise<T> {
   const method = (opts.method ?? "GET").toUpperCase();
-  if (readOnlyMode && !READ_METHODS.has(method) && url.startsWith("/api/meta/")) {
+  if (
+    readOnlyMode &&
+    !READ_METHODS.has(method) &&
+    (url.startsWith("/api/meta/") || url.startsWith("/api/graph/phone-webhook"))
+  ) {
     throw new ReadOnlyError();
   }
   const headers: Record<string, string> = { ...(opts.headers ?? {}) };

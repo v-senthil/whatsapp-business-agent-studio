@@ -17,6 +17,7 @@ import { EntityPicker } from "@/components/shell/EntityPicker";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { usePhoneDetails } from "@/lib/client/hooks/useDiscovery";
 import { useSession, usePatchSession } from "@/lib/client/hooks/useSession";
+import { fetcher } from "@/lib/client/fetcher";
 
 interface HeaderProps {
   user?: { id?: string; name?: string };
@@ -31,7 +32,11 @@ export function Header({ user, entityId }: HeaderProps) {
   const readOnly = !!session.data?.readOnly;
 
   async function logout() {
-    await fetch("/api/session", { method: "DELETE" });
+    try {
+      await fetcher("/api/session", { method: "DELETE" });
+    } catch {
+      // even on failure, push the user to /login to break the local UI state
+    }
     router.replace("/login");
   }
 

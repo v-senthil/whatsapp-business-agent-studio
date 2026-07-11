@@ -4,6 +4,7 @@ import { Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { isReadOnlyMode } from "@/lib/client/fetcher";
 
 const ALLOWED = [".pdf", ".doc", ".docx", ".png", ".jpg", ".jpeg", ".csv", ".xlsx", ".txt", ".md"];
 const MAX_MB = 100;
@@ -30,6 +31,14 @@ export function FileUploader({ entityId, onDone }: Props) {
   }
 
   function upload(item: UploadItem) {
+    // FileUploader uses XHR (fetch has no upload-progress in browsers) so the
+    // shared fetcher read-only guard does not cover it. Check the flag here
+    // and short-circuit before we even open a socket.
+    if (isReadOnlyMode()) {
+      toast.error("Read-only mode is enabled. Turn it off from the account menu to upload.");
+      setItems((all) => all.map((x) => (x.id === item.id ? { ...x, status: "error", error: "Read-only mode" } : x)));
+      return;
+    }
     const xhr = new XMLHttpRequest();
     item.xhr = xhr;
     const fd = new FormData();

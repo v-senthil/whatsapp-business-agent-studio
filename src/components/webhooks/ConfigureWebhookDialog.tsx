@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { fetcher } from "@/lib/client/fetcher";
+import { MetaApiError } from "@/lib/api/errors";
 
 interface Props {
   entityId: string;
@@ -32,28 +34,25 @@ export function ConfigureWebhookDialog({ entityId }: Props) {
     }
   }, [open, callbackUrl]);
 
+  function extractError(err: unknown, fallback: string): string {
+    if (err instanceof MetaApiError) return err.detail ?? err.title ?? fallback;
+    if (err instanceof Error) return err.message;
+    return fallback;
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/graph/phone-webhook", {
+      await fetcher("/api/graph/phone-webhook", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone_number_id: entityId,
-          callback_url: callbackUrl,
-        }),
+        json: { phone_number_id: entityId, callback_url: callbackUrl },
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setError(data?.detail ?? data?.title ?? "Configuration failed");
-        return;
-      }
       toast.success("Webhook configured for this phone");
       setOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Configuration failed");
+      setError(extractError(err, "Configuration failed"));
     } finally {
       setLoading(false);
     }
@@ -63,19 +62,14 @@ export function ConfigureWebhookDialog({ entityId }: Props) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(
+      await fetcher(
         `/api/graph/phone-webhook?phone_number_id=${encodeURIComponent(entityId)}`,
         { method: "DELETE" },
       );
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setError(data?.detail ?? data?.title ?? "Clear failed");
-        return;
-      }
       toast.success("Phone-scoped webhook cleared. Events fall back to the app-level callback URL.");
       setOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Clear failed");
+      setError(extractError(err, "Clear failed"));
     } finally {
       setLoading(false);
     }
