@@ -6,6 +6,23 @@ import { parseErrorBody } from "@/lib/api/errors";
 
 const loginSchema = z.object({ token: z.string().min(10) });
 
+// Same-origin check for state-changing session requests. We accept absent
+// Origin headers (same-origin same-tab GETs can lack them) but reject any
+// Origin whose host does not match the request Host. Environments behind a
+// reverse proxy can pin the expected host with WABIZ_PUBLIC_HOST.
+function isSameOrigin(req: Request): boolean {
+  const origin = req.headers.get("origin");
+  if (!origin) return true;
+  const host = req.headers.get("host") ?? "";
+  const expectedHost = process.env.WABIZ_PUBLIC_HOST ?? host;
+  try {
+    const originUrl = new URL(origin);
+    return originUrl.host === expectedHost;
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const parsed = loginSchema.safeParse(body);
@@ -30,7 +47,10 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true, user: { id: me.id, name: session.userName } });
 }
 
-export async function DELETE() {
+export async function DELETE(req: Request) {
+  if (!isSameOrigin(req)) {
+    return NextResponse.json({ title: "Forbidden", detail: "Cross-origin request rejected" }, { status: 403 });
+  }
   const session = await getSession();
   session.destroy();
   return NextResponse.json({ ok: true });
@@ -47,6 +67,9 @@ const patchSchema = z.object({
 });
 
 export async function PATCH(req: Request) {
+  if (!isSameOrigin(req)) {
+    return NextResponse.json({ title: "Forbidden", detail: "Cross-origin request rejected" }, { status: 403 });
+  }
   const session = await getSession();
   if (!session.token) return NextResponse.json({ title: "Unauthorized", detail: "No session" }, { status: 401 });
   const body = await req.json().catch(() => null);
