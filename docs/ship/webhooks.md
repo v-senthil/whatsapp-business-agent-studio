@@ -55,7 +55,7 @@ Use this when several phones share one Meta app but you want each phone to point
 
 - The verify token is only ever handled on the server. The dialog does not ask for it and no browser code has access to it.
 - If `META_APP_SECRET` is not set, events still land in the UI but are flagged as **Unverified**. This is fine locally but not for production.
-- The event history is in-memory. On a server restart or cold start, the list is cleared. The UI shows a small note about this.
+- The event history is in-memory. On a server restart or cold start, the list is cleared.
 - The per-phone override wins over the app-level callback URL. Meta routes an event to whichever URL is registered on the phone at the moment the event happens.
 
 ## Troubleshooting

@@ -84,7 +84,7 @@ export default function WebhooksPage({ params }: { params: Promise<{ entityId: s
   return (
     <div className="mx-auto max-w-4xl space-y-6 py-4">
       <div className="flex items-start justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <h1 className="flex items-center gap-2 text-2xl font-semibold">
             <RadioTower className="h-5 w-5" /> Webhooks
           </h1>
@@ -93,32 +93,13 @@ export default function WebhooksPage({ params }: { params: Promise<{ entityId: s
             <code className="font-mono text-xs">{entityId}</code>.
           </p>
         </div>
-        <ConfigureWebhookDialog entityId={entityId} />
+        <div className="flex flex-col items-end gap-1">
+          <ConfigureWebhookDialog entityId={entityId} />
+          <p className="max-w-[240px] text-right text-[11px] text-muted-foreground">
+            Point this phone at your callback URL. Useful when several phones share one Meta app.
+          </p>
+        </div>
       </div>
-
-      <Alert>
-        <AlertTitle>Configuration</AlertTitle>
-        <AlertDescription>
-          <div className="space-y-2 text-xs">
-            <div>
-              <strong>Callback URL</strong>:{" "}
-              <code className="font-mono">https://your-host/api/webhooks/meta</code>
-            </div>
-            <div>
-              <strong>Verify token</strong>: set <code className="font-mono">META_WEBHOOK_VERIFY_TOKEN</code> in <code>.env.local</code>. Meta will call GET on the callback URL with <code className="font-mono">hub.verify_token</code>.
-            </div>
-            <div>
-              <strong>Signature</strong>: set <code className="font-mono">META_APP_SECRET</code> in <code>.env.local</code>. Events without a valid <code className="font-mono">X-Hub-Signature-256</code> are still recorded but marked as unverified.
-            </div>
-            <div>
-              <strong>Per-phone override</strong>: click <em>Configure webhook</em> above to point this phone at your callback URL. Useful when several phones share one Meta app.
-            </div>
-            <div className="text-muted-foreground">
-              Note: this store is in-memory per Node process. On serverless deploys each cold start clears history.
-            </div>
-          </div>
-        </AlertDescription>
-      </Alert>
 
       {/* Filter bar */}
       <div className="flex flex-wrap items-center gap-2">
