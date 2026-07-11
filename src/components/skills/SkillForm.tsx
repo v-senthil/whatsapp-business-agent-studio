@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Field } from "@/components/common/FormField";
 import { LoadingButton } from "@/components/common/LoadingButton";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { AiDraftDialog } from "@/components/skills/AiDraftDialog";
 import { skillSchema, type SkillInput } from "@/lib/schemas/skill";
 
 interface SkillFormProps {
@@ -28,8 +29,15 @@ export function SkillForm({ initial, loading, onSubmit, onDelete, onCancel }: Sk
   return (
     <form onSubmit={submit}>
       <Card>
-        <CardHeader>
+        <CardHeader className="flex-row items-center justify-between space-y-0">
           <CardTitle>{initial ? "Edit skill" : "New skill"}</CardTitle>
+          <AiDraftDialog
+            onDraft={(draft) => {
+              form.reset(draft, { keepDefaultValues: false });
+              // trigger validation of the freshly-inserted values
+              form.trigger();
+            }}
+          />
         </CardHeader>
         <CardContent className="space-y-4">
           <Field label="Title" required error={form.formState.errors.title?.message}>
