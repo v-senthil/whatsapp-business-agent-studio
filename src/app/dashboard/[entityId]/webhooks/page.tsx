@@ -1,6 +1,6 @@
 "use client";
 import { use, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, RadioTower, Search, ShieldCheck, ShieldX, X } from "lucide-react";
+import { AlertTriangle, RadioTower, Search, ShieldCheck, ShieldX, Smartphone, X } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/common/EmptyState";
 import { JsonViewer } from "@/components/common/JsonViewer";
+import { ConfigureWebhookDialog } from "@/components/webhooks/ConfigureWebhookDialog";
 
 interface WebhookRecord {
   id: string;
@@ -20,12 +21,13 @@ interface WebhookRecord {
 type SignatureFilter = "all" | "signed" | "unverified";
 
 export default function WebhooksPage({ params }: { params: Promise<{ entityId: string }> }) {
-  const { entityId: _entityId } = use(params);
+  const { entityId } = use(params);
   const [events, setEvents] = useState<WebhookRecord[]>([]);
   const [connected, setConnected] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [signatureFilter, setSignatureFilter] = useState<SignatureFilter>("all");
+  const [thisPhoneOnly, setThisPhoneOnly] = useState(true);
 
   useEffect(() => {
     const es = new EventSource("/api/webhooks/stream");
@@ -43,13 +45,28 @@ export default function WebhooksPage({ params }: { params: Promise<{ entityId: s
     return () => es.close();
   }, []);
 
+  const otherPhoneCount = useMemo(
+    () =>
+      events.filter((e) => {
+        const ids = extractPhoneNumberIds(e.body);
+        return ids.length > 0 && !ids.includes(entityId);
+      }).length,
+    [events, entityId],
+  );
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return events.filter((e) => {
       if (signatureFilter === "signed" && !e.signature_ok) return false;
       if (signatureFilter === "unverified" && e.signature_ok) return false;
+      if (thisPhoneOnly) {
+        const ids = extractPhoneNumberIds(e.body);
+        // Only filter out events that clearly belong to a different phone.
+        // Events without a phone_number_id (test payloads, non-message events)
+        // pass through so they remain visible.
+        if (ids.length > 0 && !ids.includes(entityId)) return false;
+      }
       if (!q) return true;
-      // Search across summary, headers, and stringified body.
       const summary = summarize(e.body).toLowerCase();
       if (summary.includes(q)) return true;
       const headers = Object.entries(e.headers).some(([k, v]) => k.toLowerCase().includes(q) || v.toLowerCase().includes(q));
@@ -60,19 +77,23 @@ export default function WebhooksPage({ params }: { params: Promise<{ entityId: s
         return false;
       }
     });
-  }, [events, query, signatureFilter]);
+  }, [events, query, signatureFilter, thisPhoneOnly, entityId]);
 
-  const filterActive = query.trim() !== "" || signatureFilter !== "all";
+  const filterActive = query.trim() !== "" || signatureFilter !== "all" || !thisPhoneOnly;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 py-4">
-      <div>
-        <h1 className="flex items-center gap-2 text-2xl font-semibold">
-          <RadioTower className="h-5 w-5" /> Webhooks
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Live stream of events sent by Meta to <code className="font-mono">POST /api/webhooks/meta</code>.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="flex items-center gap-2 text-2xl font-semibold">
+            <RadioTower className="h-5 w-5" /> Webhooks
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Live stream of events sent by Meta for phone{" "}
+            <code className="font-mono text-xs">{entityId}</code>.
+          </p>
+        </div>
+        <ConfigureWebhookDialog entityId={entityId} />
       </div>
 
       <Alert>
@@ -88,6 +109,9 @@ export default function WebhooksPage({ params }: { params: Promise<{ entityId: s
             </div>
             <div>
               <strong>Signature</strong>: set <code className="font-mono">META_APP_SECRET</code> in <code>.env.local</code>. Events without a valid <code className="font-mono">X-Hub-Signature-256</code> are still recorded but marked as unverified.
+            </div>
+            <div>
+              <strong>Per-phone override</strong>: click <em>Configure webhook</em> above to point this phone at your callback URL. Useful when several phones share one Meta app.
             </div>
             <div className="text-muted-foreground">
               Note: this store is in-memory per Node process. On serverless deploys each cold start clears history.
@@ -122,8 +146,22 @@ export default function WebhooksPage({ params }: { params: Promise<{ entityId: s
             </button>
           ))}
         </div>
+        <button
+          type="button"
+          onClick={() => setThisPhoneOnly((v) => !v)}
+          className={
+            "inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs " +
+            (thisPhoneOnly
+              ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+              : "border-border text-muted-foreground hover:text-foreground")
+          }
+          title="Only show events for the current phone number"
+        >
+          <Smartphone className="h-3 w-3" />
+          This phone only
+        </button>
         {filterActive && (
-          <Button variant="ghost" size="sm" onClick={() => { setQuery(""); setSignatureFilter("all"); }}>
+          <Button variant="ghost" size="sm" onClick={() => { setQuery(""); setSignatureFilter("all"); setThisPhoneOnly(true); }}>
             <X className="h-3 w-3" /> Clear
           </Button>
         )}
@@ -139,6 +177,15 @@ export default function WebhooksPage({ params }: { params: Promise<{ entityId: s
             ? `${filtered.length} of ${events.length} match${filtered.length === 1 ? "" : "es"}`
             : `${events.length} event${events.length === 1 ? "" : "s"}`}
         </span>
+        {thisPhoneOnly && otherPhoneCount > 0 ? (
+          <button
+            type="button"
+            onClick={() => setThisPhoneOnly(false)}
+            className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+          >
+            +{otherPhoneCount} for other phone{otherPhoneCount === 1 ? "" : "s"}
+          </button>
+        ) : null}
       </div>
 
       {events.length === 0 ? (
@@ -173,6 +220,18 @@ export default function WebhooksPage({ params }: { params: Promise<{ entityId: s
                     </CardTitle>
                     <p className="text-xs text-muted-foreground">
                       {new Date(e.received_at).toLocaleString()}
+                      {(() => {
+                        const ids = extractPhoneNumberIds(e.body);
+                        if (ids.length === 0) return null;
+                        const isThisPhone = ids.includes(entityId);
+                        return (
+                          <span className={isThisPhone ? "ml-2 text-muted-foreground" : "ml-2 text-amber-600 dark:text-amber-400"}>
+                            {" · "}
+                            {ids.join(", ")}
+                            {!isThisPhone ? " (other phone)" : ""}
+                          </span>
+                        );
+                      })()}
                     </p>
                   </div>
                   {e.signature_ok ? (
@@ -221,4 +280,21 @@ function summarize(body: unknown): string {
   const object = obj.object ?? "event";
   const firstField = obj.entry?.[0]?.changes?.[0]?.field;
   return firstField ? `${object} · ${firstField}` : object;
+}
+
+function extractPhoneNumberIds(body: unknown): string[] {
+  if (!body || typeof body !== "object") return [];
+  const obj = body as {
+    entry?: Array<{
+      changes?: Array<{ value?: { metadata?: { phone_number_id?: string } } }>;
+    }>;
+  };
+  const ids = new Set<string>();
+  for (const entry of obj.entry ?? []) {
+    for (const change of entry.changes ?? []) {
+      const id = change?.value?.metadata?.phone_number_id;
+      if (id) ids.add(id);
+    }
+  }
+  return Array.from(ids);
 }
