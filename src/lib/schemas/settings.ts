@@ -7,15 +7,15 @@ export const settingsSchema = z.object({
   rollout: z.object({ enabled: z.boolean() }),
   handoff: z.object({
     enabled: z.boolean(),
-    message: z.string().max(1000).optional().default(""),
+    message: z.string().max(1000).default(""),
   }),
   followup: z.object({
     enabled: z.boolean(),
     followup_interval_in_seconds: z.coerce.number().refine(
       (v): v is FollowupInterval => (FOLLOWUP_INTERVALS as readonly number[]).includes(v),
-      { message: "Not a supported interval" },
+      { message: `Interval must be one of ${FOLLOWUP_INTERVALS.join(", ")} seconds` },
     ),
-    message: z.string().max(1000).optional().default(""),
+    message: z.string().max(1000).default(""),
   }),
   ai_audience: z.enum(["EVERYONE", "ALLOWLISTED_ONLY"]),
 });

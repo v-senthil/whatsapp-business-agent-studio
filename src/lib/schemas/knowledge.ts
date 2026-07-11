@@ -8,7 +8,7 @@ export type WebsiteInput = z.infer<typeof websiteSchema>;
 export const faqSchema = z.object({
   question: z.string().min(1).max(500),
   answer: z.string().min(1).max(5000),
-  metadata: z.string().optional().default(""),
+  metadata: z.string().default(""),
 });
 export type FaqInput = z.infer<typeof faqSchema>;
 
@@ -17,7 +17,7 @@ export const faqRowSchema = z
   .object({
     question: z.string().min(1).max(500),
     answer: z.string().min(1).max(5000),
-    metadata: z.string().optional().default(""),
+    metadata: z.string().default(""),
   })
   .transform((row, ctx) => {
     let meta: Record<string, string> | undefined;

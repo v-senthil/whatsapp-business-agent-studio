@@ -3,7 +3,7 @@ import { z } from "zod";
 const kvpSchema = z.object({
   field_name: z.string().min(1),
   value: z.string().min(1),
-  prefix: z.string().optional().default(""),
+  prefix: z.string().default(""),
 });
 
 export const apiKeyAuthSchema = z.object({
@@ -24,13 +24,13 @@ export const oauth2AuthSchema = z.object({
 
 export const mtlsFieldsSchema = z.object({
   client_certificate: z.string().min(1),
-  ca_certificate: z.string().optional().default(""),
+  ca_certificate: z.string().default(""),
 });
 
 export const userAuthInjectionSchema = z.object({
   location: z.enum(["headers", "query"]),
   field_name: z.string().min(1),
-  prefix: z.string().optional().default(""),
+  prefix: z.string().default(""),
 });
 
 const baseConnector = z.object({

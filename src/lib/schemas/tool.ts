@@ -5,8 +5,8 @@ export const paramTypeSchema = z.enum(["string", "integer", "number", "boolean",
 const paramEntry = z.object({
   name: z.string().min(1, "Name required"),
   type: paramTypeSchema,
-  description: z.string().max(500).optional().default(""),
-  items: z.string().optional().default(""),
+  description: z.string().max(500).default(""),
+  items: z.string().default(""),
 });
 export type ParamEntry = z.infer<typeof paramEntry>;
 

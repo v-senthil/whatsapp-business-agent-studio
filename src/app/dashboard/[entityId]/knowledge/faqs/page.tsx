@@ -19,6 +19,11 @@ import { ExportCsvButton } from "@/components/common/ExportCsvButton";
 import { faqRowSchema, faqSchema, type FaqInput } from "@/lib/schemas/knowledge";
 import { useCreateFaq, useDeleteFaq, useFaqs } from "@/lib/client/hooks/useKnowledge";
 
+// Kept at module scope so form.reset(FAQ_EMPTY) always references a stable
+// object, mirroring the allowlist page. See CLAUDE.md's "Watch out" note on
+// form.reset() flashing undefined -> "" transitions.
+const FAQ_EMPTY: FaqInput = { question: "", answer: "", metadata: "" };
+
 export default function FaqsPage({ params }: { params: Promise<{ entityId: string }> }) {
   const { entityId } = use(params);
   const { data, isLoading, error, refetch } = useFaqs(entityId);
@@ -32,7 +37,6 @@ export default function FaqsPage({ params }: { params: Promise<{ entityId: strin
     metadata: f.metadata ? JSON.stringify(f.metadata) : "",
   }));
 
-  const FAQ_EMPTY: FaqInput = { question: "", answer: "", metadata: "" };
   const form = useForm<FaqInput>({ resolver: zodResolver(faqSchema), defaultValues: FAQ_EMPTY });
   const submit = form.handleSubmit(async (v) => {
     let meta: Record<string, string> | undefined;
