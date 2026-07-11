@@ -42,7 +42,35 @@ NODE_ENV=production npm run build
 echo "[build-deploy-zip] Pruning dev dependencies"
 npm prune --omit=dev
 
-# 4. Zip
+# 4. Cross-platform binaries for the AppSail runtime (Linux x64 glibc).
+#    npm's optionalDependencies only fetch host-matching platform binaries by
+#    default, so a Mac build has no @next/swc-linux-x64 in node_modules and
+#    `next start` on the Linux runtime crashes immediately. Fetch the Linux
+#    binaries alongside the host ones, at the exact version of next installed.
+NEXT_VERSION="$(node -e 'console.log(require("./node_modules/next/package.json").version)')"
+echo "[build-deploy-zip] Adding Linux x64 target binaries (Next.js $NEXT_VERSION)"
+# --force is required because npm 11 refuses to install a package whose
+# package.json declares os/cpu that don't match the host, even with
+# --os/--cpu overrides. All Linux binaries MUST be installed in a single
+# npm command; back-to-back `npm install --no-save` calls wipe each other's
+# additions.
+LINUX_PKGS="@next/swc-linux-x64-gnu@$NEXT_VERSION @next/swc-linux-x64-musl@$NEXT_VERSION"
+if [ -d node_modules/sharp ]; then
+  SHARP_VERSION="$(node -e 'console.log(require("./node_modules/sharp/package.json").version)')"
+  # libvips version is pinned in sharp; read from an existing platform variant.
+  LIBVIPS_VERSION="$(node -e 'try{const d=require("fs").readdirSync("./node_modules/@img").find(x=>x.startsWith("sharp-libvips-"));console.log(require("./node_modules/@img/"+d+"/package.json").version)}catch(e){console.log("")}')"
+  LINUX_PKGS="$LINUX_PKGS @img/sharp-linux-x64@$SHARP_VERSION"
+  [ -n "$LIBVIPS_VERSION" ] && LINUX_PKGS="$LINUX_PKGS @img/sharp-libvips-linux-x64@$LIBVIPS_VERSION"
+fi
+# shellcheck disable=SC2086
+npm install --no-save --no-audit --no-fund --loglevel=error --force \
+  --cpu=x64 --os=linux \
+  $LINUX_PKGS \
+  || echo "[build-deploy-zip] warning: Linux binary install failed (continuing)"
+
+# 5. Zip. `-y` preserves symlinks (critical for node_modules/.bin/* shims);
+#    without it, extraction on the target flattens them to plain files that
+#    can no longer resolve their relative require paths.
 echo "[build-deploy-zip] Creating $OUT"
 rm -f "$OUT"
 # Exclude things we don't want in the archive:
@@ -51,7 +79,7 @@ rm -f "$OUT"
 #   - previous zip files
 #   - .env.local
 #   - Meta Docs/ (copyrighted local reference)
-zip -rq "$OUT" \
+zip -ryq "$OUT" \
   package.json \
   package-lock.json \
   start.sh \

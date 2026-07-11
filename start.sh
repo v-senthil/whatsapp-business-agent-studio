@@ -68,4 +68,9 @@ fi
 # ---- 3. Start -----------------------------------------------------------
 export NODE_ENV=production
 log "Starting next server on 0.0.0.0:${PORT:-3000}"
-exec node_modules/.bin/next start -p "${PORT:-3000}" -H 0.0.0.0
+# Invoke via `node` on next.js's own entry file, not via the shim at
+# node_modules/.bin/next. The shim is a relative-path symlink; some zip tools
+# (macOS Finder Compress, older zip) do not preserve symlinks and extract it
+# as a plain file, which then breaks the relative `require("../server/...")`
+# inside. Calling node directly on the target file bypasses the shim entirely.
+exec node node_modules/next/dist/bin/next start -p "${PORT:-3000}" -H 0.0.0.0
