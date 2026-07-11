@@ -36,7 +36,7 @@ Paste or upload a Markdown or plain-text document about your business, and the A
 
 ## Good to know
 
-- Long documents are automatically clipped. Focus your input on the most useful sections.
+- Long documents are automatically clipped at 40,000 characters. When that happens, the preview shows a **Long document truncated** banner so you know some content near the end may be missing. Focus your input on the most useful sections.
 - Incomplete AI suggestions are filtered out before you see them, so the preview only shows items with enough information.
 - This feature requires an AI provider to be configured. See [AI provider settings](../advanced/ai-provider.md).
 

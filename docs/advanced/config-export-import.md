@@ -58,6 +58,9 @@ agent-config-<entityId>-<yyyy-mm-dd>.enc.json   # passphrase-protected
    6. Connectors
    7. Tools
 5. If credentials were not included in the bundle, an amber alert reminds you that connectors were created but their auth still needs to be filled in. See [Connector auth rotation](../configure/connector-auth-rotation.md).
+6. If any list failed to fetch when the bundle was exported, the preview shows a **Partial export** warning. Missing sections are skipped during import.
+
+After the import finishes, every resource cache under the entity is invalidated so the just-created skills, connectors, knowledge, and allowlist entries show up without a hard reload.
 
 ## Good to know
 

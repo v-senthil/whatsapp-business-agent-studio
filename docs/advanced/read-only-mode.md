@@ -17,6 +17,8 @@ Toggle **Read-only mode** to block every write action against the Meta Agent Pla
 ## What is blocked
 
 - Any write action (create, update, delete) against the Meta Agent Platform: saving settings, creating skills, uploading files, rotating auth, running tools, and so on.
+- Configuring the phone-scoped webhook override (Webhooks > Configure).
+- File uploads: the uploader still uses raw XHR (for progress reporting) but now checks the read-only flag before opening the connection.
 - When you try one of these, the app shows a small "read-only" message instead of firing the request.
 
 ## What is not blocked
