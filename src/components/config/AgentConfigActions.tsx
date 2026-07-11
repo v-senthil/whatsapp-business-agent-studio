@@ -2,6 +2,7 @@
 import * as React from "react";
 import { AlertTriangle, Download, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -10,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { qk } from "@/lib/client/query-keys";
 import {
   Dialog,
   DialogContent,
@@ -167,6 +169,7 @@ function ExportButton({ entityId }: { entityId: string }) {
 type Stage = "pick" | "passphrase" | "preview" | "importing" | "done";
 
 function ImportButton({ entityId, onComplete }: { entityId: string; onComplete?: () => void }) {
+  const qc = useQueryClient();
   const [open, setOpen] = React.useState(false);
   const [stage, setStage] = React.useState<Stage>("pick");
   const [bundle, setBundle] = React.useState<AgentConfigBundle | null>(null);
@@ -223,6 +226,11 @@ function ImportButton({ entityId, onComplete }: { entityId: string; onComplete?:
     setStage("importing");
     const result = await runImport(entityId, bundle, setProgress);
     setStage("done");
+    // Blow away every cached query rooted under this entity so the just-created
+    // skills, connectors, knowledge, allowlist, websites, and FAQs show up
+    // without a hard reload. The raw mutations inside runImport intentionally
+    // bypass useMutation, so this is the only place caches get bumped.
+    qc.invalidateQueries({ queryKey: qk.entity(entityId), exact: false });
     if (result.failed > 0) toast.error(`${result.done} imported, ${result.failed} failed`);
     else toast.success(`${result.done} items imported`);
     onComplete?.();
@@ -325,6 +333,15 @@ function ImportButton({ entityId, onComplete }: { entityId: string; onComplete?:
                 <AlertTitle>Credentials are missing</AlertTitle>
                 <AlertDescription>
                   This bundle was exported without secrets. Connectors will be created but you will need to rotate credentials on each one from the Auth tab.
+                </AlertDescription>
+              </Alert>
+            )}
+            {bundle.partial && (
+              <Alert variant="warning">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Partial export</AlertTitle>
+                <AlertDescription>
+                  One or more resource lists failed to fetch when this bundle was exported. Missing sections will simply be skipped during import.
                 </AlertDescription>
               </Alert>
             )}

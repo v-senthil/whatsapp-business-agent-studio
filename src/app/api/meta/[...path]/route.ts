@@ -35,10 +35,25 @@ async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] 
   const forwardHeaders = pickAllowedHeaders(req.headers);
 
   const method = req.method.toUpperCase();
-  const body =
-    method === "GET" || method === "HEAD" || method === "DELETE"
-      ? null
-      : (req.body as unknown as BodyInit | null);
+  // For non-multipart writes we buffer the body so metaFetch can retry on 429.
+  // Multipart uploads must stay as a stream because the browser's boundary
+  // parser cannot re-consume a stream once it has been forwarded, and we do
+  // not want to buffer large file uploads.
+  const contentType = req.headers.get("content-type") ?? "";
+  const isMultipart = contentType.toLowerCase().startsWith("multipart/");
+  let body: BodyInit | null;
+  if (method === "GET" || method === "HEAD" || method === "DELETE") {
+    body = null;
+  } else if (isMultipart) {
+    body = req.body as unknown as BodyInit | null;
+  } else {
+    const buf = await req.arrayBuffer();
+    body = buf.byteLength > 0 ? new Uint8Array(buf) : null;
+  }
+
+  if (path.some((p) => p.includes("..") || p.includes("/") || p === "")) {
+    return NextResponse.json({ title: "Bad path", detail: "Illegal path segment" }, { status: 400 });
+  }
 
   const upstream = await metaFetch(session.token, path.join("/"), search, {
     method,

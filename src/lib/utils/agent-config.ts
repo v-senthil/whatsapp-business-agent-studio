@@ -146,6 +146,7 @@ export const agentConfigBundleSchema = z.object({
     )
     .default([]),
   credentials_included: z.boolean(),
+  partial: z.boolean().optional(),
 });
 
 export interface AgentConfigBundle {
@@ -164,6 +165,9 @@ export interface AgentConfigBundle {
     tools: Array<Omit<Tool, "id">>;
   }>;
   credentials_included: boolean;
+  // True when one or more sub-fetches during export returned no data; consumers
+  // can warn the operator that the exported config is incomplete.
+  partial?: boolean;
 }
 
 // -----------------------------------------------------------------------------
@@ -284,7 +288,10 @@ function toArray<T>(r: T[] | { data: T[] } | undefined): T[] {
 async function fetchOrNull<T>(url: string): Promise<T | undefined> {
   try {
     return await fetcher<T>(url);
-  } catch {
+  } catch (e) {
+    // Surface the miss so operators know a sub-fetch was skipped. Rest of the
+    // export continues so partial bundles are still useful.
+    console.warn(`agent-config export: sub-fetch failed for ${url}`, e);
     return undefined;
   }
 }
@@ -319,6 +326,16 @@ export async function exportAgentConfig(entityId: string, includeCredentials: bo
     }),
   );
 
+  const partial =
+    settings === undefined ||
+    businessInfo === undefined ||
+    skills === undefined ||
+    websites === undefined ||
+    faqs === undefined ||
+    allowlist === undefined ||
+    files === undefined ||
+    connectors === undefined;
+
   return {
     version: CONFIG_BUNDLE_VERSION,
     exported_at: new Date().toISOString(),
@@ -332,6 +349,7 @@ export async function exportAgentConfig(entityId: string, includeCredentials: bo
     files_manifest: toArray(files).map((f) => ({ file_name: f.file_name })),
     connectors: bundledConnectors,
     credentials_included: includeCredentials,
+    partial: partial || undefined,
   };
 }
 
