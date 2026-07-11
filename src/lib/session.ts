@@ -2,6 +2,8 @@ import { cookies } from "next/headers";
 import { getIronSession, type SessionOptions } from "iron-session";
 import { env } from "@/lib/env";
 
+export type AiProvider = "claude" | "openai";
+
 export interface SessionData {
   token?: string;
   userId?: string;
@@ -9,6 +11,11 @@ export interface SessionData {
   lastEntityId?: string;
   lastBusinessId?: string;
   readOnly?: boolean;
+  // AI-assist config — used server-side to route drafting requests.
+  aiProvider?: AiProvider;
+  aiBaseUrl?: string;    // OpenAI-compat only, e.g. https://api.openai.com/v1 or http://localhost:11434/v1
+  aiApiKey?: string;     // OpenAI-compat only. Kept server-side; never returned to browser.
+  aiModel?: string;      // e.g. "gpt-4o-mini", "llama3.1", or a Claude model
 }
 
 export const sessionOptions: SessionOptions = {

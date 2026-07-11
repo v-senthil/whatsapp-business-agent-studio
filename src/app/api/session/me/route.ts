@@ -12,5 +12,12 @@ export async function GET() {
     lastEntityId: session.lastEntityId ?? null,
     lastBusinessId: session.lastBusinessId ?? null,
     readOnly: !!session.readOnly,
+    // AI-assist config — return the shape but scrub the actual API key.
+    ai: {
+      provider: session.aiProvider ?? null,
+      baseUrl: session.aiBaseUrl ?? null,
+      model: session.aiModel ?? null,
+      hasApiKey: !!session.aiApiKey,
+    },
   });
 }

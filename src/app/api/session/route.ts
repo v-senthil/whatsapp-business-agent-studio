@@ -40,6 +40,10 @@ const patchSchema = z.object({
   lastEntityId: z.string().optional(),
   lastBusinessId: z.string().optional(),
   readOnly: z.boolean().optional(),
+  aiProvider: z.enum(["claude", "openai"]).nullish(),
+  aiBaseUrl: z.string().optional().nullable(),
+  aiApiKey: z.string().optional().nullable(),
+  aiModel: z.string().optional().nullable(),
 });
 
 export async function PATCH(req: Request) {
@@ -48,9 +52,14 @@ export async function PATCH(req: Request) {
   const body = await req.json().catch(() => null);
   const parsed = patchSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ title: "Invalid body", detail: "Bad patch" }, { status: 400 });
-  if (parsed.data.lastEntityId !== undefined) session.lastEntityId = parsed.data.lastEntityId;
-  if (parsed.data.lastBusinessId !== undefined) session.lastBusinessId = parsed.data.lastBusinessId;
-  if (parsed.data.readOnly !== undefined) session.readOnly = parsed.data.readOnly;
+  const d = parsed.data;
+  if (d.lastEntityId !== undefined) session.lastEntityId = d.lastEntityId;
+  if (d.lastBusinessId !== undefined) session.lastBusinessId = d.lastBusinessId;
+  if (d.readOnly !== undefined) session.readOnly = d.readOnly;
+  if (d.aiProvider !== undefined) session.aiProvider = d.aiProvider ?? undefined;
+  if (d.aiBaseUrl !== undefined) session.aiBaseUrl = d.aiBaseUrl ?? undefined;
+  if (d.aiApiKey !== undefined) session.aiApiKey = d.aiApiKey ?? undefined;
+  if (d.aiModel !== undefined) session.aiModel = d.aiModel ?? undefined;
   await session.save();
   return NextResponse.json({ ok: true });
 }

@@ -2,7 +2,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, Eye, EyeOff, LogOut, User } from "lucide-react";
+import { Check, Eye, EyeOff, LogOut, Sparkles, User } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -63,6 +63,9 @@ export function Header({ user, entityId }: HeaderProps) {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/home">Change phone number</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/settings/ai"><Sparkles className="h-4 w-4" /> AI assistant</Link>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={toggleReadOnly}>
               {readOnly ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
