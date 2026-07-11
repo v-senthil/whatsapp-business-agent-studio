@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const schema = z.object({
-  SESSION_SECRET: z.string().min(32, "SESSION_SECRET must be 32+ chars"),
+  SESSION_SECRET: z.string().min(48, "SESSION_SECRET must be 48+ chars. Generate with `openssl rand -hex 32`."),
   META_API_BASE: z.string().url().default("https://api.facebook.com"),
   GRAPH_API_BASE: z.string().url().default("https://graph.facebook.com/v20.0"),
 });

@@ -56,12 +56,25 @@ export function clear() {
  * machine (session cookie is domain-bound though, so real use is for
  * debugging shapes, not for external reuse).
  */
+// Headers stripped from the curl output. cookie: to avoid leaking the
+// session. authorization + x-api-key: user might have proxied through the
+// dev drawer during testing. x-hub-signature*: HMAC of the body, meaningless
+// once you rerun. x-real-ip: identifier from any reverse proxy in front.
+const CURL_HEADER_OMIT = new Set([
+  "cookie",
+  "authorization",
+  "x-hub-signature-256",
+  "x-hub-signature",
+  "x-api-key",
+  "x-real-ip",
+]);
+
 export function toCurl(call: ApiCall): string {
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const url = call.url.startsWith("http") ? call.url : `${origin}${call.url}`;
   const parts: string[] = [`curl -X ${call.method} ${quote(url)}`];
   for (const [k, v] of Object.entries(call.requestHeaders)) {
-    if (k.toLowerCase() === "cookie") continue; // omit session cookie
+    if (CURL_HEADER_OMIT.has(k.toLowerCase())) continue;
     parts.push(`  -H ${quote(`${k}: ${v}`)}`);
   }
   if (call.requestBody !== undefined) {

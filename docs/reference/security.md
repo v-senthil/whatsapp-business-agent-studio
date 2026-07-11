@@ -13,7 +13,14 @@ Summary of how the app keeps your access token private, how sessions work, and h
 - **Sign in**, you paste the token on the login screen. The app verifies it with Meta before creating a session.
 - **Session read**, whenever the app needs to know who you are, it reads the safe subset of your session (never the token itself).
 - **Sign out**, choose Sign out from the account menu. Your session is cleared and you return to the login screen.
+- **Default TTL**, 8 hours. Configurable with `WABIZ_SESSION_TTL_SECONDS`.
+- **Cross-origin writes**, `PATCH` and `DELETE /api/session` reject requests whose `Origin` header does not match the request `Host`. Behind a reverse proxy, set `WABIZ_PUBLIC_HOST` to the externally visible host so the check compares to the right value.
 - If Meta rejects a request as unauthenticated, the app bounces you back to the login screen automatically.
+
+## Session secret
+
+- `SESSION_SECRET` must be at least 48 characters. Generate one with `openssl rand -hex 32` (which produces 64 hex chars).
+- Rotating the secret invalidates every existing session; users will need to sign in again.
 
 ## Webhook signature verification
 
@@ -35,7 +42,15 @@ When you first configure a webhook in Meta Business Suite, Meta sends a GET requ
 
 ## Copy as cURL and the session cookie
 
-The **Copy as cURL** button in the dev drawer intentionally omits your session cookie from the copied command. This is deliberate; it prevents an accidental paste from leaking your session. If you need to reproduce a call outside the app, use your own access token directly against the Meta API. See [Dev drawer](../advanced/dev-drawer.md).
+The **Copy as cURL** button in the dev drawer intentionally omits several headers from the copied command so an accidental paste cannot leak credentials or signatures:
+
+- `cookie` (the session)
+- `authorization`
+- `x-api-key`
+- `x-hub-signature-256`, `x-hub-signature` (HMAC over the specific body, meaningless once you rerun)
+- `x-real-ip`
+
+If you need to reproduce a call outside the app, use your own access token directly against the Meta API. See [Dev drawer](../advanced/dev-drawer.md).
 
 ## AI endpoint SSRF guard
 

@@ -18,14 +18,22 @@ export interface SessionData {
   aiModel?: string;      // e.g. "gpt-4o-mini", "llama3.1", or a Claude model
 }
 
+// Default session lifetime: 8 hours. Operators can override by setting
+// WABIZ_SESSION_TTL_SECONDS on the deploy environment.
+const DEFAULT_TTL_SECONDS = 60 * 60 * 8;
+const ttl = Number(process.env.WABIZ_SESSION_TTL_SECONDS ?? DEFAULT_TTL_SECONDS);
+const sessionTtl = Number.isFinite(ttl) && ttl > 0 ? Math.floor(ttl) : DEFAULT_TTL_SECONDS;
+
 export const sessionOptions: SessionOptions = {
   password: env.SESSION_SECRET,
   cookieName: "wabiz_session",
+  ttl: sessionTtl,
   cookieOptions: {
     secure: process.env.NODE_ENV === "production",
     httpOnly: true,
     sameSite: "lax",
     path: "/",
+    maxAge: sessionTtl,
   },
 };
 

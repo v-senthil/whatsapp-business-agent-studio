@@ -87,7 +87,7 @@ A visual builder for WhatsApp Business AI agents on the [Meta Business Agent Pla
 ```bash
 npm install
 cp .env.example .env.local
-# edit .env.local — SESSION_SECRET must be 32+ chars
+# edit .env.local — set SESSION_SECRET to `openssl rand -hex 32` (64 hex chars)
 npm run dev
 ```
 
@@ -98,12 +98,16 @@ Open [http://localhost:3000](http://localhost:3000) to hit the landing page, cli
 `.env.local`:
 
 ```
-SESSION_SECRET=<32+ char random string, e.g. openssl rand -hex 32>
+SESSION_SECRET=<48+ char random string, generate with `openssl rand -hex 32`>
 META_API_BASE=https://api.facebook.com
 GRAPH_API_BASE=https://graph.facebook.com/v20.0
 # Optional — only if this app is a Meta webhook callback:
 # META_APP_SECRET=
 # META_WEBHOOK_VERIFY_TOKEN=
+# Optional — session lifetime, defaults to 8 hours (28800 seconds):
+# WABIZ_SESSION_TTL_SECONDS=28800
+# Optional — expected host for same-origin CSRF check behind a reverse proxy:
+# WABIZ_PUBLIC_HOST=agents.example.com
 ```
 
 ### Meta access token requirements
@@ -141,12 +145,16 @@ That runs `npm ci` + `npm run build`, prunes dev dependencies, and produces a `d
 Set in the AppSail dashboard, **not** in the ZIP:
 
 ```
-SESSION_SECRET=<32+ char random>
+SESSION_SECRET=<48+ char random, generate with `openssl rand -hex 32`>
 META_API_BASE=https://api.facebook.com
 GRAPH_API_BASE=https://graph.facebook.com/v20.0
 # Optional, only if this app is a Meta webhook callback:
 # META_APP_SECRET=
 # META_WEBHOOK_VERIFY_TOKEN=
+# Optional, session lifetime in seconds (default 28800 = 8 hours)
+# WABIZ_SESSION_TTL_SECONDS=28800
+# Optional, expected host for same-origin CSRF check behind a reverse proxy
+# WABIZ_PUBLIC_HOST=agents.example.com
 ```
 
 Do **not** upload `.env.local`. `.gitignore` already excludes it; make sure your ZIP does too.
