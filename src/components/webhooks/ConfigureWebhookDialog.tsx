@@ -23,7 +23,6 @@ interface Props {
 export function ConfigureWebhookDialog({ entityId }: Props) {
   const [open, setOpen] = React.useState(false);
   const [callbackUrl, setCallbackUrl] = React.useState("");
-  const [verifyToken, setVerifyToken] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -44,7 +43,6 @@ export function ConfigureWebhookDialog({ entityId }: Props) {
         body: JSON.stringify({
           phone_number_id: entityId,
           callback_url: callbackUrl,
-          verify_token: verifyToken,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -54,7 +52,6 @@ export function ConfigureWebhookDialog({ entityId }: Props) {
       }
       toast.success("Webhook configured for this phone");
       setOpen(false);
-      setVerifyToken("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Configuration failed");
     } finally {
@@ -63,7 +60,6 @@ export function ConfigureWebhookDialog({ entityId }: Props) {
   }
 
   async function onClear() {
-    if (!confirm("Remove the phone-scoped webhook override? Events will fall back to the app-level callback URL.")) return;
     setLoading(true);
     setError(null);
     try {
@@ -76,7 +72,7 @@ export function ConfigureWebhookDialog({ entityId }: Props) {
         setError(data?.detail ?? data?.title ?? "Clear failed");
         return;
       }
-      toast.success("Phone-scoped webhook cleared");
+      toast.success("Phone-scoped webhook cleared. Events fall back to the app-level callback URL.");
       setOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Clear failed");
@@ -119,22 +115,10 @@ export function ConfigureWebhookDialog({ entityId }: Props) {
               required
             />
             <p className="text-[11px] text-muted-foreground">
-              Meta calls GET on this URL first to verify. It must match this server, and{" "}
-              <code className="font-mono">META_WEBHOOK_VERIFY_TOKEN</code> on the server must
-              match the token below.
+              The verify token is read from{" "}
+              <code className="font-mono">META_WEBHOOK_VERIFY_TOKEN</code> on the server. Meta
+              will call GET on this URL first to verify.
             </p>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="verify_token">Verify token</Label>
-            <Input
-              id="verify_token"
-              type="password"
-              value={verifyToken}
-              onChange={(e) => setVerifyToken(e.target.value)}
-              placeholder="Same value as META_WEBHOOK_VERIFY_TOKEN"
-              required
-            />
           </div>
 
           {error ? (

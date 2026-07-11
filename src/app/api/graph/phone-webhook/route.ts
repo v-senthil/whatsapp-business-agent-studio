@@ -12,21 +12,30 @@ export async function POST(req: Request) {
     return NextResponse.json({ title: "Unauthorized", detail: "No session" }, { status: 401 });
   }
 
-  let payload: { phone_number_id?: string; callback_url?: string; verify_token?: string };
+  let payload: { phone_number_id?: string; callback_url?: string };
   try {
     payload = await req.json();
   } catch {
     return NextResponse.json({ title: "Bad request", detail: "Invalid JSON" }, { status: 400 });
   }
 
-  const { phone_number_id, callback_url, verify_token } = payload;
-  if (!phone_number_id || !callback_url || !verify_token) {
+  const { phone_number_id, callback_url } = payload;
+  if (!phone_number_id || !callback_url) {
+    return NextResponse.json(
+      { title: "Bad request", detail: "phone_number_id and callback_url are required" },
+      { status: 400 },
+    );
+  }
+
+  const verify_token = process.env.META_WEBHOOK_VERIFY_TOKEN;
+  if (!verify_token) {
     return NextResponse.json(
       {
-        title: "Bad request",
-        detail: "phone_number_id, callback_url, and verify_token are required",
+        title: "Server not configured",
+        detail:
+          "META_WEBHOOK_VERIFY_TOKEN is not set on the server. Add it to .env.local (or the deploy environment) and restart, then try again.",
       },
-      { status: 400 },
+      { status: 500 },
     );
   }
 
