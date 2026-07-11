@@ -42,7 +42,16 @@ export default async function HelpDoc({ params }: { params: Promise<Params> }) {
   const entry = await findEntry(slugStr);
   if (!entry) notFound();
 
-  const markdown = await readDocMarkdown(entry);
+  let markdown: string;
+  try {
+    markdown = await readDocMarkdown(entry);
+  } catch (e) {
+    // A linked doc file may be missing on disk (typo in docs/README.md, or a
+    // file we deleted but forgot to unlink). Fall back to notFound() rather
+    // than surfacing an unhelpful ENOENT 500.
+    if ((e as NodeJS.ErrnoException).code === "ENOENT") notFound();
+    throw e;
+  }
   const { prev, next } = await neighbours(slugStr);
 
   const sectionLabel = (await listSections()).find((s) =>

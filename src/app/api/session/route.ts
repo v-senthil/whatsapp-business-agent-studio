@@ -39,6 +39,18 @@ export async function POST(req: Request) {
   const me = (await res.json()) as { id: string; name?: string };
 
   const session = await getSession();
+  // If the incoming token differs from the current one, this is a real
+  // sign-in (potentially by a different user) so we scrub AI creds and per-
+  // phone state. Re-logging in with the same token keeps the existing state.
+  if (session.token && session.token !== token) {
+    session.aiApiKey = undefined;
+    session.aiProvider = undefined;
+    session.aiBaseUrl = undefined;
+    session.aiModel = undefined;
+    session.readOnly = undefined;
+    session.lastEntityId = undefined;
+    session.lastBusinessId = undefined;
+  }
   session.token = token;
   session.userId = me.id;
   session.userName = me.name ?? me.id;
@@ -57,8 +69,11 @@ export async function DELETE(req: Request) {
 }
 
 const patchSchema = z.object({
-  lastEntityId: z.string().optional(),
-  lastBusinessId: z.string().optional(),
+  // Empty string is treated as "clear this field" so the picker UI does not
+  // have to send null explicitly. min(1) on the non-null branch would reject
+  // "" outright, which used to overwrite the id with an empty string.
+  lastEntityId: z.string().nullish(),
+  lastBusinessId: z.string().nullish(),
   readOnly: z.boolean().optional(),
   aiProvider: z.enum(["claude", "openai"]).nullish(),
   aiBaseUrl: z.string().optional().nullable(),
@@ -76,8 +91,12 @@ export async function PATCH(req: Request) {
   const parsed = patchSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ title: "Invalid body", detail: "Bad patch" }, { status: 400 });
   const d = parsed.data;
-  if (d.lastEntityId !== undefined) session.lastEntityId = d.lastEntityId;
-  if (d.lastBusinessId !== undefined) session.lastBusinessId = d.lastBusinessId;
+  if (d.lastEntityId !== undefined) {
+    session.lastEntityId = d.lastEntityId ? d.lastEntityId : undefined;
+  }
+  if (d.lastBusinessId !== undefined) {
+    session.lastBusinessId = d.lastBusinessId ? d.lastBusinessId : undefined;
+  }
   if (d.readOnly !== undefined) session.readOnly = d.readOnly;
   if (d.aiProvider !== undefined) session.aiProvider = d.aiProvider ?? undefined;
   if (d.aiBaseUrl !== undefined) session.aiBaseUrl = d.aiBaseUrl ?? undefined;

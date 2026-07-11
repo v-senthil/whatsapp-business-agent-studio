@@ -20,6 +20,12 @@ const INDEX_FILE = path.join(DOCS_DIR, "README.md");
 let cache: { sections: DocSection[]; flat: DocEntry[] } | null = null;
 
 async function loadIndex() {
+  // In development, drop every cache so newly-added or renamed docs are
+  // visible on the next request without a server restart.
+  if (process.env.NODE_ENV !== "production") {
+    cache = null;
+    searchCache = null;
+  }
   if (cache) return cache;
   const raw = await fs.readFile(INDEX_FILE, "utf8");
   const sections: DocSection[] = [];
@@ -115,7 +121,10 @@ export async function getSearchIndex(): Promise<SearchEntry[]> {
       try {
         const body = await fs.readFile(entry.file, "utf8");
         text = stripMarkdown(body);
-      } catch {
+      } catch (e) {
+        // Warn once at index-build time so a missing linked doc surfaces in
+        // dev logs rather than silently rendering an empty search hit.
+        console.warn(`help-docs: could not read ${entry.file}`, e);
         text = "";
       }
       out.push({
