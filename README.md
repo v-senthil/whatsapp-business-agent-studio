@@ -1,6 +1,6 @@
 # WhatsApp Business Agent Studio
 
-A visual builder for WhatsApp Business AI agents on the [Meta Business Agent Platform](https://developers.facebook.com/docs/whatsapp/business-management-api/agents). Wraps the entire Meta Business Agent Platform API and Meta Graph API behind a Next.js UI: discover WABAs and phone numbers, onboard an agent, configure settings/knowledge/skills, register external tool connectors, run evals, and chat-test — all without touching Postman.
+A visual builder for WhatsApp Business AI agents on the [Meta Business Agent Platform](https://developers.facebook.com/documentation/meta-business-agent/get-started). Wraps the entire Meta Business Agent Platform API and Meta Graph API behind a Next.js UI: discover WABAs and phone numbers, onboard an agent, configure settings/knowledge/skills, register external tool connectors, run evals, and chat-test — all without touching Postman.
 
 ## Features
 

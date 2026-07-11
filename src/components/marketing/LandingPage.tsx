@@ -676,7 +676,7 @@ function Footer({ signInUrl }: { signInUrl: string }) {
             FAQ
           </Link>
           <a
-            href="https://developers.facebook.com/docs/whatsapp"
+            href="https://developers.facebook.com/documentation/meta-business-agent/get-started"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 hover:text-foreground"
