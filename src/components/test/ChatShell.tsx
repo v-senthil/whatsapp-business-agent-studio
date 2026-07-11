@@ -112,14 +112,14 @@ export function ChatShell({ entityId }: { entityId: string }) {
                   {m.quick_replies && m.quick_replies.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
                       {m.quick_replies.map((q, j) => (
-                        <Badge
+                        <button
                           key={j}
-                          variant="outline"
-                          className="cursor-pointer bg-background hover:bg-accent"
+                          type="button"
                           onClick={() => submit(q)}
+                          className="inline-flex items-center rounded-md border border-border bg-background px-2 py-0.5 text-xs font-medium text-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           {q}
-                        </Badge>
+                        </button>
                       ))}
                     </div>
                   )}

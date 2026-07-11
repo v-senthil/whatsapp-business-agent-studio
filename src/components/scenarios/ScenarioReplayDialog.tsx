@@ -11,6 +11,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { fetcher, metaUrl } from "@/lib/client/fetcher";
@@ -54,7 +55,17 @@ export function ScenarioReplayDialog({ entityId, scenario, trigger }: Props) {
   async function run() {
     setRunning(true);
     let conversationId: string | undefined;
-    const current = [...replays];
+    // Build the plan from the scenario turns synchronously so a stale
+    // replays state (e.g. from a prior run) cannot leak in mid-loop.
+    const current: Replay[] = [];
+    const turns = scenario.turns;
+    for (let i = 0; i < turns.length; i++) {
+      const t = turns[i];
+      if (t.role !== "user") continue;
+      const nextAgent = turns.slice(i + 1).find((x) => x.role === "agent");
+      current.push({ userText: t.text, original: nextAgent, status: "pending" });
+    }
+    setReplays([...current]);
     for (let i = 0; i < current.length; i++) {
       current[i] = { ...current[i], status: "running" };
       setReplays([...current]);
@@ -79,7 +90,7 @@ export function ScenarioReplayDialog({ entityId, scenario, trigger }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <span onClick={() => setOpen(true)}>{trigger}</span>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>Replay: {scenario.name}</DialogTitle>

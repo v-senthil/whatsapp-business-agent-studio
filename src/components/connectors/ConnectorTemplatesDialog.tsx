@@ -12,6 +12,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { connectorTemplates, type ConnectorVendor } from "@/lib/connector-templates";
@@ -139,9 +140,11 @@ export function ConnectorTemplatesDialog({ entityId }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <Button variant="outline" onClick={() => setOpen(true)}>
-        <BookMarked className="h-4 w-4" /> From template
-      </Button>
+      <DialogTrigger asChild>
+        <Button variant="outline">
+          <BookMarked className="h-4 w-4" /> From template
+        </Button>
+      </DialogTrigger>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Connector templates</DialogTitle>

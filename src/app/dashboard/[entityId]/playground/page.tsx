@@ -31,7 +31,9 @@ const QUICK_CALLS: QuickCall[] = [
   { method: "POST", label: "Test message",       path: "agent_test",              description: "Send a message to the agent.", body: `{\n  "user_msg": "Hi, what are your hours?"\n}` },
 ];
 
-interface Response {
+// Named PlaygroundResponse so it does not shadow the global `Response` DOM type
+// used elsewhere in the module (via fetcher etc.).
+interface PlaygroundResponse {
   status: number;
   ok: boolean;
   duration_ms: number;
@@ -46,7 +48,7 @@ export default function PlaygroundPage({ params }: { params: Promise<{ entityId:
   const [query, setQuery] = useState("");
   const [body, setBody] = useState("");
   const [running, setRunning] = useState(false);
-  const [response, setResponse] = useState<Response | null>(null);
+  const [response, setResponse] = useState<PlaygroundResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const url = useMemo(() => {

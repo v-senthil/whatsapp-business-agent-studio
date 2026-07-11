@@ -19,6 +19,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { downloadText } from "@/lib/utils/csv";
 import {
@@ -99,9 +100,11 @@ function ExportButton({ entityId }: { entityId: string }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <Button variant="outline" onClick={() => setOpen(true)}>
-        <Download className="h-4 w-4" /> Export config
-      </Button>
+      <DialogTrigger asChild>
+        <Button variant="outline">
+          <Download className="h-4 w-4" /> Export config
+        </Button>
+      </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Export agent config</DialogTitle>
@@ -241,13 +244,19 @@ function ImportButton({ entityId, onComplete }: { entityId: string; onComplete?:
       open={open}
       onOpenChange={(v) => {
         setOpen(v);
-        if (!v) setTimeout(reset, 200);
       }}
     >
-      <Button variant="outline" onClick={() => setOpen(true)}>
-        <Upload className="h-4 w-4" /> Import config
-      </Button>
-      <DialogContent className="max-w-lg">
+      <DialogTrigger asChild>
+        <Button variant="outline">
+          <Upload className="h-4 w-4" /> Import config
+        </Button>
+      </DialogTrigger>
+      <DialogContent
+        className="max-w-lg"
+        onCloseAutoFocus={() => {
+          if (!open) reset();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Import agent config</DialogTitle>
           <DialogDescription>

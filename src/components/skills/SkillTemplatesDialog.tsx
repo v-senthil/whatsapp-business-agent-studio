@@ -13,6 +13,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SKILL_TEMPLATES, type SkillTemplate } from "@/lib/skill-templates";
@@ -75,9 +76,11 @@ export function SkillTemplatesDialog({ entityId, onComplete, existingTitles = []
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <Button variant="outline" onClick={() => setOpen(true)}>
-        <BookMarked className="h-4 w-4" /> Templates
-      </Button>
+      <DialogTrigger asChild>
+        <Button variant="outline">
+          <BookMarked className="h-4 w-4" /> Templates
+        </Button>
+      </DialogTrigger>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2"><Sparkles className="h-4 w-4" /> Skill templates</DialogTitle>
@@ -115,7 +118,16 @@ export function SkillTemplatesDialog({ entityId, onComplete, existingTitles = []
                       >
                         <CardHeader className="pb-2">
                           <div className="flex items-start gap-2">
-                            <Checkbox checked={isSelected} disabled={alreadyAdded} onCheckedChange={() => toggle(t.slug)} className="mt-0.5" />
+                            <Checkbox
+                              checked={isSelected}
+                              disabled={alreadyAdded}
+                              onCheckedChange={() => toggle(t.slug)}
+                              // Prevent the card's onClick from firing again
+                              // so clicking the checkbox itself doesn't
+                              // double-toggle the state.
+                              onClick={(e) => e.stopPropagation()}
+                              className="mt-0.5"
+                            />
                             <div className="flex-1 min-w-0">
                               <CardTitle className="text-sm">{t.title}</CardTitle>
                               <p className="mt-1 text-xs text-muted-foreground">{t.description}</p>

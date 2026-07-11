@@ -1,5 +1,5 @@
 "use client";
-import { use } from "react";
+import { Suspense, use } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { ConnectorForm } from "@/components/connectors/ConnectorForm";
@@ -7,8 +7,9 @@ import { ErrorState } from "@/components/common/ErrorState";
 import { useCreateConnector } from "@/lib/client/hooks/useConnectors";
 import { findConnectorTemplate } from "@/lib/connector-templates";
 
-export default function NewConnectorPage({ params }: { params: Promise<{ entityId: string }> }) {
-  const { entityId } = use(params);
+// Split the useSearchParams read into an inner client-only component so it
+// can sit under a Suspense boundary. Mirrors DevDrawerMount.
+function NewConnectorInner({ entityId }: { entityId: string }) {
   const router = useRouter();
   const search = useSearchParams();
   const templateSlug = search.get("template") ?? undefined;
@@ -39,5 +40,14 @@ export default function NewConnectorPage({ params }: { params: Promise<{ entityI
         }}
       />
     </div>
+  );
+}
+
+export default function NewConnectorPage({ params }: { params: Promise<{ entityId: string }> }) {
+  const { entityId } = use(params);
+  return (
+    <Suspense fallback={null}>
+      <NewConnectorInner entityId={entityId} />
+    </Suspense>
   );
 }

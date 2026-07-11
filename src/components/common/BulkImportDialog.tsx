@@ -11,6 +11,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -115,11 +116,17 @@ export function BulkImportDialog<TRow, TInput>({
       open={open}
       onOpenChange={(v) => {
         setOpen(v);
-        if (!v) setTimeout(reset, 200);
       }}
     >
-      <span onClick={() => setOpen(true)}>{trigger}</span>
-      <DialogContent className="max-w-2xl">
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent
+        className="max-w-2xl"
+        // Reset internal state after Radix finishes its close animation so we
+        // do not flash the pick view during the fade-out.
+        onCloseAutoFocus={() => {
+          if (!open) reset();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>

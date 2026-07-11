@@ -28,12 +28,22 @@ const LABELS: Record<string, string> = {
   run: "Run",
 };
 
+// Compact display for id-shaped path segments. UUID-ish and long numeric ids
+// get truncated with an ellipsis so the crumb bar stays readable.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function shortenIdSegment(seg: string): string {
+  if (LABELS[seg]) return LABELS[seg];
+  if (UUID_RE.test(seg)) return `${seg.slice(0, 4)}…${seg.slice(-4)}`;
+  if (/^\d+$/.test(seg) && seg.length > 12) return `${seg.slice(0, 6)}…${seg.slice(-4)}`;
+  return seg;
+}
+
 export function Breadcrumbs() {
   const pathname = usePathname() ?? "/";
   const parts = pathname.split("/").filter(Boolean);
   const crumbs = parts.map((p, i) => {
     const href = "/" + parts.slice(0, i + 1).join("/");
-    const label = LABELS[p] ?? p;
+    const label = shortenIdSegment(p);
     return { href, label };
   });
   if (crumbs.length === 0) return null;
