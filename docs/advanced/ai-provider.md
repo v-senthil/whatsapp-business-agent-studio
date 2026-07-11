@@ -43,5 +43,6 @@ The **AI provider** settings page picks which AI powers **Draft with AI** on the
 - **Claude is unavailable, "not installed"**, the `claude` binary is not present on the server. Install it or switch to an OpenAI-compatible provider.
 - **Claude is unavailable, "authentication needed"**, sign in with `claude` on the server (usually by running it interactively once).
 - **OpenAI-compatible test fails with a network error**, the base URL cannot be reached. Verify the URL and any firewalls between the app and the endpoint.
+- **"Invalid AI endpoint, cannot reach private, loopback, or link-local hosts"**, the app blocks AI base URLs that resolve to loopback, private, link-local, or cloud metadata addresses to prevent SSRF. In development, plain `http://` is permitted so Ollama and LM Studio still work; production requires `https://` and a publicly resolvable host.
 - **The Save button stays greyed out even though I picked a provider**, edit any field or re-select the radio to mark the form as dirty, then Save.
 - **"AI not configured" banner won't clear after saving**, refresh the page.

@@ -6,6 +6,7 @@
 //      speaks that shape (OpenAI, Ollama, LM Studio, Together, etc.).
 
 import type { SessionData } from "@/lib/session";
+import { validatePublicHttpUrl } from "@/lib/api/url-guard";
 
 export interface AiConfig {
   provider: "claude" | "openai";
@@ -15,7 +16,7 @@ export interface AiConfig {
 }
 
 export interface AiError {
-  code: "not_configured" | "not_installed" | "network" | "auth" | "invalid_response" | "runtime";
+  code: "not_configured" | "not_installed" | "network" | "auth" | "invalid_response" | "runtime" | "blocked_url";
   message: string;
 }
 
@@ -51,17 +52,34 @@ export async function runPrompt(config: AiConfig, prompt: string, system?: strin
 // The SDK npm package is optional (may not be installed on lightweight
 // deployments), so we spawn the `claude` binary directly. -p is "print mode":
 // non-interactive, prints the response to stdout, exits.
+//
+// We rely on PATH lookup so a user's `claude` install (nvm, brew, volta, etc.)
+// keeps working. The tradeoff is that a hostile PATH could shadow the binary;
+// that is an acceptable local-only risk given the alternative (hard-coded
+// absolute path) breaks every install we do not control.
 async function runClaude(config: AiConfig, prompt: string, system?: string): Promise<string> {
-  const { spawn } = await import("node:child_process");
+  const cp = await import("node:child_process");
+  type ChildProcessWithoutNullStreams = ReturnType<typeof cp.spawn>;
   const args = ["-p"];
   if (config.model) args.push("--model", config.model);
   if (system) args.push("--system-prompt", system);
-  args.push(prompt);
+  // "--" terminates option parsing so a prompt that starts with a dash is not
+  // interpreted as a flag.
+  args.push("--", prompt);
 
   return await new Promise<string>((resolve, reject) => {
-    let child;
+    let child: ChildProcessWithoutNullStreams;
     try {
-      child = spawn("claude", args, { stdio: ["ignore", "pipe", "pipe"] });
+      // Minimal env so we do not leak the whole process env into the child.
+      // Node's ProcessEnv type requires many fields we do not want to forward,
+      // so cast the trimmed env to satisfy the overload.
+      child = cp.spawn("claude", args, {
+        stdio: ["ignore", "pipe", "pipe"],
+        env: {
+          PATH: process.env.PATH ?? "",
+          HOME: process.env.HOME ?? "",
+        } as unknown as NodeJS.ProcessEnv,
+      });
     } catch (e) {
       reject(new AiFailure({
         code: "not_installed",
@@ -72,8 +90,8 @@ async function runClaude(config: AiConfig, prompt: string, system?: string): Pro
 
     let stdout = "";
     let stderr = "";
-    child.stdout.on("data", (chunk) => { stdout += chunk.toString(); });
-    child.stderr.on("data", (chunk) => { stderr += chunk.toString(); });
+    child.stdout?.on("data", (chunk) => { stdout += chunk.toString(); });
+    child.stderr?.on("data", (chunk) => { stderr += chunk.toString(); });
     child.on("error", (e: NodeJS.ErrnoException) => {
       if (e.code === "ENOENT") {
         reject(new AiFailure({
@@ -103,11 +121,17 @@ async function runClaude(config: AiConfig, prompt: string, system?: string): Pro
 }
 
 // ---------------------------------------------------------------------------
-// OpenAI-compatible provider.
+// OpenAI-compatible provider. baseUrl comes from user input; we screen it for
+// SSRF before opening a connection.
 async function runOpenAI(config: AiConfig, prompt: string, system?: string): Promise<string> {
-  const baseUrl = (config.baseUrl ?? "").replace(/\/+$/, "");
-  if (!baseUrl) throw new AiFailure({ code: "not_configured", message: "OpenAI base URL is missing." });
+  const rawBaseUrl = (config.baseUrl ?? "").trim().replace(/\/+$/, "");
+  if (!rawBaseUrl) throw new AiFailure({ code: "not_configured", message: "OpenAI base URL is missing." });
   if (!config.model) throw new AiFailure({ code: "not_configured", message: "OpenAI model is missing." });
+
+  const guard = await validatePublicHttpUrl(`${rawBaseUrl}/chat/completions`);
+  if (!guard.ok) {
+    throw new AiFailure({ code: "blocked_url", message: "Cannot reach private, loopback, or link-local hosts" });
+  }
 
   const messages: Array<{ role: "system" | "user"; content: string }> = [];
   if (system) messages.push({ role: "system", content: system });
@@ -115,7 +139,7 @@ async function runOpenAI(config: AiConfig, prompt: string, system?: string): Pro
 
   let res: Response;
   try {
-    res = await fetch(`${baseUrl}/chat/completions`, {
+    res = await fetch(guard.url, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -133,11 +157,12 @@ async function runOpenAI(config: AiConfig, prompt: string, system?: string): Pro
   }
 
   if (res.status === 401 || res.status === 403) {
-    throw new AiFailure({ code: "auth", message: `${res.status}: API key rejected by ${baseUrl}` });
+    throw new AiFailure({ code: "auth", message: `${res.status}: API key rejected by upstream` });
   }
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new AiFailure({ code: "runtime", message: `HTTP ${res.status} from ${baseUrl}: ${text.slice(0, 500)}` });
+    // Do NOT echo the upstream body: it can contain identifying info about
+    // an internal service if the SSRF guard is ever bypassed at another layer.
+    throw new AiFailure({ code: "runtime", message: `Upstream error: HTTP ${res.status}` });
   }
 
   let json: { choices?: Array<{ message?: { content?: string } }>; error?: { message?: string } };

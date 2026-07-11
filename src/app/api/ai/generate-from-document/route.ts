@@ -43,6 +43,7 @@ function titleFor(code: AiFailure["code"]): string {
     case "auth": return "AI auth failed";
     case "network": return "Network error";
     case "invalid_response": return "Invalid AI response";
+    case "blocked_url": return "Invalid AI endpoint";
     default: return "AI request failed";
   }
 }
@@ -50,6 +51,7 @@ function statusFor(code: AiFailure["code"]): number {
   switch (code) {
     case "not_configured":
     case "not_installed":
+    case "blocked_url":
     case "auth": return 400;
     default: return 502;
   }

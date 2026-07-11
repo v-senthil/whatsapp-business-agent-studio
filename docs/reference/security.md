@@ -34,6 +34,14 @@ When you first configure a webhook in Meta Business Suite, Meta sends a GET requ
 
 The **Copy as cURL** button in the dev drawer intentionally omits your session cookie from the copied command. This is deliberate; it prevents an accidental paste from leaking your session. If you need to reproduce a call outside the app, use your own access token directly against the Meta API. See [Dev drawer](../advanced/dev-drawer.md).
 
+## AI endpoint SSRF guard
+
+The AI provider settings accept an arbitrary base URL, which the server calls on your behalf. To prevent that from being turned into a probe of internal infrastructure, the server:
+
+- Resolves the host via DNS and rejects any address in loopback, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `169.254.0.0/16`, IPv6 link-local, IPv6 unique-local, or cloud metadata hostnames like `metadata.google.internal`.
+- Requires `https://` in production. Development builds still allow `http://` so local providers like Ollama and LM Studio keep working.
+- Does not echo the upstream response body if the upstream returns a non-2xx status. Only the status code is surfaced.
+
 ## Deployment secrets
 
 - Do not upload `.env.local` to your deploy target. Set secrets via your deployment provider's dashboard.

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
+import { validatePublicHttpUrl } from "@/lib/api/url-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,7 +15,7 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({} as Record<string, unknown>));
   const baseUrl = String((body as { baseUrl?: string }).baseUrl ?? session.aiBaseUrl ?? "").trim().replace(/\/+$/, "");
   // Prefer the caller-supplied key (typed in the form right now) over the
-  // stored one — makes "test before saving" work.
+  // stored one, so "test before saving" works.
   const rawKey = (body as { apiKey?: string }).apiKey;
   const apiKey = typeof rawKey === "string" && rawKey.length > 0 ? rawKey : session.aiApiKey;
 
@@ -22,9 +23,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "Base URL is required." }, { status: 400 });
   }
 
+  const guard = await validatePublicHttpUrl(`${baseUrl}/models`);
+  if (!guard.ok) {
+    return NextResponse.json(
+      { title: "Invalid AI endpoint", detail: "Cannot reach private, loopback, or link-local hosts" },
+      { status: 400 },
+    );
+  }
+
   let res: Response;
   try {
-    res = await fetch(`${baseUrl}/models`, {
+    res = await fetch(guard.url, {
       headers: apiKey ? { authorization: `Bearer ${apiKey}` } : {},
       cache: "no-store",
     });
@@ -36,8 +45,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: `${res.status}: endpoint requires an API key or the key was rejected.` }, { status: 200 });
   }
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    return NextResponse.json({ ok: false, error: `HTTP ${res.status}: ${text.slice(0, 300)}` }, { status: 200 });
+    // Do NOT echo the upstream body. If the SSRF guard is ever bypassed the
+    // response bytes could carry internal service identifiers.
+    return NextResponse.json({ ok: false, error: `Upstream error: HTTP ${res.status}` }, { status: 200 });
   }
 
   let json: unknown;
