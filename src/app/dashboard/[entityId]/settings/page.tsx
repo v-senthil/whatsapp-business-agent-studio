@@ -1,6 +1,6 @@
 "use client";
 import { use, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Save } from "lucide-react";
@@ -94,9 +94,10 @@ export default function SettingsPage({ params }: { params: Promise<{ entityId: s
         <CardContent>
           <div className="flex items-center justify-between">
             <span className="text-sm">Enabled</span>
-            <Switch
-              checked={form.watch("rollout.enabled")}
-              onCheckedChange={(v) => form.setValue("rollout.enabled", v, { shouldDirty: true })}
+            <Controller
+              control={form.control}
+              name="rollout.enabled"
+              render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />}
             />
           </div>
         </CardContent>
@@ -110,9 +111,10 @@ export default function SettingsPage({ params }: { params: Promise<{ entityId: s
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-sm">Enabled</span>
-            <Switch
-              checked={form.watch("handoff.enabled")}
-              onCheckedChange={(v) => form.setValue("handoff.enabled", v, { shouldDirty: true })}
+            <Controller
+              control={form.control}
+              name="handoff.enabled"
+              render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />}
             />
           </div>
           <Field label="Handoff message" htmlFor="handoff-msg" hint="Shown to the customer at handoff.">
@@ -129,23 +131,30 @@ export default function SettingsPage({ params }: { params: Promise<{ entityId: s
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-sm">Enabled</span>
-            <Switch
-              checked={form.watch("followup.enabled")}
-              onCheckedChange={(v) => form.setValue("followup.enabled", v, { shouldDirty: true })}
+            <Controller
+              control={form.control}
+              name="followup.enabled"
+              render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />}
             />
           </div>
           <Field label="Inactivity interval" hint="How long the customer must be silent before the agent follows up.">
-            <Select
-              value={String(form.watch("followup.followup_interval_in_seconds") ?? 900)}
-              onValueChange={(v) => form.setValue("followup.followup_interval_in_seconds", Number(v) as FollowupInterval, { shouldDirty: true })}
-            >
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {FOLLOWUP_INTERVALS.map((s) => (
-                  <SelectItem key={s} value={String(s)}>{INTERVAL_LABEL[s]}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Controller
+              control={form.control}
+              name="followup.followup_interval_in_seconds"
+              render={({ field }) => (
+                <Select
+                  value={String(field.value ?? 900)}
+                  onValueChange={(v) => field.onChange(Number(v) as FollowupInterval)}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {FOLLOWUP_INTERVALS.map((s) => (
+                      <SelectItem key={s} value={String(s)}>{INTERVAL_LABEL[s]}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </Field>
           <Field label="Follow-up message" htmlFor="followup-msg">
             <Textarea id="followup-msg" rows={3} {...form.register("followup.message")} />
@@ -160,13 +169,19 @@ export default function SettingsPage({ params }: { params: Promise<{ entityId: s
         </CardHeader>
         <CardContent>
           <Field label="Audience">
-            <Select value={form.watch("ai_audience")} onValueChange={(v) => form.setValue("ai_audience", v as SettingsInput["ai_audience"], { shouldDirty: true })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="EVERYONE">Everyone</SelectItem>
-                <SelectItem value="ALLOWLISTED_ONLY">Allowlisted only</SelectItem>
-              </SelectContent>
-            </Select>
+            <Controller
+              control={form.control}
+              name="ai_audience"
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={(v) => field.onChange(v as SettingsInput["ai_audience"])}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="EVERYONE">Everyone</SelectItem>
+                    <SelectItem value="ALLOWLISTED_ONLY">Allowlisted only</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </Field>
         </CardContent>
       </Card>

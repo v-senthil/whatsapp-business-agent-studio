@@ -140,6 +140,12 @@ function ChatBubble({ side, children }: { side: "in" | "out"; children: React.Re
   const outbound = side === "out";
   return (
     <div className={outbound ? "flex justify-end" : "flex justify-start"}>
+      {/*
+        Marketing chat mock intentionally hard-codes WhatsApp's bubble colors
+        (bg-white for inbound, #dcf8c6 for outbound) since the whole point is
+        to mimic the real client. Not a semantic-token violation, exempted
+        from the "no raw bg-white in feature code" rule in CLAUDE.md.
+      */}
       <div
         className={
           outbound

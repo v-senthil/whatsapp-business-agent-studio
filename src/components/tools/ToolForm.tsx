@@ -1,5 +1,5 @@
 "use client";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Save, Trash2 } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,9 +55,12 @@ export function ToolForm({ initial, loading, onSubmit, onDelete, submitLabel = "
               <div className="text-sm font-medium">Requires per-user auth</div>
               <div className="text-xs text-muted-foreground">Uses the connector's user-auth injection to add the user's token.</div>
             </div>
-            <Switch
-              checked={!!form.watch("user_auth_required")}
-              onCheckedChange={(v) => form.setValue("user_auth_required", v, { shouldDirty: true })}
+            <Controller
+              control={form.control}
+              name="user_auth_required"
+              render={({ field }) => (
+                <Switch checked={!!field.value} onCheckedChange={field.onChange} />
+              )}
             />
           </div>
         </CardContent>

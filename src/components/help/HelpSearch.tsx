@@ -109,7 +109,12 @@ export function HelpSearch({ index, placeholder = "Search help articles...", cla
   React.useEffect(() => {
     function onClickOutside(e: MouseEvent) {
       if (!containerRef.current) return;
-      if (!containerRef.current.contains(e.target as Node)) setFocused(false);
+      if (!containerRef.current.contains(e.target as Node)) {
+        setFocused(false);
+        // Clicking outside is a natural "dismiss" gesture; wipe the query so
+        // the next focus starts fresh instead of restoring a stale search.
+        setQuery("");
+      }
     }
     window.addEventListener("mousedown", onClickOutside);
     return () => window.removeEventListener("mousedown", onClickOutside);

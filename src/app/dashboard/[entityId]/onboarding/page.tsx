@@ -59,7 +59,7 @@ export default function OnboardingPage({ params }: { params: Promise<{ entityId:
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="rounded-full bg-emerald-100 p-2 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-100">
+              <div className="rounded-full bg-emerald-500/10 p-2 text-emerald-700 dark:text-emerald-400">
                 <CheckCircle2 className="h-5 w-5" />
               </div>
               <div>

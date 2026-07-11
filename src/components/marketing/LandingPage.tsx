@@ -632,7 +632,6 @@ function Footer() {
             className="inline-flex items-center gap-1 hover:text-foreground"
           >
             Meta docs
-            <Github className="h-3 w-3 opacity-0" />
           </a>
         </div>
       </div>
