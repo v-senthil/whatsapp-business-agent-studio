@@ -167,6 +167,36 @@ Do **not** upload `.env.local`. `.gitignore` already excludes it; make sure your
 - **`Illegal option -o pipefail`** — the runtime uses `dash`, not `bash`. Fixed: the script is POSIX-compliant.
 - **Startup command `npm run dev`** — wrong; that's the Next.js dev server. Use `sh start.sh`.
 
+## Deploying the landing page to GitHub Pages
+
+The full app (session cookies, Meta proxy, webhooks, AI routes) cannot run on Pages. What ships to Pages is just the public landing page as a static export, so anyone can visit `https://<owner>.github.io/<repo>/` and hit "Dashboard" to jump into the real app hosted on AppSail (or wherever you deploy the Next server).
+
+The static site lives in `marketing/`. It reuses the same `LandingPage`, `HeroPreview`, `MarketingNav`, `Logo`, `CopyButton`, and `Button` components as the main app via `tsconfig` `paths` (`@/*` → `../src/*`), so any change to the marketing components flows into both builds.
+
+### One-time GitHub setup
+
+1. In the repo's **Settings → Pages**, set **Source** to `GitHub Actions`.
+2. In **Settings → Secrets and variables → Actions → Variables**, add a repository variable named `APP_URL` pointing at your live app's origin (no trailing slash), for example:
+   ```
+   APP_URL=https://whatsapp-business-agent-studio-50033550439.development.catalystappsail.in
+   ```
+   The workflow feeds this to the marketing build as `NEXT_PUBLIC_APP_URL` so the Dashboard, Docs, and Sign-in CTAs on the exported landing point at the real app. Leaving it unset ships a landing whose CTAs are relative paths, which will 404 on Pages.
+
+### How it deploys
+
+`.github/workflows/pages.yml` runs on every push to `main` that touches `marketing/**` or any of the shared marketing components under `src/components/`. It installs the main app's dependencies (so imports resolve), installs `marketing/`'s smaller subset, runs `next build` with `output: 'export'` and `basePath: /<repo-name>`, and uploads `marketing/out` to the Pages environment.
+
+### Running the marketing build locally
+
+```
+cd marketing
+npm install
+NEXT_PUBLIC_APP_URL=https://your-app.example.com npm run build
+npx serve out
+```
+
+Open `http://localhost:3000` and you see the exact site GitHub Pages will serve. Skip `NEXT_PUBLIC_BASE_PATH` locally so links resolve at the root of `serve`.
+
 ## User flow
 
 0. **`/`** — public landing page. Signed-in visitors see a **Dashboard** button that jumps to `/home`; anyone else lands on `/login`. The marketing nav also links to the in-app **Docs** at `/help`, which is public.
