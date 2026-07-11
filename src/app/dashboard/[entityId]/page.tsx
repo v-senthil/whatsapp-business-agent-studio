@@ -11,6 +11,7 @@ import { useEligibility, useSettings } from "@/lib/client/hooks/useSettings";
 import { CopyButton } from "@/components/common/CopyButton";
 import { AgentConfigActions } from "@/components/config/AgentConfigActions";
 import { OnboardingChecklist } from "@/components/overview/OnboardingChecklist";
+import { RecentActivity } from "@/components/overview/RecentActivity";
 
 export default function EntityOverviewPage({ params }: { params: Promise<{ entityId: string }> }) {
   const { entityId } = use(params);
@@ -139,6 +140,8 @@ export default function EntityOverviewPage({ params }: { params: Promise<{ entit
           </CardFooter>
         </Card>
       </div>
+
+      <RecentActivity entityId={entityId} />
     </div>
   );
 }

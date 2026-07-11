@@ -2,6 +2,7 @@
 
 import { MetaApiError, type MetaApiErrorShape } from "@/lib/api/errors";
 import { record, updateCall } from "@/lib/client/api-log";
+import { record as recordActivity } from "@/lib/client/activity-log";
 
 interface FetchOpts {
   method?: string;
@@ -100,6 +101,10 @@ export async function fetcher<T = unknown>(url: string, opts: FetchOpts = {}): P
     ok: true,
     responseBody: parsed,
   });
+  // Log to the per-entity persistent activity feed for state-changing calls.
+  if (!READ_METHODS.has(method)) {
+    try { recordActivity(url, method, opts.json); } catch { /* ignore */ }
+  }
   return parsed as T;
 }
 
