@@ -36,20 +36,31 @@ export function AiSettingsForm() {
   const [modelsLoading, setModelsLoading] = React.useState(false);
   const [modelsError, setModelsError] = React.useState<string | null>(null);
 
+  // Track the last saved shape so we only wipe local edits when the persisted
+  // provider actually changes; a session refetch that returns identical
+  // primitives should not blow away a mid-edit apiKey field.
+  const lastSaved = React.useRef<{ provider?: string | null; baseUrl?: string | null; model?: string | null; hasApiKey?: boolean }>({});
   React.useEffect(() => {
     if (!ai) return;
+    const same =
+      lastSaved.current.provider === ai.provider &&
+      lastSaved.current.baseUrl === ai.baseUrl &&
+      lastSaved.current.model === ai.model &&
+      lastSaved.current.hasApiKey === ai.hasApiKey;
+    if (same) return;
+    lastSaved.current = { provider: ai.provider, baseUrl: ai.baseUrl, model: ai.model, hasApiKey: ai.hasApiKey };
     if (ai.provider) setProvider(ai.provider);
     if (ai.baseUrl) setBaseUrl(ai.baseUrl);
     if (ai.model) setModel(ai.model);
     // When nothing is persisted yet, the radio shows a default but the form
-    // is not really "clean" — treat it as dirty so the Save button is usable
+    // is not really "clean", treat it as dirty so the Save button is usable
     // on first visit without requiring the user to re-click the current radio.
     setDirty(!ai.provider);
     setClearKey(false);
     setApiKey("");
     setAvailableModels([]);
     setModelsError(null);
-  }, [ai?.provider, ai?.baseUrl, ai?.model, ai?.hasApiKey]);
+  }, [ai?.provider, ai?.baseUrl, ai?.model, ai?.hasApiKey, ai]);
 
   async function loadModels() {
     setModelsError(null);

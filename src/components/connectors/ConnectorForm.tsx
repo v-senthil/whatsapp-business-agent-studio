@@ -43,8 +43,13 @@ export function ConnectorForm({ initial, loading, submitLabel = "Save", onSubmit
   const prevAuth = React.useRef<string>(authType);
   React.useEffect(() => {
     if (prevAuth.current === authType) return;
-    // stash the previous auth config
-    stash.current[prevAuth.current] = form.getValues("auth_config" as never);
+    // stash the previous auth config or requires_certificate flag so we can
+    // restore it if the user toggles back
+    if (prevAuth.current === "MTLS") {
+      stash.current["MTLS"] = form.getValues("requires_certificate" as never);
+    } else {
+      stash.current[prevAuth.current] = form.getValues("auth_config" as never);
+    }
     // restore or set defaults for the new type
     if (authType === "API_KEY") {
       form.setValue("auth_config", (stash.current["API_KEY"] as never) ?? ({ api_key: { headers: [], query_params: [], body_params: [] } } as never));
@@ -58,6 +63,8 @@ export function ConnectorForm({ initial, loading, submitLabel = "Save", onSubmit
           token_request_content_type: "application/x-www-form-urlencoded",
         },
       } as never));
+    } else if (authType === "MTLS") {
+      form.setValue("requires_certificate" as never, ((stash.current["MTLS"] as boolean | undefined) ?? true) as never);
     }
     prevAuth.current = authType;
   }, [authType, form]);

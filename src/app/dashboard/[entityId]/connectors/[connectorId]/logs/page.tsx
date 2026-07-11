@@ -1,5 +1,5 @@
 "use client";
-import { use, useState } from "react";
+import { use, useMemo, useState } from "react";
 import { Loader2, ScrollText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,11 +12,11 @@ import { useConnectorLogs } from "@/lib/client/hooks/useConnectors";
 export default function ConnectorLogsPage({ params }: { params: Promise<{ entityId: string; connectorId: string }> }) {
   const { entityId, connectorId } = use(params);
   const [filters, setFilters] = useState({ start_time: "", end_time: "", tool_id: "", limit: "50", top_n: "10" });
-  const query = useConnectorLogs(entityId, connectorId, {
-    ...filters,
-    include_stats: "true",
-    summary_only: "false",
-  });
+  const queryParams = useMemo(
+    () => ({ ...filters, include_stats: "true", summary_only: "false" }),
+    [filters],
+  );
+  const query = useConnectorLogs(entityId, connectorId, queryParams);
 
   return (
     <div className="mx-auto max-w-4xl space-y-4 py-4">

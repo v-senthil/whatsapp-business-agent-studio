@@ -17,15 +17,22 @@ interface Props {
 const LOOKBACK_SECONDS = 24 * 60 * 60;
 
 export function ConnectorHealth({ entityId, connectorId }: Props) {
-  const now = Math.floor(Date.now() / 1000);
-  const start = now - LOOKBACK_SECONDS;
-  const query = useConnectorLogs(entityId, connectorId, {
-    start_time: String(start),
-    end_time: String(now),
-    include_stats: "true",
-    summary_only: "true",
-    top_n: "5",
-  });
+  // Bucket the window to the current hour boundary so the params object is
+  // stable within an hour of use; a fresh Date.now() every render made
+  // TanStack Query treat the params as a new key and refetch on any parent
+  // rerender.
+  const params = useMemo(() => {
+    const now = Math.floor(Date.now() / 1000);
+    const bucket = now - (now % 3600);
+    return {
+      start_time: String(bucket - LOOKBACK_SECONDS),
+      end_time: String(bucket),
+      include_stats: "true",
+      summary_only: "true",
+      top_n: "5",
+    };
+  }, [entityId, connectorId]);
+  const query = useConnectorLogs(entityId, connectorId, params);
 
   const resp = query.data as ConnectorLogsResponse<ConnectorFailurePattern> | undefined;
   const stats = resp?.stats;

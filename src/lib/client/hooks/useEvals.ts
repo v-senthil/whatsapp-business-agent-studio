@@ -39,7 +39,7 @@ export function useEvalJob(entityId: string, jobId: string) {
 
 export function useEvalDetails(entityId: string, ids: string[]) {
   return useQuery({
-    queryKey: ["entity", entityId, "evals", "details", ids.join(",")],
+    queryKey: qk.evalDetails(entityId, ids),
     queryFn: () => fetcher<EvalDetail[] | { data: EvalDetail[] }>(metaUrl(entityId, "agent-eval/details", { eval_ids: ids.join(",") })).then(toArray),
     enabled: ids.length > 0,
   });
@@ -47,7 +47,7 @@ export function useEvalDetails(entityId: string, ids: string[]) {
 
 export function useEvalSummary(entityId: string, ids: string[]) {
   return useQuery({
-    queryKey: ["entity", entityId, "evals", "summary", ids.join(",")],
+    queryKey: qk.evalSummary(entityId, ids),
     queryFn: () => fetcher<EvalSummary[] | { data: EvalSummary[] }>(metaUrl(entityId, "agent-eval/summary", { summary_ids: ids.join(",") })).then(toArray),
     enabled: ids.length > 0,
   });

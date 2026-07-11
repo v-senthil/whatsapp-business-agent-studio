@@ -1,6 +1,7 @@
 "use client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { fetcher, metaUrl } from "@/lib/client/fetcher";
+import { qk } from "@/lib/client/query-keys";
 import type { AgentEventInput } from "@/lib/schemas/agent-event";
 import type { AgentEventPostResponse, AgentEventStatusResponse } from "@/types/agent-event";
 
@@ -13,7 +14,7 @@ export function useSubmitAgentEvent(entityId: string) {
 
 export function useAgentEventStatus(entityId: string, agentEventId: string | undefined) {
   return useQuery({
-    queryKey: ["entity", entityId, "agent_event", agentEventId ?? ""],
+    queryKey: qk.agentEvent(entityId, agentEventId ?? ""),
     queryFn: () => fetcher<AgentEventStatusResponse>(metaUrl(entityId, `agent_event/${agentEventId}`)),
     enabled: !!agentEventId,
     refetchInterval: (query) => {
