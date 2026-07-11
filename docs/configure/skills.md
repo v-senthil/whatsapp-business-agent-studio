@@ -46,8 +46,9 @@ Skills are free-form instructions the model follows in specific scenarios. Each 
 ### Templates
 
 1. Click **Templates** in the header.
-2. A dialog shows a library of curated templates across categories like Onboarding, Support, Sales, Escalation, and Utility.
+2. A dialog shows a library of curated templates across five categories: **Onboarding**, **Support**, **Sales**, **Escalation**, and **Utility**. The library covers common flows like greeting, handoff, order lookup, appointment booking, coupon issuance, invoice sending, KYC collection, feedback capture, language matching, and abandoned-cart recovery.
 3. Multi-select the ones you want and click **Add**. Templates whose title matches a skill you already have show an **Added** badge and are skipped.
+4. After adding, open each new skill and adjust the body to match your policies (return window, escalation contact, brand voice).
 
 ### Draft with AI
 
