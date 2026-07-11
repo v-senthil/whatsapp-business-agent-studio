@@ -12,6 +12,13 @@ interface Props {
   children: React.ReactNode;
 }
 
+// Same helper LandingPage uses: when the help center runs off-origin
+// (GitHub Pages), NEXT_PUBLIC_APP_URL points at the live app so the
+// header Dashboard button jumps back to the real product. Unset in the
+// main-app build leaves paths same-origin.
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
+const DASHBOARD_HREF = APP_URL ? `${APP_URL}/home` : "/home";
+
 export async function HelpShell({ activeSlug, breadcrumbs, children }: Props) {
   const [sections, searchIndex] = await Promise.all([listSections(), getSearchIndex()]);
 
@@ -37,7 +44,7 @@ export async function HelpShell({ activeSlug, breadcrumbs, children }: Props) {
           <div className="flex shrink-0 items-center gap-2">
             <ThemeToggle variant="ghost" />
             <Link
-              href="/home"
+              href={DASHBOARD_HREF}
               className="hidden rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent sm:inline-flex"
             >
               Dashboard

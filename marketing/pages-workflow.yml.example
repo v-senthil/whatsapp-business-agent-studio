@@ -5,7 +5,9 @@ on:
     branches: [main]
     paths:
       - "marketing/**"
+      - "docs/**"
       - "src/components/marketing/**"
+      - "src/components/help/**"
       - "src/components/common/Logo.tsx"
       - "src/components/common/CopyButton.tsx"
       - "src/components/common/ThemeToggle.tsx"
@@ -14,6 +16,8 @@ on:
       - "src/components/providers/ThemeProvider.tsx"
       - "src/components/ui/toaster.tsx"
       - "src/lib/utils/cn.ts"
+      - "src/lib/help-docs.ts"
+      - "src/lib/help-links.ts"
       - "src/app/icon.svg"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
@@ -58,6 +62,9 @@ jobs:
         env:
           NEXT_PUBLIC_APP_URL: ${{ vars.APP_URL }}
           NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+          # The help center reads Markdown from ../docs when the build
+          # runs from marketing/, so tell help-docs.ts where to look.
+          HELP_DOCS_DIR: ../docs
         run: npm run build
 
       - name: Configure Pages

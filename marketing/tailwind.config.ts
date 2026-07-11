@@ -7,6 +7,7 @@ export default {
   content: [
     "./src/**/*.{ts,tsx}",
     "../src/components/marketing/**/*.{ts,tsx}",
+    "../src/components/help/**/*.{ts,tsx}",
     "../src/components/common/Logo.tsx",
     "../src/components/common/CopyButton.tsx",
     "../src/components/common/ThemeToggle.tsx",
@@ -58,5 +59,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 } satisfies Config;

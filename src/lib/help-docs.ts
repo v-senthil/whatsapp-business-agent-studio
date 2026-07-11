@@ -14,7 +14,13 @@ export interface DocSection {
   entries: DocEntry[];
 }
 
-const DOCS_DIR = path.join(process.cwd(), "docs");
+// When the main Next app runs from the repo root, `docs/` sits next to
+// `src/`. When the marketing microsite runs from `marketing/`, the same
+// folder lives one level up. HELP_DOCS_DIR overrides the resolution so both
+// builds share the same source of truth without symlinks or copies.
+const DOCS_DIR = process.env.HELP_DOCS_DIR
+  ? path.resolve(process.env.HELP_DOCS_DIR)
+  : path.join(process.cwd(), "docs");
 const INDEX_FILE = path.join(DOCS_DIR, "README.md");
 
 let cache: { sections: DocSection[]; flat: DocEntry[] } | null = null;

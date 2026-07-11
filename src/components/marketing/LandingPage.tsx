@@ -49,7 +49,9 @@ function appPath(path: string): string {
 export function LandingPage({ authed }: Props) {
   const primaryCtaHref = authed ? appPath("/home") : appPath("/login");
   const primaryCtaLabel = "Dashboard";
-  const helpUrl = appPath("/help");
+  // The help center is bundled into every build (main app + static-export
+  // marketing site), so /help stays same-origin regardless of APP_URL.
+  const helpUrl = "/help";
   const signInUrl = appPath("/login");
 
   return (
