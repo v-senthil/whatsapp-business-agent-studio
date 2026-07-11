@@ -37,14 +37,29 @@ interface Props {
   authed: boolean;
 }
 
+// When the landing page ships from a different origin than the app itself
+// (e.g. GitHub Pages), NEXT_PUBLIC_APP_URL points at the live app so the
+// Dashboard / Docs / footer Sign-in CTAs land on the real thing. In the
+// main app build it stays unset and same-origin relative paths are used.
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
+function appPath(path: string): string {
+  return APP_URL ? `${APP_URL}${path}` : path;
+}
+
 export function LandingPage({ authed }: Props) {
-  const primaryCtaHref = authed ? "/home" : "/login";
+  const primaryCtaHref = authed ? appPath("/home") : appPath("/login");
   const primaryCtaLabel = "Dashboard";
+  const helpUrl = appPath("/help");
+  const signInUrl = appPath("/login");
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
       <BackgroundGrid />
-      <MarketingNav primaryCtaHref={primaryCtaHref} primaryCtaLabel={primaryCtaLabel} />
+      <MarketingNav
+        primaryCtaHref={primaryCtaHref}
+        primaryCtaLabel={primaryCtaLabel}
+        helpUrl={helpUrl}
+      />
 
       <Hero primaryCtaHref={primaryCtaHref} primaryCtaLabel={primaryCtaLabel} />
       <LogoBar />
@@ -54,7 +69,7 @@ export function LandingPage({ authed }: Props) {
       <ForTeams />
       <FaqSection />
       <FinalCta primaryCtaHref={primaryCtaHref} primaryCtaLabel={primaryCtaLabel} />
-      <Footer />
+      <Footer signInUrl={signInUrl} />
     </div>
   );
 }
@@ -607,7 +622,7 @@ function FinalCta({
   );
 }
 
-function Footer() {
+function Footer({ signInUrl }: { signInUrl: string }) {
   return (
     <footer className="border-t border-border/60">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row sm:px-6 lg:px-8">
@@ -616,7 +631,7 @@ function Footer() {
           <span>WhatsApp Business Agent Studio</span>
         </div>
         <div className="flex items-center gap-6 text-xs text-muted-foreground">
-          <Link href="/login" className="hover:text-foreground">
+          <Link href={signInUrl} className="hover:text-foreground">
             Sign in
           </Link>
           <Link href="#features" className="hover:text-foreground">

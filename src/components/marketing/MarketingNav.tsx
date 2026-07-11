@@ -7,20 +7,23 @@ import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { Logo } from "@/components/common/Logo";
 import { cn } from "@/lib/utils/cn";
 
-const links = [
-  { href: "#features", label: "Features" },
-  { href: "#workflow", label: "How it works" },
-  { href: "#platform", label: "Platform" },
-  { href: "/help", label: "Docs" },
-  { href: "#faq", label: "FAQ" },
-];
-
 interface Props {
   primaryCtaHref: string;
   primaryCtaLabel: string;
+  // Optional. When the landing ships from a different origin (e.g. GitHub
+  // Pages), the caller passes the absolute /help URL on the live app. Falls
+  // back to the same-origin path.
+  helpUrl?: string;
 }
 
-export function MarketingNav({ primaryCtaHref, primaryCtaLabel }: Props) {
+export function MarketingNav({ primaryCtaHref, primaryCtaLabel, helpUrl }: Props) {
+  const links = [
+    { href: "#features", label: "Features" },
+    { href: "#workflow", label: "How it works" },
+    { href: "#platform", label: "Platform" },
+    { href: helpUrl ?? "/help", label: "Docs" },
+    { href: "#faq", label: "FAQ" },
+  ];
   const [open, setOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
 
