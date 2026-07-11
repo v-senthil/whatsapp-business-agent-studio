@@ -82,3 +82,52 @@ export async function neighbours(slug: string): Promise<{
     next: i < flat.length - 1 ? flat[i + 1] : null,
   };
 }
+
+export interface SearchEntry {
+  slug: string;
+  href: string;
+  label: string;
+  description: string;
+  section: string;
+  text: string;
+}
+
+let searchCache: SearchEntry[] | null = null;
+
+function stripMarkdown(body: string): string {
+  return body
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`[^`\n]*`/g, " ")
+    .replace(/^\s*#{1,6}\s+/gm, "")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/[*_~>#-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export async function getSearchIndex(): Promise<SearchEntry[]> {
+  if (searchCache) return searchCache;
+  const { sections } = await loadIndex();
+  const out: SearchEntry[] = [];
+  for (const section of sections) {
+    for (const entry of section.entries) {
+      let text = "";
+      try {
+        const body = await fs.readFile(entry.file, "utf8");
+        text = stripMarkdown(body);
+      } catch {
+        text = "";
+      }
+      out.push({
+        slug: entry.slug,
+        href: entry.href,
+        label: entry.label,
+        description: entry.description,
+        section: section.label,
+        text,
+      });
+    }
+  }
+  searchCache = out;
+  return out;
+}

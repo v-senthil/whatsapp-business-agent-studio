@@ -3,7 +3,8 @@ import { ChevronRight } from "lucide-react";
 import { Logo } from "@/components/common/Logo";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { HelpSidebar } from "@/components/help/HelpSidebar";
-import { listSections } from "@/lib/help-docs";
+import { HelpSearch } from "@/components/help/HelpSearch";
+import { getSearchIndex, listSections } from "@/lib/help-docs";
 
 interface Props {
   activeSlug?: string;
@@ -12,16 +13,16 @@ interface Props {
 }
 
 export async function HelpShell({ activeSlug, breadcrumbs, children }: Props) {
-  const sections = await listSections();
+  const [sections, searchIndex] = await Promise.all([listSections(), getSearchIndex()]);
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4 sm:px-6">
+          <div className="flex shrink-0 items-center gap-3">
             <Link href="/" className="flex items-center gap-2">
               <Logo size={28} />
-              <span className="text-sm font-semibold tracking-tight">
+              <span className="hidden text-sm font-semibold tracking-tight sm:inline">
                 WhatsApp Business Agent Studio
               </span>
             </Link>
@@ -30,7 +31,10 @@ export async function HelpShell({ activeSlug, breadcrumbs, children }: Props) {
               Help
             </Link>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="min-w-0 flex-1 sm:max-w-lg">
+            <HelpSearch index={searchIndex} />
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
             <ThemeToggle variant="ghost" />
             <Link
               href="/home"

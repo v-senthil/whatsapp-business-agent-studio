@@ -35,6 +35,8 @@
 
 Every page in the studio has a **Help** link in its top-right corner. Clicking it opens the matching article from this help center in a new tab, so you can read the guide alongside the page you're working on. If you don't see a Help link, the page is a lightweight single-purpose screen (like the marketing landing page).
 
+Inside the help center itself, a search box at the top of every page searches article titles, descriptions, section names, and body text. Press `/` from anywhere in the help center to jump straight into it, and `Esc` to clear. Results appear as you type with the section chip on the right and the matched snippet below.
+
 ## Where to go next
 
 - [Prerequisites](prerequisites.md) to make sure your Meta setup is ready.

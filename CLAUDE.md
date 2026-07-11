@@ -60,6 +60,8 @@ Previously redirected. Now renders `<LandingPage authed={…}>` (`src/components
 
 `generateStaticParams` in the article route prerenders every doc at build time, so any newly-added file appears in production only after a rebuild.
 
+**Search.** `HelpShell` calls `getSearchIndex()` on `src/lib/help-docs.ts`, which reads every `.md` under `docs/`, strips fenced code / headings / links, and returns `{ slug, href, label, description, section, text }[]`. The list is memoized in-module (separate cache from the section index). `<HelpSearch>` (`src/components/help/HelpSearch.tsx`) is a client component that ranks matches with a tiny scoring function (label 40, description 15, section 6, body 5 per token, must-match-all semantics) and renders a dropdown of the top 12 hits with per-match snippets. The `/` key focuses it globally (guarded by `isEditableTarget` so it does not fight active inputs), `Esc` clears. Do NOT switch this to a fuzzy library like fuse.js; the current corpus is small and the linear scan beats setup overhead.
+
 The `docs/` folder is **user-facing only**. Do NOT drop developer notes, API paths, source paths, or component names into it — the rewriter that produced the current 37 files is intentional. If you need internal notes, put them in this file or a design doc under `~/.claude/plans/`.
 
 ### `/login` — `src/app/login/page.tsx`
