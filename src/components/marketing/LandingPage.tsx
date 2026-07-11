@@ -7,6 +7,7 @@ import {
   Boxes,
   CheckCircle2,
   ChevronRight,
+  Container,
   FileText,
   FlaskConical,
   Github,
@@ -145,7 +146,7 @@ function LogoBar() {
     { icon: Bot, label: "Meta Agent Platform" },
     { icon: Sparkles, label: "Claude Agent SDK" },
     { icon: Globe, label: "OpenAI-compatible" },
-    { icon: Lock, label: "iron-session" },
+    { icon: Container, label: "Docker & AppSail" },
     { icon: Terminal, label: "Next.js 15" },
   ];
   return (
@@ -482,7 +483,7 @@ function FaqSection() {
     },
     {
       q: "Where does my access token live?",
-      a: "In an encrypted, httpOnly cookie (iron-session), server-side only. The browser never has access to the raw token, and every Meta API call is proxied through same-origin routes that inject it at request time.",
+      a: "In an encrypted, httpOnly session cookie, server-side only. The browser never sees the raw token, and every Meta API call is proxied through same-origin routes that inject it at request time.",
     },
     {
       q: "Which AI model does the studio use?",
@@ -494,7 +495,11 @@ function FaqSection() {
     },
     {
       q: "Is there a hosted version?",
-      a: "The studio is self-hosted and ships with a one-shot AppSail deploy script. You keep control of the box, the cookie secret, and the access tokens.",
+      a: "The studio is self-hosted. Ship it as a Docker container (Dockerfile plus docker-compose.yaml included), on Apple's native container CLI, or as a one-shot Zoho Catalyst AppSail deploy. You keep control of the box, the cookie secret, and the access tokens.",
+    },
+    {
+      q: "How do I find help while I use the app?",
+      a: "Every page has a Help link in its top-right that opens the matching article in a new tab. The full help center at /help has a search box (press / to focus) that ranks matches across article titles, sections, and body text.",
     },
     {
       q: "How do I test changes safely before going live?",
