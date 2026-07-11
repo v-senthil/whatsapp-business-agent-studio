@@ -20,6 +20,19 @@ interface Props {
   entityId: string;
 }
 
+function authLabel(authType: string): string {
+  switch (authType) {
+    case "OAUTH2_CLIENT_CREDENTIALS":
+      return "OAuth 2";
+    case "API_KEY":
+      return "API key";
+    case "MTLS":
+      return "mTLS";
+    default:
+      return authType.replace(/_/g, " ").toLowerCase();
+  }
+}
+
 export function ConnectorTemplatesDialog({ entityId }: Props) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
@@ -74,7 +87,7 @@ export function ConnectorTemplatesDialog({ entityId }: Props) {
                           <CardTitle className="text-sm">{t.label}</CardTitle>
                           <p className="mt-1 text-xs text-muted-foreground">{t.description}</p>
                         </div>
-                        <Badge variant="outline" className="shrink-0 text-[10px]">{t.input.auth_type.replace("_", " ")}</Badge>
+                        <Badge variant="outline" className="shrink-0 whitespace-nowrap text-[10px]">{authLabel(t.input.auth_type)}</Badge>
                       </CardHeader>
                       <CardContent className="flex items-center justify-between pt-0 text-[11px] text-muted-foreground">
                         <span className="truncate font-mono">{t.input.base_url}</span>
