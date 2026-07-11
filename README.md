@@ -349,7 +349,3 @@ src/
 - **Add a new AI provider:** extend the `AiConfig` discriminated union in `src/lib/ai/index.ts` and add a `run<Provider>` branch. Everything else (settings UI, doc generator, draft-skill) uses `runPrompt(cfg, prompt, system)` so no downstream changes are needed.
 - **Support PDF/DOCX in the doc generator:** currently the generator accepts Markdown/text only. To add binary parsing, install `pdf-parse` + `mammoth`, dispatch on file extension inside `src/app/api/ai/generate-from-document/route.ts`, and relax the `accept` list in `src/components/ai-generator/DocumentGenerator.tsx`.
 - **Swap the proxy target:** change `META_API_BASE` in `.env.local`. All requests still route through the catch-all.
-
-## License
-
-Internal tool.
