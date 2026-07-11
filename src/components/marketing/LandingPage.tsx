@@ -170,10 +170,10 @@ function Features() {
     body:
       "Author skills as prompts, wire connectors to your APIs, and expose them as tools the agent can call. Everything is versioned in JSON so you can export a config and reproduce a workspace anywhere.",
     bullets: [
-      "10 curated skill templates",
-      "8 prefilled connector shells",
-      "Discriminated-union auth (API key, OAuth2, mTLS)",
+      "22 curated skill templates across five categories",
+      "48 Zoho product connectors, prefilled with OAuth scopes",
       "Path / query / header / body params typed end-to-end",
+      "Every config exportable as versioned JSON",
     ],
   };
 
@@ -308,7 +308,7 @@ function Workflow() {
       icon: Zap,
       title: "Configure skills, knowledge, connectors",
       body:
-        "Author skills, upload knowledge, wire connectors and tools to your existing APIs, or import a config JSON you already have.",
+        "Author skills, upload knowledge, wire connectors to your existing APIs (with 48 Zoho product templates ready to go), or import a config JSON you already have.",
     },
     {
       n: "04",
@@ -376,6 +376,7 @@ function PlatformDeepDive() {
           points={[
             "Dev drawer with a ring buffer of every request and Copy-as-cURL.",
             "Free-form API playground scoped to the current phone.",
+            "In-app help center with instant search and a per-page Help link.",
             "Vendored OpenAPI reference with theme sync.",
             "Config export / import as versioned JSON.",
           ]}
@@ -384,8 +385,8 @@ function PlatformDeepDive() {
           icon={Boxes}
           title="Reusable building blocks"
           points={[
-            "10 skill templates across Onboarding, Support, Sales, Escalation, Utility.",
-            "8 connector templates: Shopify, Stripe, Zendesk, HubSpot, Salesforce, Twilio, SendGrid, Slack.",
+            "22 skill templates across Onboarding, Support, Sales, Escalation, and Utility.",
+            "48 Zoho product connectors: CRM, Desk, Books, Inventory, Campaigns, Bookings, SalesIQ, Sign, Mail, Cliq, Analytics, Creator, and more.",
             "CSV import / export for skills, FAQs, websites, allowlist.",
             "Save any chat as a scenario, replay them as regression tests.",
           ]}
@@ -506,7 +507,7 @@ function FaqSection() {
       <SectionHeader
         eyebrow="FAQ"
         title="Straight answers."
-        description="If you have another question, sign in and open the API reference. It's linked from the sidebar."
+        description="If you have another question, browse the full help center. Every page in the studio also has a Help link that opens the matching article."
       />
       <div className="divide-y divide-border rounded-2xl border border-border bg-card">
         {faqs.map((f) => (
