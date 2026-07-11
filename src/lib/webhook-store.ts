@@ -12,7 +12,7 @@ export interface WebhookRecord {
 
 type Subscriber = (record: WebhookRecord) => void;
 
-const MAX = 200;
+export const MAX = 200;
 const g = globalThis as unknown as {
   __wabiz_webhook_store?: {
     ring: WebhookRecord[];
@@ -44,10 +44,6 @@ export function subscribe(cb: Subscriber): () => void {
   const s = store();
   s.subscribers.add(cb);
   return () => { s.subscribers.delete(cb); };
-}
-
-export function clearEvents(): void {
-  store().ring.length = 0;
 }
 
 // Return the phone_number_ids referenced in an event body. Empty array means

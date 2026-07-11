@@ -38,7 +38,9 @@ export default function WebhooksPage({ params }: { params: Promise<{ entityId: s
     es.addEventListener("event", (e) => {
       try {
         const record = JSON.parse((e as MessageEvent).data) as WebhookRecord;
-        setEvents((prev) => [record, ...prev].slice(0, 200));
+        // The snapshot and the live push can overlap during connect, so dedupe
+        // by id when prepending; otherwise a burst-then-connect shows dupes.
+        setEvents((prev) => (prev.some((x) => x.id === record.id) ? prev : [record, ...prev].slice(0, 200)));
       } catch {}
     });
     es.addEventListener("error", () => setConnected(false));

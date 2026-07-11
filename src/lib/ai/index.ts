@@ -105,7 +105,13 @@ async function runClaude(config: AiConfig, prompt: string, system?: string): Pro
     child.on("close", (code) => {
       if (code === 0) {
         resolve(stdout.trim());
-      } else if (stderr.toLowerCase().includes("not authenticated") || stderr.toLowerCase().includes("login")) {
+        return;
+      }
+      // Narrower auth detection: previously "login" false-matched build output
+      // and unrelated stderr chatter. Require both a non-zero exit and one of a
+      // handful of auth-flavored substrings before classifying as auth failure.
+      const authRe = /(not authenticated|please log ?in|authentication.*required)/i;
+      if (authRe.test(stderr)) {
         reject(new AiFailure({
           code: "auth",
           message: "Claude Code is not signed in. Run `claude` interactively once to log in, then retry.",

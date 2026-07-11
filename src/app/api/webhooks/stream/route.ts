@@ -1,5 +1,5 @@
 import { getSession } from "@/lib/session";
-import { listEvents, subscribe, eventMatchesPhone, filterForPhone, type WebhookRecord } from "@/lib/webhook-store";
+import { MAX, listEvents, subscribe, eventMatchesPhone, filterForPhone, type WebhookRecord } from "@/lib/webhook-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -50,7 +50,7 @@ export async function GET() {
         safeEnqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
       }
 
-      const snapshot = listEvents(50);
+      const snapshot = listEvents(MAX);
       const initial = phoneId ? filterForPhone(snapshot, phoneId) : snapshot;
       send("snapshot", initial);
 

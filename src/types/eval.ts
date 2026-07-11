@@ -32,7 +32,9 @@ export interface EvalSummary {
 export interface AgentTestResponse {
   message_id: string;
   agent_response: string;
-  conversation_id: string;
+  // Meta may omit conversation_id on some replies (e.g. handoff-only bounces),
+  // so keep it optional and let the caller decide how to react.
+  conversation_id?: string;
   timestamp?: number;
   handoff_reason?: string;
   no_response_reason?: string;
