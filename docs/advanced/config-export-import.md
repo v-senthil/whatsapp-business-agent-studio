@@ -23,14 +23,17 @@ Export bundles:
 ## Credential handling
 
 - **Default**, credentials are stripped from the export (API key values, OAuth client secrets, mTLS certificates).
-- **Opt-in**, tick **Include credentials** to keep them in the file. A red warning banner reminds you that the file now contains secrets and should be treated accordingly.
+- **Opt-in**, tick **Include credentials** to keep them in the file. Two extra controls appear:
+  - A **Passphrase** field. If you set one, the download is encrypted with AES-GCM (PBKDF2-SHA256, 200k iterations, per-file salt and IV) and saved as `.enc.json`. You will need the same passphrase to import it.
+  - If you leave the passphrase blank, a red banner asks you to explicitly acknowledge that the file will contain plaintext secrets. The Download button stays disabled until you tick the checkbox.
 
 ## Filename
 
 Exports download with a filename like:
 
 ```
-agent-config-<entityId>-<yyyy-mm-dd>.json
+agent-config-<entityId>-<yyyy-mm-dd>.json       # plaintext
+agent-config-<entityId>-<yyyy-mm-dd>.enc.json   # passphrase-protected
 ```
 
 ## Step-by-step, export
@@ -43,8 +46,9 @@ agent-config-<entityId>-<yyyy-mm-dd>.json
 ## Step-by-step, import
 
 1. On the destination phone's dashboard, click **Import config**.
-2. Upload the JSON file. The dialog validates the shape; if the file is not a valid bundle, the dialog explains why and blocks the import.
-3. Review the **preview counts** per resource (skills, FAQs, connectors, etc.).
+2. Upload the JSON file. Both plain `.json` and encrypted `.enc.json` files are accepted. If the file is encrypted, the dialog prompts for the passphrase before it reads the contents.
+3. The dialog validates the shape against a strict schema. If any record fails validation, the dialog names the failing field and record and blocks the import.
+4. Review the **preview counts** per resource (skills, FAQs, connectors, etc.).
 4. Click **Import**. A progress indicator shows each stage as it runs:
    1. Business info
    2. Skills
