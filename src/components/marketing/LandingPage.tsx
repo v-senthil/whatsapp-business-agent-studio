@@ -53,6 +53,11 @@ export function LandingPage({ authed }: Props) {
   // marketing site), so /help stays same-origin regardless of APP_URL.
   const helpUrl = "/help";
   const signInUrl = appPath("/login");
+  // The Dashboard button only makes sense on the main-app landing where a
+  // signed-in visitor may want to jump to /home. On the off-origin marketing
+  // build (GitHub Pages), NEXT_PUBLIC_APP_URL is set and we hide it so the
+  // marketing surface stays informational.
+  const showDashboardCta = !APP_URL;
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
@@ -61,16 +66,25 @@ export function LandingPage({ authed }: Props) {
         primaryCtaHref={primaryCtaHref}
         primaryCtaLabel={primaryCtaLabel}
         helpUrl={helpUrl}
+        showDashboardCta={showDashboardCta}
       />
 
-      <Hero primaryCtaHref={primaryCtaHref} primaryCtaLabel={primaryCtaLabel} />
+      <Hero
+        primaryCtaHref={primaryCtaHref}
+        primaryCtaLabel={primaryCtaLabel}
+        showDashboardCta={showDashboardCta}
+      />
       <LogoBar />
       <Features />
       <Workflow />
       <PlatformDeepDive />
       <ForTeams />
       <FaqSection />
-      <FinalCta primaryCtaHref={primaryCtaHref} primaryCtaLabel={primaryCtaLabel} />
+      <FinalCta
+        primaryCtaHref={primaryCtaHref}
+        primaryCtaLabel={primaryCtaLabel}
+        showDashboardCta={showDashboardCta}
+      />
       <Footer signInUrl={signInUrl} />
     </div>
   );
@@ -96,7 +110,15 @@ function BackgroundGrid() {
   );
 }
 
-function Hero({ primaryCtaHref, primaryCtaLabel }: { primaryCtaHref: string; primaryCtaLabel: string }) {
+function Hero({
+  primaryCtaHref,
+  primaryCtaLabel,
+  showDashboardCta,
+}: {
+  primaryCtaHref: string;
+  primaryCtaLabel: string;
+  showDashboardCta: boolean;
+}) {
   return (
     <section className="relative">
       <div className="mx-auto max-w-7xl px-4 pb-16 pt-16 sm:px-6 sm:pt-24 lg:px-8 lg:pb-24">
@@ -120,13 +142,20 @@ function Hero({ primaryCtaHref, primaryCtaLabel }: { primaryCtaHref: string; pri
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button asChild size="lg" className="w-full sm:w-auto">
-              <Link href={primaryCtaHref}>
-                {primaryCtaLabel}
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
+            {showDashboardCta ? (
+              <Button asChild size="lg" className="w-full sm:w-auto">
+                <Link href={primaryCtaHref}>
+                  {primaryCtaLabel}
+                  <ArrowRight className="ml-1 h-4 w-4" />
+                </Link>
+              </Button>
+            ) : null}
+            <Button
+              asChild
+              size="lg"
+              variant={showDashboardCta ? "outline" : "default"}
+              className="w-full sm:w-auto"
+            >
               <Link href="#features">
                 <PlayCircle className="mr-1 h-4 w-4" />
                 See what's inside
@@ -590,9 +619,11 @@ function FaqSection() {
 function FinalCta({
   primaryCtaHref,
   primaryCtaLabel,
+  showDashboardCta,
 }: {
   primaryCtaHref: string;
   primaryCtaLabel: string;
+  showDashboardCta: boolean;
 }) {
   return (
     <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
@@ -608,13 +639,15 @@ function FinalCta({
             testing your first agent within the hour.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button asChild size="lg">
-              <Link href={primaryCtaHref}>
-                {primaryCtaLabel}
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
+            {showDashboardCta ? (
+              <Button asChild size="lg">
+                <Link href={primaryCtaHref}>
+                  {primaryCtaLabel}
+                  <ArrowRight className="ml-1 h-4 w-4" />
+                </Link>
+              </Button>
+            ) : null}
+            <Button asChild size="lg" variant={showDashboardCta ? "outline" : "default"}>
               <Link href="#features">Explore the features</Link>
             </Button>
           </div>

@@ -12,12 +12,13 @@ interface Props {
   children: React.ReactNode;
 }
 
-// Same helper LandingPage uses: when the help center runs off-origin
-// (GitHub Pages), NEXT_PUBLIC_APP_URL points at the live app so the
-// header Dashboard button jumps back to the real product. Unset in the
-// main-app build leaves paths same-origin.
+// On the main-app help center the header carries a Dashboard button so a
+// signed-in reader can jump back to /home in one click. On the off-origin
+// marketing build (GitHub Pages), NEXT_PUBLIC_APP_URL is set and we hide
+// the button entirely so the marketing surface stays informational.
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
-const DASHBOARD_HREF = APP_URL ? `${APP_URL}/home` : "/home";
+const SHOW_DASHBOARD_CTA = !APP_URL;
+const DASHBOARD_HREF = "/home";
 
 export async function HelpShell({ activeSlug, breadcrumbs, children }: Props) {
   const [sections, searchIndex] = await Promise.all([listSections(), getSearchIndex()]);
@@ -43,12 +44,14 @@ export async function HelpShell({ activeSlug, breadcrumbs, children }: Props) {
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <ThemeToggle variant="ghost" />
-            <Link
-              href={DASHBOARD_HREF}
-              className="hidden rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent sm:inline-flex"
-            >
-              Dashboard
-            </Link>
+            {SHOW_DASHBOARD_CTA ? (
+              <Link
+                href={DASHBOARD_HREF}
+                className="hidden rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent sm:inline-flex"
+              >
+                Dashboard
+              </Link>
+            ) : null}
           </div>
         </div>
       </header>

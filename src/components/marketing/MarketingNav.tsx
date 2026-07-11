@@ -14,9 +14,18 @@ interface Props {
   // Pages), the caller passes the absolute /help URL on the live app. Falls
   // back to the same-origin path.
   helpUrl?: string;
+  // False on the marketing microsite (GitHub Pages) so the Dashboard CTA
+  // is hidden. True on the main app where a signed-in visitor may want to
+  // jump to /home from the landing.
+  showDashboardCta?: boolean;
 }
 
-export function MarketingNav({ primaryCtaHref, primaryCtaLabel, helpUrl }: Props) {
+export function MarketingNav({
+  primaryCtaHref,
+  primaryCtaLabel,
+  helpUrl,
+  showDashboardCta = true,
+}: Props) {
   const links = [
     { href: "#features", label: "Features" },
     { href: "#workflow", label: "How it works" },
@@ -65,9 +74,11 @@ export function MarketingNav({ primaryCtaHref, primaryCtaLabel, helpUrl }: Props
 
         <div className="hidden items-center gap-2 md:flex">
           <ThemeToggle variant="ghost" />
-          <Button asChild size="sm">
-            <Link href={primaryCtaHref}>{primaryCtaLabel}</Link>
-          </Button>
+          {showDashboardCta ? (
+            <Button asChild size="sm">
+              <Link href={primaryCtaHref}>{primaryCtaLabel}</Link>
+            </Button>
+          ) : null}
         </div>
 
         <button
@@ -94,9 +105,11 @@ export function MarketingNav({ primaryCtaHref, primaryCtaLabel, helpUrl }: Props
             ))}
             <div className="mt-2 flex items-center gap-2 px-1">
               <ThemeToggle variant="ghost" />
-              <Button asChild size="sm" className="flex-1">
-                <Link href={primaryCtaHref}>{primaryCtaLabel}</Link>
-              </Button>
+              {showDashboardCta ? (
+                <Button asChild size="sm" className="flex-1">
+                  <Link href={primaryCtaHref}>{primaryCtaLabel}</Link>
+                </Button>
+              ) : null}
             </div>
           </div>
         </div>
