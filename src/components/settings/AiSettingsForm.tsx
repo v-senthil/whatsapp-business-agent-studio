@@ -1,11 +1,11 @@
 "use client";
 import * as React from "react";
 import { toast } from "sonner";
-import { CheckCircle2, Eye, EyeOff, Loader2, Save, Sparkles, Terminal, XCircle } from "lucide-react";
+import { CheckCircle2, Eye, EyeOff, Loader2, RefreshCw, Save, Sparkles, Terminal, XCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,8 @@ import { fetcher } from "@/lib/client/fetcher";
 import { useSession, usePatchSession } from "@/lib/client/hooks/useSession";
 
 type Provider = "claude" | "openai";
+
+const MODEL_DATALIST_ID = "wabiz-ai-model-list";
 
 export function AiSettingsForm() {
   const { data, isLoading } = useSession();
@@ -30,6 +32,10 @@ export function AiSettingsForm() {
   const [showKey, setShowKey] = React.useState(false);
   const [dirty, setDirty] = React.useState(false);
 
+  const [availableModels, setAvailableModels] = React.useState<string[]>([]);
+  const [modelsLoading, setModelsLoading] = React.useState(false);
+  const [modelsError, setModelsError] = React.useState<string | null>(null);
+
   React.useEffect(() => {
     if (!ai) return;
     if (ai.provider) setProvider(ai.provider);
@@ -38,25 +44,55 @@ export function AiSettingsForm() {
     setDirty(false);
     setClearKey(false);
     setApiKey("");
+    setAvailableModels([]);
+    setModelsError(null);
   }, [ai?.provider, ai?.baseUrl, ai?.model, ai?.hasApiKey]);
 
-  function markDirty<T>(setter: (v: T) => void) {
-    return (v: T) => { setter(v); setDirty(true); };
+  async function loadModels() {
+    setModelsError(null);
+    setModelsLoading(true);
+    try {
+      const resp = await fetcher<{ ok: boolean; models?: string[]; error?: string }>(
+        "/api/ai/list-models",
+        {
+          method: "POST",
+          json: {
+            baseUrl: baseUrl.trim(),
+            apiKey: apiKey || undefined,
+          },
+        },
+      );
+      if (resp.ok && resp.models) {
+        setAvailableModels(resp.models);
+        if (resp.models.length === 0) {
+          setModelsError("The endpoint returned an empty list. You can still type a model name.");
+        } else {
+          toast.success(`Loaded ${resp.models.length} model${resp.models.length === 1 ? "" : "s"}`);
+        }
+      } else {
+        setModelsError(resp.error ?? "Could not load models.");
+      }
+    } catch (e) {
+      setModelsError(e instanceof Error ? e.message : "Could not load models.");
+    } finally {
+      setModelsLoading(false);
+    }
   }
 
   async function save() {
     const body: Parameters<typeof patch.mutateAsync>[0] = {
       aiProvider: provider,
-      aiModel: model || null,
     };
     if (provider === "openai") {
-      body.aiBaseUrl = baseUrl || null;
+      body.aiBaseUrl = baseUrl.trim() || null;
+      body.aiModel = model.trim() || null;
       if (apiKey) body.aiApiKey = apiKey;
       else if (clearKey) body.aiApiKey = null;
     } else {
-      // Clear OpenAI-only fields when switching to Claude to avoid stale state.
+      // Claude Agent SDK — clear OpenAI-only fields to avoid stale state.
       body.aiBaseUrl = null;
       body.aiApiKey = null;
+      body.aiModel = null;
     }
     try {
       await patch.mutateAsync(body);
@@ -89,7 +125,7 @@ export function AiSettingsForm() {
               current={provider}
               icon={<Terminal className="h-4 w-4" />}
               title="Claude Agent SDK (local)"
-              description="Uses the locally-installed Claude Code CLI. No API key needed; consumes your Claude Code session."
+              description="Uses the locally-installed Claude Code CLI. Nothing to configure; consumes your Claude Code session."
               badges={["No API key"]}
             />
             <ProviderOption
@@ -97,60 +133,76 @@ export function AiSettingsForm() {
               current={provider}
               icon={<Sparkles className="h-4 w-4" />}
               title="OpenAI-compatible endpoint"
-              description="Any /v1/chat/completions API — OpenAI, Ollama, LM Studio, Together, Anthropic-via-proxy, etc."
-              badges={["Requires API key"]}
+              description="Any /v1/chat/completions API — OpenAI, Ollama, LM Studio, Together, Anthropic-via-proxy, etc. Local endpoints often don't need a key."
+              badges={["Base URL + model"]}
             />
           </RadioGroup>
         </CardContent>
       </Card>
 
-      {provider === "claude" && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Claude Agent SDK settings</CardTitle>
-            <CardDescription>
-              This provider spawns the local <code className="font-mono">claude</code> binary via the Claude Agent SDK.
-              Install and log in first: <code className="font-mono">npm install -g @anthropic-ai/claude-code</code> then run <code className="font-mono">claude</code> once and sign in.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Field label="Model (optional)" hint="Leave blank to use Claude Code's default.">
-              <Input value={model} onChange={(e) => markDirty(setModel)(e.target.value)} placeholder="claude-sonnet-4-6" />
-            </Field>
-            <Alert>
-              <AlertTitle>Local-only</AlertTitle>
-              <AlertDescription>
-                This provider works on machines that have Claude Code installed and authenticated.
-                It will fail on hosts (like AppSail) that don&apos;t ship the CLI. Use the OpenAI-compatible option there.
-              </AlertDescription>
-            </Alert>
-          </CardContent>
-        </Card>
-      )}
-
       {provider === "openai" && (
         <Card>
           <CardHeader>
             <CardTitle>OpenAI-compatible endpoint</CardTitle>
-            <CardDescription>Any endpoint that speaks the <code className="font-mono">POST /chat/completions</code> shape.</CardDescription>
+            <CardDescription>
+              Any endpoint that speaks the <code className="font-mono">POST /chat/completions</code> shape.
+              Common bases: OpenAI = <code className="font-mono">https://api.openai.com/v1</code>,
+              Ollama = <code className="font-mono">http://localhost:11434/v1</code>,
+              LM Studio = <code className="font-mono">http://localhost:1234/v1</code>.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Field label="Base URL" hint="e.g. https://api.openai.com/v1 or http://localhost:11434/v1">
-              <Input value={baseUrl} onChange={(e) => markDirty(setBaseUrl)(e.target.value)} placeholder="https://api.openai.com/v1" />
+            <Field label="Base URL" required>
+              <Input
+                value={baseUrl}
+                onChange={(e) => { setBaseUrl(e.target.value); setDirty(true); }}
+                placeholder="https://api.openai.com/v1"
+              />
             </Field>
-            <Field label="Model" required>
-              <Input value={model} onChange={(e) => markDirty(setModel)(e.target.value)} placeholder="gpt-4o-mini" />
+
+            <Field
+              label="Model"
+              required
+              hint={
+                availableModels.length > 0
+                  ? `${availableModels.length} model${availableModels.length === 1 ? "" : "s"} loaded from the endpoint — start typing to filter.`
+                  : "Type a model name, or click Load models to browse what the endpoint offers."
+              }
+              error={modelsError ?? undefined}
+            >
+              <div className="flex gap-2">
+                <Input
+                  value={model}
+                  onChange={(e) => { setModel(e.target.value); setDirty(true); }}
+                  placeholder="gpt-4o-mini"
+                  list={availableModels.length > 0 ? MODEL_DATALIST_ID : undefined}
+                />
+                <Button type="button" variant="outline" size="sm" onClick={loadModels} disabled={modelsLoading || !baseUrl.trim()}>
+                  {modelsLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                  Load models
+                </Button>
+              </div>
+              {availableModels.length > 0 && (
+                <datalist id={MODEL_DATALIST_ID}>
+                  {availableModels.map((m) => <option key={m} value={m} />)}
+                </datalist>
+              )}
             </Field>
+
             <Field
               label="API key"
-              hint={ai?.hasApiKey ? "A key is already stored. Leave blank to keep it. Use Clear to remove it." : "Kept in the encrypted session cookie server-side; never returned to the browser."}
+              hint={
+                ai?.hasApiKey
+                  ? "A key is already stored. Leave blank to keep it, or check Clear to remove it. Local endpoints (Ollama, LM Studio) usually don't need one."
+                  : "Optional — local endpoints (Ollama, LM Studio) usually don't need one. Kept server-side in an encrypted cookie; never returned to the browser."
+              }
             >
               <div className="flex gap-2">
                 <Input
                   type={showKey ? "text" : "password"}
                   value={apiKey}
                   onChange={(e) => { setApiKey(e.target.value); setDirty(true); }}
-                  placeholder={ai?.hasApiKey ? "•••• leave blank to keep existing ••••" : "sk-..."}
+                  placeholder={ai?.hasApiKey ? "•••• leave blank to keep existing ••••" : "leave blank for local LLMs"}
                   autoComplete="off"
                 />
                 <Button
@@ -176,6 +228,18 @@ export function AiSettingsForm() {
             </Field>
           </CardContent>
         </Card>
+      )}
+
+      {provider === "claude" && (
+        <Alert>
+          <Terminal className="h-4 w-4" />
+          <AlertTitle>Local-only provider</AlertTitle>
+          <AlertDescription>
+            Runs via the local <code className="font-mono">claude</code> binary. Install once with{" "}
+            <code className="font-mono">npm i -g @anthropic-ai/claude-code</code>{" "}
+            and run <code className="font-mono">claude</code> to sign in. Uses whatever model Claude Code defaults to; no further configuration.
+          </AlertDescription>
+        </Alert>
       )}
 
       <div className="flex items-center justify-between">
