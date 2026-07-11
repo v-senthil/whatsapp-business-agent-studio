@@ -19,7 +19,10 @@ Summary of how the app keeps your access token private, how sessions work, and h
 
 - When Meta POSTs a webhook to the app, the app computes an HMAC-SHA256 of the request body using the configured app secret and compares it to the signature Meta sent.
 - Each entry in the Webhooks page is tagged as **signed** or **unverified** based on that check.
-- If the app secret is not configured, entries are still accepted but shown as unverified. This is useful for local development; production should always have the secret configured.
+- In development, if the app secret is not configured, entries are still accepted but shown as unverified.
+- **In production**, if `META_APP_SECRET` is not set the receiver refuses the POST with a 500 and does not buffer the event. This prevents an unauthenticated caller from filling the in-memory ring buffer with forged webhooks.
+- Request bodies larger than 1 MB are rejected with a 413 before the body is read. Meta's real events are a few KB.
+- Only a small allowlist of request headers is preserved on the stored event: `x-hub-signature-256`, `x-hub-signature`, `user-agent`, `content-type`, `x-request-id`. Every other header is dropped.
 
 ## Verification handshake
 

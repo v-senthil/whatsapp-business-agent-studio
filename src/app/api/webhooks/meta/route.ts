@@ -5,6 +5,27 @@ import { pushEvent } from "@/lib/webhook-store";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const MAX_BODY_BYTES = 1_000_000; // 1 MB
+
+// Only these request headers are preserved on the stored record. Everything
+// else is dropped so a hostile sender cannot pack the ring buffer with
+// megabytes of custom headers.
+const HEADER_ALLOWLIST = new Set([
+  "x-hub-signature-256",
+  "x-hub-signature",
+  "user-agent",
+  "content-type",
+  "x-request-id",
+]);
+
+function pickAllowedHeaders(src: NextRequest["headers"]): Record<string, string> {
+  const out: Record<string, string> = {};
+  src.forEach((value, key) => {
+    if (HEADER_ALLOWLIST.has(key.toLowerCase())) out[key] = value;
+  });
+  return out;
+}
+
 // Meta webhook verification handshake.
 // Docs: https://developers.facebook.com/docs/graph-api/webhooks/getting-started#verification-requests
 export async function GET(req: NextRequest) {
@@ -15,7 +36,10 @@ export async function GET(req: NextRequest) {
   const expected = process.env.META_WEBHOOK_VERIFY_TOKEN;
 
   if (!expected) {
-    return NextResponse.json({ error: "META_WEBHOOK_VERIFY_TOKEN is not configured" }, { status: 500 });
+    // Do not leak configuration state to an unauthenticated caller. Log the
+    // missing env server-side and return the same 403 as a failed match.
+    console.error("[webhooks] GET /api/webhooks/meta hit but META_WEBHOOK_VERIFY_TOKEN is not set");
+    return NextResponse.json({ error: "verification failed" }, { status: 403 });
   }
   if (mode === "subscribe" && token === expected && challenge) {
     return new NextResponse(challenge, { status: 200, headers: { "content-type": "text/plain" } });
@@ -25,26 +49,39 @@ export async function GET(req: NextRequest) {
 
 // Event notifications from Meta.
 export async function POST(req: NextRequest) {
-  const raw = await req.text();
   const secret = process.env.META_APP_SECRET;
+  const isProduction = process.env.NODE_ENV === "production";
+
+  // Refuse to buffer events in production if the signing secret is missing.
+  // Without it we cannot tell real Meta traffic from forged posts.
+  if (isProduction && !secret) {
+    console.error("[webhooks] POST /api/webhooks/meta refused: META_APP_SECRET is not set in production");
+    return NextResponse.json({ error: "webhook signing not configured" }, { status: 500 });
+  }
+
+  // Refuse anything past the size limit before reading the body so a large
+  // payload cannot DoS the process. Meta's real events are a few KB.
+  const declared = Number(req.headers.get("content-length") ?? "0");
+  if (declared > MAX_BODY_BYTES) {
+    return NextResponse.json({ error: "payload too large" }, { status: 413 });
+  }
+
+  const raw = await req.text();
+  if (raw.length > MAX_BODY_BYTES) {
+    return NextResponse.json({ error: "payload too large" }, { status: 413 });
+  }
+
   const signature = req.headers.get("x-hub-signature-256") ?? "";
   let signatureOk = false;
   if (secret && signature.startsWith("sha256=")) {
     const expected = "sha256=" + crypto.createHmac("sha256", secret).update(raw).digest("hex");
     signatureOk = timingSafeEqual(signature, expected);
-  } else if (!secret) {
-    // Without a secret we can't verify; accept but flag as unverified so the UI can warn.
-    signatureOk = false;
   }
 
   let body: unknown = raw;
   try { body = JSON.parse(raw); } catch { /* leave as string */ }
 
-  const headers: Record<string, string> = {};
-  req.headers.forEach((value, key) => {
-    if (["content-length", "host", "cookie"].includes(key)) return;
-    headers[key] = value;
-  });
+  const headers = pickAllowedHeaders(req.headers);
 
   pushEvent({
     id: crypto.randomUUID(),
@@ -54,8 +91,8 @@ export async function POST(req: NextRequest) {
     headers,
   });
 
-  // Meta expects 200 quickly. Log signature failures but still 200 so Meta doesn't retry-forever
-  // during local dev where the secret may not be configured.
+  // Meta expects 200 quickly. Log signature failures but still 200 so Meta
+  // does not retry-forever during local dev where the secret may not be set.
   return NextResponse.json({ ok: true, signature_ok: signatureOk });
 }
 

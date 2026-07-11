@@ -54,7 +54,9 @@ Use this when several phones share one Meta app but you want each phone to point
 ## Good to know
 
 - The verify token is only ever handled on the server. The dialog does not ask for it and no browser code has access to it.
-- If `META_APP_SECRET` is not set, events still land in the UI but are flagged as **Unverified**. This is fine locally but not for production.
+- If `META_APP_SECRET` is not set in development, events still land in the UI but are flagged as **Unverified**. In production, the receiver refuses events with a 500 until the secret is configured; this prevents forged webhooks from populating the ring buffer.
+- The receiver caps request bodies at 1 MB. Larger payloads get a 413. Meta's real events are a few KB, so this only affects abuse.
+- Only a small allowlist of request headers is kept on each stored event: `x-hub-signature-256`, `x-hub-signature`, `user-agent`, `content-type`, and `x-request-id`. Everything else is dropped to keep the ring buffer bounded.
 - The event history is in-memory. On a server restart or cold start, the list is cleared.
 - The per-phone override wins over the app-level callback URL. Meta routes an event to whichever URL is registered on the phone at the moment the event happens.
 
