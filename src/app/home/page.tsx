@@ -14,6 +14,7 @@ import {
 import { UserMenuLogout } from "@/components/home/UserMenuLogout";
 import { HomeContent } from "@/components/home/HomeContent";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
+import { HelpButton } from "@/components/common/HelpButton";
 
 export default async function HomePage() {
   const session = await getSession();
@@ -29,6 +30,7 @@ export default async function HomePage() {
               <Link href={`/dashboard/${session.lastEntityId}`}>Continue with {session.lastEntityId}</Link>
             </Button>
           )}
+          <HelpButton variant="text" slug="getting-started/pick-business-and-phone" />
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

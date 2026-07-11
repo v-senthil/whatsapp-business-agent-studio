@@ -31,6 +31,10 @@
 - **Knowledge**, files, websites, FAQs, and an allowlist of consumer phone numbers.
 - **Eval**, a batch of Meta-provided test cases you run against the agent to score responses.
 
+## Finding help while you work
+
+Every page in the studio has a **Help** link in its top-right corner. Clicking it opens the matching article from this help center in a new tab, so you can read the guide alongside the page you're working on. If you don't see a Help link, the page is a lightweight single-purpose screen (like the marketing landing page).
+
 ## Where to go next
 
 - [Prerequisites](prerequisites.md) to make sure your Meta setup is ready.

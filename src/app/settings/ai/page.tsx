@@ -5,6 +5,7 @@ import { getSession } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { AiSettingsForm } from "@/components/settings/AiSettingsForm";
 import { DocumentGenerator } from "@/components/ai-generator/DocumentGenerator";
+import { HelpButton } from "@/components/common/HelpButton";
 
 export default async function AiSettingsPage() {
   const session = await getSession();
@@ -14,10 +15,11 @@ export default async function AiSettingsPage() {
 
   return (
     <div className="mx-auto min-h-screen max-w-3xl px-6 py-6">
-      <div className="mb-6 flex items-center gap-2">
+      <div className="mb-6 flex items-center justify-between gap-2">
         <Button asChild variant="ghost" size="sm">
           <Link href={backHref}><ArrowLeft className="h-4 w-4" /> Back</Link>
         </Button>
+        <HelpButton variant="text" slug="advanced/ai-provider" />
       </div>
       <div className="mb-6">
         <h1 className="flex items-center gap-2 text-2xl font-semibold">
