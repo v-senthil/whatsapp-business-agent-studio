@@ -31,10 +31,10 @@ You pick the auth type when you create the connector. Switching auth types on an
 
 ### Create from a template
 
-The template library has two families: **Zoho** (default, every Zoho product with a documented API, prefilled with OAuth 2.0 scopes and the `accounts.zoho.com` token URL) and **Others** (universally available third-party APIs).
+The template library has three families: **Zoho** (default, every Zoho product with a documented API), **Google** (Workspace, Marketing, and Cloud APIs), and **Others** (universally available third-party APIs). Every template ships with OAuth 2.0 scopes and the correct token URL preset.
 
 1. On the Connectors list page, click **From template** in the header.
-2. The dialog opens with a filter row at the top: **Zoho · Others · All**. It defaults to **Zoho**. Each tab shows a count next to its label so you know what's under each.
+2. The dialog opens with a filter row at the top: **Zoho · Google · Others · All**. It defaults to **Zoho**. Each tab shows a count next to its label so you know what's under each.
 3. Under **Zoho**, templates are grouped by product family:
    - **Sales & CRM**: CRM, Bigin, SalesIQ, Backstage.
    - **Support**: Desk, Assist, Lens.
@@ -47,19 +47,29 @@ The template library has two families: **Zoho** (default, every Zoho product wit
    - **Developer**: Creator, Flow, Catalyst, Directory.
    - **Sign & Contracts**: Sign, Contracts.
    - **Events & Learning**: Learn, Webinar.
-4. Under **Others**, templates are grouped by industry category and cover common non-Zoho integrations:
+4. Under **Google**, templates are grouped by function:
+   - **Productivity**: Sheets, Docs, Slides, Drive, Calendar, Tasks, Contacts.
+   - **Communication**: Gmail, Chat, Meet.
+   - **Marketing**: Ads, Search Console, YouTube Data.
+   - **CRM**: Business Profile.
+   - **Analytics**: Google Analytics (GA4 Data API).
+   - **Developer**: Cloud Translation, Cloud Vision, Cloud Speech-to-Text, Cloud Text-to-Speech, Cloud Natural Language, Cloud Pub/Sub, Firebase Cloud Messaging.
+5. Under **Others**, templates are grouped by industry category:
    - **E-commerce**: Shopify, WooCommerce.
    - **Payments**: Stripe.
    - **Support**: Zendesk, Freshdesk, Intercom.
    - **CRM**: HubSpot, Salesforce.
    - **Communication**: Twilio, Slack.
    - **Marketing**: SendGrid, Mailchimp.
-   - **Productivity**: Google Sheets, Google Calendar, Calendly, Notion.
-5. Pick one. You land on the New connector page with the fields prefilled.
-6. For Zoho templates, register a client on the [Zoho API Console](https://api-console.zoho.com/) for the same data center you use, and paste the **Client ID** and **Client Secret** into the form. For non-Zoho templates, follow the linked docs to mint the credentials the connector needs.
-7. **Data center for Zoho**: swap the `.com` suffix on both the token URL and the base URL if your Zoho org is in another region: `.in`, `.eu`, `.com.au`, `.jp`, `.com.cn`, or `.ca`.
-8. **Scopes**: the template ships with a minimum set. Add more if a tool needs them; keep the list tight so client-secret leaks have limited blast radius.
-9. Click **Save**.
+   - **Productivity**: Calendly, Notion.
+6. Pick one. You land on the New connector page with the fields prefilled.
+7. Mint credentials for the target API:
+   - **Zoho** templates: register a client on the [Zoho API Console](https://api-console.zoho.com/) for your data center, then paste the **Client ID** and **Client Secret**.
+   - **Google** templates: create a project on [Google Cloud Console](https://console.cloud.google.com/), enable the specific API for the product you picked, create an OAuth 2.0 client, and paste its **Client ID** and **Client Secret**.
+   - **Others**: follow the linked docs on the template card to mint the credentials the connector needs (usually an API key or an OAuth client).
+8. **Data center for Zoho**: swap the `.com` suffix on both the token URL and the base URL if your Zoho org is in another region: `.in`, `.eu`, `.com.au`, `.jp`, `.com.cn`, or `.ca`.
+9. **Scopes**: each template ships with a minimum set. Add more if a tool needs them; keep the list tight so client-secret leaks have limited blast radius.
+10. Click **Save**.
 
 ### Zoho region cheatsheet
 

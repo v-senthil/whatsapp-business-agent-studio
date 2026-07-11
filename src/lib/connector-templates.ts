@@ -1,6 +1,6 @@
 import type { ConnectorInput } from "@/lib/schemas/connector";
 
-export type ConnectorVendor = "zoho" | "other";
+export type ConnectorVendor = "zoho" | "google" | "other";
 
 export interface ConnectorTemplate {
   slug: string;
@@ -59,6 +59,47 @@ function zoho(
       auth_config: {
         oauth2_client_credentials: {
           token_url: ZOHO_TOKEN_URL_COM,
+          scopes_to_request: scopes,
+          client_id: "",
+          client_secret: "",
+          token_request_content_type: "application/x-www-form-urlencoded",
+        },
+      },
+    },
+  };
+}
+
+// Google APIs share the same OAuth 2.0 token endpoint. Scopes are URL-shaped
+// (https://www.googleapis.com/auth/<name>) unless the product explicitly uses
+// a bare scope name.
+const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
+
+function google(
+  slug: string,
+  label: string,
+  category: ConnectorTemplate["category"],
+  base_url: string,
+  scopes: string[],
+  description: string,
+  iconGlyph: string,
+  docs: string,
+): ConnectorTemplate {
+  return {
+    slug,
+    label,
+    description,
+    iconGlyph,
+    vendor: "google",
+    category,
+    docs,
+    input: {
+      name: label,
+      description,
+      base_url,
+      auth_type: "OAUTH2_CLIENT_CREDENTIALS",
+      auth_config: {
+        oauth2_client_credentials: {
+          token_url: GOOGLE_TOKEN_URL,
           scopes_to_request: scopes,
           client_id: "",
           client_secret: "",
@@ -582,6 +623,256 @@ const TEMPLATES: ConnectorTemplate[] = [
     "https://www.zoho.com/meeting/api/",
   ),
 
+  // ==== Google product family ==========================================
+  // All Google APIs use a shared OAuth 2.0 endpoint. Scopes are URL-shaped
+  // by convention. Register a client on the Google Cloud Console, enable
+  // the relevant API for the project, and paste the client id and secret
+  // into the connector form.
+
+  // ---- Productivity ----------------------------------------------------
+  google(
+    "google-sheets",
+    "Google Sheets",
+    "Productivity",
+    "https://sheets.googleapis.com/v4",
+    ["https://www.googleapis.com/auth/spreadsheets"],
+    "Read and write ranges on Google Sheets. Useful as a lightweight datastore or lookup table.",
+    "GS",
+    "https://developers.google.com/sheets/api/reference/rest",
+  ),
+  google(
+    "google-docs",
+    "Google Docs",
+    "Productivity",
+    "https://docs.googleapis.com/v1",
+    ["https://www.googleapis.com/auth/documents"],
+    "Create and edit Google Docs, apply structural edits, and read document content.",
+    "GD",
+    "https://developers.google.com/docs/api/reference/rest",
+  ),
+  google(
+    "google-slides",
+    "Google Slides",
+    "Productivity",
+    "https://slides.googleapis.com/v1",
+    ["https://www.googleapis.com/auth/presentations"],
+    "Create and edit Google Slides presentations.",
+    "GP",
+    "https://developers.google.com/slides/api/reference/rest",
+  ),
+  google(
+    "google-drive",
+    "Google Drive",
+    "Productivity",
+    "https://www.googleapis.com/drive/v3",
+    ["https://www.googleapis.com/auth/drive"],
+    "Manage files and folders on Google Drive: upload, download, share, search.",
+    "GV",
+    "https://developers.google.com/drive/api/reference/rest/v3",
+  ),
+  google(
+    "google-calendar",
+    "Google Calendar",
+    "Productivity",
+    "https://www.googleapis.com/calendar/v3",
+    ["https://www.googleapis.com/auth/calendar"],
+    "Read availability and create events on Google Calendar.",
+    "GC",
+    "https://developers.google.com/calendar/api/v3/reference",
+  ),
+  google(
+    "google-tasks",
+    "Google Tasks",
+    "Productivity",
+    "https://tasks.googleapis.com/tasks/v1",
+    ["https://www.googleapis.com/auth/tasks"],
+    "Read and mutate task lists and tasks on Google Tasks.",
+    "GT",
+    "https://developers.google.com/tasks/reference/rest",
+  ),
+  google(
+    "google-people",
+    "Google Contacts",
+    "Productivity",
+    "https://people.googleapis.com/v1",
+    ["https://www.googleapis.com/auth/contacts"],
+    "Read and manage contacts on Google (People API).",
+    "GO",
+    "https://developers.google.com/people/api/rest",
+  ),
+
+  // ---- Communication --------------------------------------------------
+  google(
+    "gmail",
+    "Gmail",
+    "Communication",
+    "https://gmail.googleapis.com/gmail/v1",
+    [
+      "https://www.googleapis.com/auth/gmail.modify",
+      "https://www.googleapis.com/auth/gmail.send",
+    ],
+    "Send and read email, manage labels and threads on Gmail.",
+    "GM",
+    "https://developers.google.com/gmail/api/reference/rest",
+  ),
+  google(
+    "google-chat",
+    "Google Chat",
+    "Communication",
+    "https://chat.googleapis.com/v1",
+    [
+      "https://www.googleapis.com/auth/chat.messages",
+      "https://www.googleapis.com/auth/chat.spaces",
+    ],
+    "Post messages to spaces and read chat data on Google Chat.",
+    "GH",
+    "https://developers.google.com/workspace/chat/api/reference/rest",
+  ),
+  google(
+    "google-meet",
+    "Google Meet",
+    "Communication",
+    "https://meet.googleapis.com/v2",
+    [
+      "https://www.googleapis.com/auth/meetings.space.created",
+      "https://www.googleapis.com/auth/meetings.space.readonly",
+    ],
+    "Create and read Google Meet meeting spaces and conference records.",
+    "GE",
+    "https://developers.google.com/meet/api/reference/rest",
+  ),
+
+  // ---- Marketing ------------------------------------------------------
+  google(
+    "google-ads",
+    "Google Ads",
+    "Marketing",
+    "https://googleads.googleapis.com/v16",
+    ["https://www.googleapis.com/auth/adwords"],
+    "Query and mutate Google Ads campaigns, ad groups, keywords, and reports.",
+    "GA",
+    "https://developers.google.com/google-ads/api/reference/rpc",
+  ),
+  google(
+    "google-search-console",
+    "Google Search Console",
+    "Marketing",
+    "https://searchconsole.googleapis.com/v1",
+    ["https://www.googleapis.com/auth/webmasters.readonly"],
+    "Read site verification, indexing status, and search analytics for your properties.",
+    "GK",
+    "https://developers.google.com/webmaster-tools/v1/api_reference_index",
+  ),
+  google(
+    "youtube-data",
+    "YouTube Data",
+    "Marketing",
+    "https://www.googleapis.com/youtube/v3",
+    [
+      "https://www.googleapis.com/auth/youtube",
+      "https://www.googleapis.com/auth/youtube.readonly",
+    ],
+    "Read and mutate videos, playlists, channels, and comments on YouTube.",
+    "YT",
+    "https://developers.google.com/youtube/v3/docs",
+  ),
+
+  // ---- CRM ------------------------------------------------------------
+  google(
+    "google-business-profile",
+    "Google Business Profile",
+    "CRM",
+    "https://mybusinessbusinessinformation.googleapis.com/v1",
+    ["https://www.googleapis.com/auth/business.manage"],
+    "Manage business locations, hours, and posts on Google Business Profile (formerly My Business).",
+    "GB",
+    "https://developers.google.com/my-business",
+  ),
+
+  // ---- Analytics ------------------------------------------------------
+  google(
+    "google-analytics",
+    "Google Analytics",
+    "Analytics",
+    "https://analyticsdata.googleapis.com/v1beta",
+    ["https://www.googleapis.com/auth/analytics.readonly"],
+    "Run reports against GA4 properties via the Google Analytics Data API.",
+    "GY",
+    "https://developers.google.com/analytics/devguides/reporting/data/v1/rest",
+  ),
+
+  // ---- Developer (Cloud APIs) -----------------------------------------
+  google(
+    "google-translate",
+    "Google Cloud Translation",
+    "Developer",
+    "https://translation.googleapis.com/v3",
+    ["https://www.googleapis.com/auth/cloud-translation"],
+    "Translate text and detect language on Google Cloud Translation.",
+    "GX",
+    "https://cloud.google.com/translate/docs/reference/rest",
+  ),
+  google(
+    "google-vision",
+    "Google Cloud Vision",
+    "Developer",
+    "https://vision.googleapis.com/v1",
+    ["https://www.googleapis.com/auth/cloud-vision"],
+    "Detect labels, faces, text, and objects in images on Google Cloud Vision.",
+    "GN",
+    "https://cloud.google.com/vision/docs/reference/rest",
+  ),
+  google(
+    "google-speech-to-text",
+    "Google Cloud Speech-to-Text",
+    "Developer",
+    "https://speech.googleapis.com/v1",
+    ["https://www.googleapis.com/auth/cloud-platform"],
+    "Transcribe audio on Google Cloud Speech-to-Text.",
+    "GQ",
+    "https://cloud.google.com/speech-to-text/docs/reference/rest",
+  ),
+  google(
+    "google-text-to-speech",
+    "Google Cloud Text-to-Speech",
+    "Developer",
+    "https://texttospeech.googleapis.com/v1",
+    ["https://www.googleapis.com/auth/cloud-platform"],
+    "Synthesize speech from text on Google Cloud Text-to-Speech.",
+    "GZ",
+    "https://cloud.google.com/text-to-speech/docs/reference/rest",
+  ),
+  google(
+    "google-natural-language",
+    "Google Cloud Natural Language",
+    "Developer",
+    "https://language.googleapis.com/v1",
+    ["https://www.googleapis.com/auth/cloud-language"],
+    "Analyze sentiment, entities, and syntax on Google Cloud Natural Language.",
+    "GL",
+    "https://cloud.google.com/natural-language/docs/reference/rest",
+  ),
+  google(
+    "google-pubsub",
+    "Google Cloud Pub/Sub",
+    "Developer",
+    "https://pubsub.googleapis.com/v1",
+    ["https://www.googleapis.com/auth/pubsub"],
+    "Publish and subscribe to topics on Google Cloud Pub/Sub.",
+    "GU",
+    "https://cloud.google.com/pubsub/docs/reference/rest",
+  ),
+  google(
+    "firebase-cloud-messaging",
+    "Firebase Cloud Messaging",
+    "Developer",
+    "https://fcm.googleapis.com/v1",
+    ["https://www.googleapis.com/auth/firebase.messaging"],
+    "Send push notifications to iOS, Android, and web via Firebase Cloud Messaging.",
+    "FB",
+    "https://firebase.google.com/docs/reference/fcm/rest",
+  ),
+
   // ==== Universally available third-party templates =====================
   // Vendor: "other". Kept for teams that mix Zoho and non-Zoho tools. The
   // picker defaults to Zoho-only; users flip to "Others" or "All" to see
@@ -870,54 +1161,6 @@ const TEMPLATES: ConnectorTemplate[] = [
   },
 
   // ---- Productivity ---------------------------------------------------
-  {
-    slug: "google-sheets",
-    label: "Google Sheets",
-    description: "Read and write spreadsheet data via the Sheets API.",
-    iconGlyph: "GS",
-    vendor: "other",
-    category: "Productivity",
-    docs: "https://developers.google.com/sheets/api/reference/rest",
-    input: {
-      name: "Google Sheets",
-      description: "Read and write ranges on Google Sheets.",
-      base_url: "https://sheets.googleapis.com/v4",
-      auth_type: "OAUTH2_CLIENT_CREDENTIALS",
-      auth_config: {
-        oauth2_client_credentials: {
-          token_url: "https://oauth2.googleapis.com/token",
-          scopes_to_request: ["https://www.googleapis.com/auth/spreadsheets"],
-          client_id: "",
-          client_secret: "",
-          token_request_content_type: "application/x-www-form-urlencoded",
-        },
-      },
-    },
-  },
-  {
-    slug: "google-calendar",
-    label: "Google Calendar",
-    description: "List free/busy, create events on Google Calendar.",
-    iconGlyph: "GC",
-    vendor: "other",
-    category: "Productivity",
-    docs: "https://developers.google.com/calendar/api",
-    input: {
-      name: "Google Calendar",
-      description: "Read availability and create events on Google Calendar.",
-      base_url: "https://www.googleapis.com/calendar/v3",
-      auth_type: "OAUTH2_CLIENT_CREDENTIALS",
-      auth_config: {
-        oauth2_client_credentials: {
-          token_url: "https://oauth2.googleapis.com/token",
-          scopes_to_request: ["https://www.googleapis.com/auth/calendar"],
-          client_id: "",
-          client_secret: "",
-          token_request_content_type: "application/x-www-form-urlencoded",
-        },
-      },
-    },
-  },
   {
     slug: "calendly",
     label: "Calendly",

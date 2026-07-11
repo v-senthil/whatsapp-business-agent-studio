@@ -25,6 +25,7 @@ type VendorFilter = ConnectorVendor | "all";
 
 const FILTERS: { value: VendorFilter; label: string; description: string }[] = [
   { value: "zoho", label: "Zoho", description: "Every Zoho product with a documented API" },
+  { value: "google", label: "Google", description: "Workspace, Marketing, and Cloud APIs from Google" },
   { value: "other", label: "Others", description: "Universally available third-party APIs" },
   { value: "all", label: "All", description: "Everything, grouped by vendor" },
 ];
@@ -51,6 +52,7 @@ export function ConnectorTemplatesDialog({ entityId }: Props) {
   const counts = React.useMemo(
     () => ({
       zoho: all.filter((t) => t.vendor === "zoho").length,
+      google: all.filter((t) => t.vendor === "google").length,
       other: all.filter((t) => t.vendor === "other").length,
       all: all.length,
     }),
@@ -60,9 +62,11 @@ export function ConnectorTemplatesDialog({ entityId }: Props) {
   const grouped = React.useMemo(() => {
     const source = filter === "all" ? all : all.filter((t) => t.vendor === filter);
     if (filter === "all") {
-      // Group by vendor first, then by category. This keeps Zoho above Others.
+      // Group by vendor first, then by category. Ordering below controls the
+      // visual order Zoho -> Google -> Others.
       const byVendor: Record<ConnectorVendor, Record<string, typeof source>> = {
         zoho: {},
+        google: {},
         other: {},
       };
       for (const t of source) {
@@ -176,16 +180,15 @@ export function ConnectorTemplatesDialog({ entityId }: Props) {
         <ScrollArea className="max-h-[60vh] pr-3">
           {filter === "all" ? (
             <div className="space-y-6">
-              {(["zoho", "other"] as const).map((vendor) => {
+              {(["zoho", "google", "other"] as const).map((vendor) => {
                 const groups = (grouped as Record<ConnectorVendor, Record<string, typeof all>>)[vendor];
                 const entries = Object.entries(groups);
                 if (entries.length === 0) return null;
+                const heading = vendor === "zoho" ? "Zoho" : vendor === "google" ? "Google" : "Others";
                 return (
                   <div key={vendor} className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <div className="text-sm font-semibold">
-                        {vendor === "zoho" ? "Zoho" : "Others"}
-                      </div>
+                      <div className="text-sm font-semibold">{heading}</div>
                       <div className="h-px flex-1 bg-border" />
                       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
                         {counts[vendor]} templates

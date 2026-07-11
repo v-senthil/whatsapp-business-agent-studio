@@ -171,7 +171,7 @@ function Features() {
       "Author skills as prompts, wire connectors to your APIs, and expose them as tools the agent can call. Everything is versioned in JSON so you can export a config and reproduce a workspace anywhere.",
     bullets: [
       "22 curated skill templates across five categories",
-      "48 Zoho product connectors, prefilled with OAuth scopes",
+      "84 connector templates: Zoho, Google, and universally available APIs",
       "Path / query / header / body params typed end-to-end",
       "Every config exportable as versioned JSON",
     ],
@@ -308,7 +308,7 @@ function Workflow() {
       icon: Zap,
       title: "Configure skills, knowledge, connectors",
       body:
-        "Author skills, upload knowledge, wire connectors to your existing APIs (with 48 Zoho product templates ready to go), or import a config JSON you already have.",
+        "Author skills, upload knowledge, wire connectors to your existing APIs (with 48 Zoho and 22 Google product templates ready to go), or import a config JSON you already have.",
     },
     {
       n: "04",
@@ -386,7 +386,7 @@ function PlatformDeepDive() {
           title="Reusable building blocks"
           points={[
             "22 skill templates across Onboarding, Support, Sales, Escalation, and Utility.",
-            "48 Zoho product connectors: CRM, Desk, Books, Inventory, Campaigns, Bookings, SalesIQ, Sign, Mail, Cliq, Analytics, Creator, and more.",
+            "84 connector templates: 48 Zoho products, 22 Google APIs (Workspace, Ads, Cloud), and 14 universally available services.",
             "CSV import / export for skills, FAQs, websites, allowlist.",
             "Save any chat as a scenario, replay them as regression tests.",
           ]}
