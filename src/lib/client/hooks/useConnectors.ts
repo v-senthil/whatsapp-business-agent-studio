@@ -26,7 +26,15 @@ export function useCreateConnector(entityId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: unknown) => fetcher<Connector>(metaUrl(entityId, "agent_connectors"), { method: "POST", json: body }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: qk.connectors(entityId) }),
+    onSuccess: (created) => {
+      // Optimistic list update: prepend the created connector to the cached
+      // list so the /connectors page renders it on the first frame after
+      // navigation, before the background invalidation refetch resolves.
+      qc.setQueryData<Connector[] | undefined>(qk.connectors(entityId), (prev) =>
+        prev ? [created, ...prev] : [created],
+      );
+      qc.invalidateQueries({ queryKey: qk.connectors(entityId) });
+    },
   });
 }
 
@@ -45,7 +53,18 @@ export function useDeleteConnector(entityId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (connectorId: string) => fetcher(metaUrl(entityId, `agent_connectors/${connectorId}`), { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: qk.connectors(entityId) }),
+    onSuccess: (_data, connectorId) => {
+      // Remove immediately from the list cache so the /connectors page paints
+      // without the deleted item on the first frame after navigation.
+      qc.setQueryData<Connector[] | undefined>(qk.connectors(entityId), (prev) =>
+        prev ? prev.filter((c) => c.id !== connectorId) : prev,
+      );
+      // Drop the deleted item's own detail + tools caches so a stale return
+      // trip via back button does not briefly render the removed record.
+      qc.removeQueries({ queryKey: qk.connector(entityId, connectorId) });
+      qc.removeQueries({ queryKey: qk.tools(entityId, connectorId) });
+      qc.invalidateQueries({ queryKey: qk.connectors(entityId) });
+    },
   });
 }
 
@@ -102,7 +121,12 @@ export function useCreateTool(entityId: string, connectorId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: unknown) => fetcher<Tool>(metaUrl(entityId, `agent_connectors/${connectorId}/tools`), { method: "POST", json: body }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: qk.tools(entityId, connectorId) }),
+    onSuccess: (created) => {
+      qc.setQueryData<Tool[] | undefined>(qk.tools(entityId, connectorId), (prev) =>
+        prev ? [created, ...prev] : [created],
+      );
+      qc.invalidateQueries({ queryKey: qk.tools(entityId, connectorId) });
+    },
   });
 }
 
@@ -121,7 +145,13 @@ export function useDeleteTool(entityId: string, connectorId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (toolId: string) => fetcher(metaUrl(entityId, `agent_connectors/${connectorId}/tools/${toolId}`), { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: qk.tools(entityId, connectorId) }),
+    onSuccess: (_data, toolId) => {
+      qc.setQueryData<Tool[] | undefined>(qk.tools(entityId, connectorId), (prev) =>
+        prev ? prev.filter((t) => t.id !== toolId) : prev,
+      );
+      qc.removeQueries({ queryKey: qk.tool(entityId, connectorId, toolId) });
+      qc.invalidateQueries({ queryKey: qk.tools(entityId, connectorId) });
+    },
   });
 }
 
