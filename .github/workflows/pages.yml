@@ -1,0 +1,80 @@
+name: Deploy landing page to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "marketing/**"
+      - "src/components/marketing/**"
+      - "src/components/common/Logo.tsx"
+      - "src/components/common/CopyButton.tsx"
+      - "src/components/common/ThemeToggle.tsx"
+      - "src/components/ui/button.tsx"
+      - "src/components/ui/dropdown-menu.tsx"
+      - "src/components/providers/ThemeProvider.tsx"
+      - "src/components/ui/toaster.tsx"
+      - "src/lib/utils/cn.ts"
+      - "src/app/icon.svg"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            marketing/package-lock.json
+
+      # The marketing bundle imports React components from ../src, so the
+      # main app's node_modules must exist for the marketing build to
+      # resolve peer packages like react, next, and lucide-react.
+      - name: Install main deps
+        run: npm ci
+
+      - name: Install marketing deps
+        working-directory: marketing
+        run: npm ci
+
+      - name: Build static export
+        working-directory: marketing
+        env:
+          NEXT_PUBLIC_APP_URL: ${{ vars.APP_URL }}
+          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+        run: npm run build
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: marketing/out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
