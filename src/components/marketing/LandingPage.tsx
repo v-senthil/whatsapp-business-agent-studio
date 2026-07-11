@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { HeroPreview } from "@/components/marketing/HeroPreview";
 import { Logo } from "@/components/common/Logo";
+import { CopyButton } from "@/components/common/CopyButton";
 
 interface Props {
   authed: boolean;
@@ -130,6 +131,8 @@ function Hero({ primaryCtaHref, primaryCtaLabel }: { primaryCtaHref: string; pri
               Works with any OpenAI-compatible model
             </span>
           </div>
+
+          <QuickStart />
         </div>
 
         <div className="mt-16">
@@ -137,6 +140,44 @@ function Hero({ primaryCtaHref, primaryCtaLabel }: { primaryCtaHref: string; pri
         </div>
       </div>
     </section>
+  );
+}
+
+function QuickStart() {
+  const repoUrl = "https://github.com/v-senthil/whatsapp-business-agent-studio";
+  const cloneCmd = `git clone ${repoUrl}.git`;
+  const runCmd = "npm install && npm run dev";
+  return (
+    <div className="mx-auto mt-8 max-w-xl text-left">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+          Run it locally
+        </span>
+        <a
+          href={repoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <Github className="h-3.5 w-3.5" />
+          v-senthil/whatsapp-business-agent-studio
+        </a>
+      </div>
+      <div className="mt-2 space-y-2 rounded-xl border border-border bg-card p-2 shadow-sm">
+        <CommandRow value={cloneCmd} />
+        <CommandRow value={runCmd} />
+      </div>
+    </div>
+  );
+}
+
+function CommandRow({ value }: { value: string }) {
+  return (
+    <div className="flex items-center gap-2 rounded-md bg-muted/60 px-3 py-1.5">
+      <span className="select-none text-emerald-600 dark:text-emerald-400">$</span>
+      <code className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">{value}</code>
+      <CopyButton value={value} />
+    </div>
   );
 }
 
