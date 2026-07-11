@@ -7,11 +7,11 @@ import {
   Bell,
   BookOpen,
   BookText,
-  Bot,
   Clapperboard,
   ClipboardCheck,
   FileText,
   Globe,
+  Home,
   Info,
   Layers,
   ListChecks,
@@ -22,8 +22,10 @@ import {
   Settings,
   Sparkles,
   TerminalSquare,
+  Wand2,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { Logo } from "@/components/common/Logo";
 
 interface SidebarProps { entityId: string; }
 
@@ -46,6 +48,7 @@ function groups(entityId: string): NavGroup[] {
         { href: `${base}/settings`, label: "Settings", icon: Settings },
         { href: `${base}/business-info`, label: "Business info", icon: Info },
         { href: `${base}/skills`, label: "Skills", icon: Layers },
+        { href: `${base}/generate`, label: "Generate from doc", icon: Wand2 },
       ],
     },
     {
@@ -85,11 +88,12 @@ export function Sidebar({ entityId }: SidebarProps) {
   const pathname = usePathname();
   const nav = groups(entityId);
   const apiDocsActive = pathname?.startsWith("/api-docs");
+  const helpActive = pathname?.startsWith("/help");
   return (
     <aside className="hidden h-full w-60 shrink-0 flex-col border-r bg-muted/30 md:flex">
       <div className="flex h-14 shrink-0 items-center border-b px-4">
         <Link href="/dashboard" className="flex min-w-0 items-center gap-2">
-          <Bot className="h-5 w-5 shrink-0" />
+          <Logo size={22} />
           <span className="flex min-w-0 flex-col leading-tight">
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">WhatsApp Business</span>
             <span className="truncate text-sm font-semibold">Agent Studio</span>
@@ -97,6 +101,20 @@ export function Sidebar({ entityId }: SidebarProps) {
         </Link>
       </div>
       <nav className="flex flex-1 flex-col gap-4 overflow-y-auto px-3 py-4">
+        <ul className="space-y-0.5">
+          <li>
+            <Link
+              href="/home"
+              className={cn(
+                "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                pathname === "/home" && "bg-accent text-accent-foreground",
+              )}
+            >
+              <Home className="h-4 w-4" />
+              Home
+            </Link>
+          </li>
+        </ul>
         {nav.map((group) => (
           <div key={group.heading}>
             <div className="mb-1 px-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -127,7 +145,17 @@ export function Sidebar({ entityId }: SidebarProps) {
           </div>
         ))}
       </nav>
-      <div className="border-t p-3">
+      <div className="space-y-0.5 border-t p-3">
+        <Link
+          href="/help"
+          className={cn(
+            "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+            helpActive && "bg-accent text-accent-foreground",
+          )}
+        >
+          <BookOpen className="h-4 w-4" />
+          Help center
+        </Link>
         <Link
           href="/api-docs"
           className={cn(

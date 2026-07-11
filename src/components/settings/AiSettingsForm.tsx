@@ -41,7 +41,10 @@ export function AiSettingsForm() {
     if (ai.provider) setProvider(ai.provider);
     if (ai.baseUrl) setBaseUrl(ai.baseUrl);
     if (ai.model) setModel(ai.model);
-    setDirty(false);
+    // When nothing is persisted yet, the radio shows a default but the form
+    // is not really "clean" — treat it as dirty so the Save button is usable
+    // on first visit without requiring the user to re-click the current radio.
+    setDirty(!ai.provider);
     setClearKey(false);
     setApiKey("");
     setAvailableModels([]);

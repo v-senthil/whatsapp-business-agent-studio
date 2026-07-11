@@ -26,6 +26,17 @@ A visual builder for WhatsApp Business AI agents on the [Meta Business Agent Pla
 - **Connector templates library** — 8 prefilled shells (Shopify, Stripe, Zendesk, HubSpot, Salesforce, Twilio, SendGrid, Slack). Pick one, fill in credentials.
 - **Agent config JSON export / import** — bundle everything (settings, business info, skills, knowledge, allowlist, connectors + tools) into a single JSON, with optional credential strip. Reimport on another phone to promote staging → prod.
 
+### AI-assisted authoring
+
+- **AI provider settings** at `/settings/ai` — pick between the local Claude Agent SDK (uses your logged-in `claude` CLI, no key needed) or any OpenAI-compatible endpoint (OpenAI, Ollama, LM Studio, Together, …). Base URL + model + optional API key stored server-side in the encrypted session; browser only sees a `hasApiKey` flag. Includes a "Load models" button that hits `/v1/models` and a "Test connection" round-trip.
+- **Generate from document** — paste a Markdown/plain-text description of the business (or upload `.md`/`.markdown`/`.txt`), and the AI drafts:
+  - 3–10 **FAQs** extracted verbatim from the source,
+  - 2–6 **skills** with kebab-case titles, "When ..." trigger clauses, numbered action lists, and explicit human-handoff fallbacks,
+  - up to 5 **connector suggestions** mapped to the built-in template catalog by slug (with freeform proposals when no template fits).
+
+  Available in two places: `/settings/ai` (utility mode — preview + copy JSON), and `/dashboard/[entityId]/generate` (apply mode — per-item checkboxes + one-click creation against the current phone, plus deep-links into `connectors/new?template=<slug>`). PDF/DOCX inputs need conversion to Markdown first (pandoc, copy-paste from a reader, etc.).
+- **Draft a skill from intent** — on the skill creation flow, describe the intent in one sentence and the AI drafts the title/description/body against the configured provider.
+
 ### Testing & regression
 
 - **Scenario recording → replay** — save any test-chat conversation as a scenario; replay it later through `agent_test` and see original vs. current responses side-by-side with match/differs badges.
@@ -42,6 +53,13 @@ A visual builder for WhatsApp Business AI agents on the [Meta Business Agent Pla
 
 - **Connector health card** on each connector page — success rate (colored by threshold), total calls, p95 latency, failure count, top-5 failure patterns. Uses Meta's `/logs?include_stats=true&summary_only=true` over a 24-hour window.
 - **Live webhook receiver** at `POST /api/webhooks/meta` — HMAC-SHA256 signature verification against `META_APP_SECRET`, GET verification challenge, in-memory ring buffer (200), SSE stream to `/api/webhooks/stream`, live-updating UI at `/dashboard/[entityId]/webhooks` with text search + signed/unverified filter.
+
+### Marketing and help
+
+- **Public landing page** at `/` — full marketing site (hero, feature bento, workflow, platform deep-dive, FAQ, final CTA) shown to anyone. Session-aware nav: a single **Dashboard** button jumps signed-in visitors straight to `/home` and non-authed visitors to `/login`.
+- **In-app help center** at `/help` — every article in the `docs/` tree rendered as browsable help pages with a left sidebar, breadcrumbs, per-article prev/next pager, and internal link resolution. Backed by `react-markdown` + `remark-gfm` + `@tailwindcss/typography`; the sidebar and index are built from `docs/README.md` at request time so a Markdown edit is all it takes to add a new topic.
+- **Shared product mark** — `src/components/common/Logo.tsx` renders the same green-gradient speech-bubble sparkle used by the favicon (`src/app/icon.svg`) and Apple touch icon (`src/app/apple-icon.tsx`). Reused across login, dashboard sidebar, marketing nav/footer, and the chat mock.
+- **User-facing help library** in `docs/` — 37 Markdown files (Getting started, Configure, Ship, Advanced, Reference) with imperative step-by-step instructions and no developer internals; safe to lift into any static site generator later.
 
 ### Polish
 
@@ -60,6 +78,7 @@ A visual builder for WhatsApp Business AI agents on the [Meta Business Agent Pla
 - **next-themes** for dark mode
 - **papaparse** for CSV import/export
 - **Zudoku** (self-hosted, iframe-isolated) for the OpenAPI reference
+- **react-markdown** + **remark-gfm** + **@tailwindcss/typography** for the in-app help center
 - **sonner** for toasts, **lucide-react** for icons
 
 ## Setup
@@ -71,7 +90,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000), paste a Meta access token, then a business ID (or a phone number ID directly).
+Open [http://localhost:3000](http://localhost:3000) to hit the landing page, click **Dashboard** to jump to `/login`, paste a Meta access token, then a business ID (or a phone number ID directly). The in-app help center is at [/help](http://localhost:3000/help).
 
 ### Environment
 
@@ -141,6 +160,7 @@ Do **not** upload `.env.local`. `.gitignore` already excludes it; make sure your
 
 ## User flow
 
+0. **`/`** — public landing page. Signed-in visitors see a **Dashboard** button that jumps to `/home`; anyone else lands on `/login`. The marketing nav also links to the in-app **Docs** at `/help`, which is public.
 1. **`/login`** — paste an access token. Verified server-side against `GET /me` on the Graph API before the session cookie is issued.
 2. **`/home`** — paste your Meta business ID. WABAs are fetched, each with its phones. Persisted to session as `lastBusinessId`.
 3. **`/dashboard/[entityId]`** — pick a phone; the sidebar unlocks all configuration tabs for that phone. The onboarding checklist walks you through eligibility → agent → business info → skill → connector → rollout.
@@ -176,6 +196,11 @@ The browser never sees the access token — it's stored in an encrypted iron-ses
 ```
 src/
 ├── app/
+│   ├── page.tsx                          # public marketing landing page
+│   ├── icon.svg, apple-icon.tsx          # favicon (SVG) + dynamic Apple touch icon (PNG)
+│   ├── help/                             # in-app help center (renders docs/*.md)
+│   │   ├── page.tsx                      # index (cards grouped by section)
+│   │   └── [...slug]/page.tsx            # article route with prev/next + generateStaticParams
 │   ├── login/                            # token paste
 │   ├── home/                             # business → WABA → phone picker
 │   ├── api-docs/                         # Zudoku iframe wrapper
@@ -185,6 +210,7 @@ src/
 │   │   ├── settings/                     # rollout/handoff/followup/ai_audience
 │   │   ├── business-info/
 │   │   ├── skills/{page, new, [skillId]}/
+│   │   ├── generate/                     # AI-generated FAQs/skills/connectors from a doc
 │   │   ├── knowledge/{files, websites, faqs, allowlist}/
 │   │   ├── connectors/…/tools/…/run/     # connectors + health + tools + credentials + logs + runner
 │   │   ├── evals/{page, runs/[jobId]}/
@@ -194,14 +220,18 @@ src/
 │   │   ├── webhooks/                     # live SSE stream + filter
 │   │   ├── playground/                   # free-form API request builder
 │   │   └── thread-control/
+│   ├── settings/ai/                      # AI provider config + document generator (utility mode)
 │   └── api/
-│       ├── session/{route.ts, me/}       # POST=login, DELETE=logout, PATCH=lastEntityId/lastBusinessId/readOnly
+│       ├── session/{route.ts, me/}       # POST=login, DELETE=logout, PATCH=lastEntityId/lastBusinessId/readOnly/ai*
+│       ├── ai/{draft-skill, generate-from-document, list-models, test}/ # AI-assisted endpoints
 │       ├── graph/{wabas, phones, phone}/ # Meta Graph discovery
 │       ├── webhooks/{meta, stream}/      # incoming webhook + SSE feed
 │       └── meta/[...path]/               # catch-all proxy → api.facebook.com
 ├── components/
 │   ├── ui/                               # shadcn-style primitives (self-built)
 │   ├── shell/                            # AppShell, Sidebar, Header, Breadcrumbs, EntityPicker, ReadOnlyBanner
+│   ├── marketing/                        # LandingPage, MarketingNav, HeroPreview (used by src/app/page.tsx)
+│   ├── help/                             # HelpShell, HelpSidebar, DocContent (Markdown renderer)
 │   ├── dev/                              # DevDrawer + DevDrawerMount
 │   ├── home/                             # BusinessIdInput, WabaList, HomeContent
 │   ├── overview/                         # OnboardingChecklist
@@ -209,7 +239,7 @@ src/
 │   ├── skills/, knowledge/, connectors/, tools/, evals/, test/
 │   ├── scenarios/                        # ScenarioReplayDialog
 │   ├── events/                           # AgentEventRow
-│   ├── common/                           # FormField, LoadingButton, EmptyState, ErrorState, ConfirmDialog, JsonViewer, CopyButton, BulkImportDialog, ExportCsvButton, ThemeToggle
+│   ├── common/                           # Logo (product mark), FormField, LoadingButton, EmptyState, ErrorState, ConfirmDialog, JsonViewer, CopyButton, BulkImportDialog, ExportCsvButton, ThemeToggle
 │   └── providers/                        # QueryProvider, EntityProvider, ThemeProvider, ReadOnlySync
 ├── lib/
 │   ├── env.ts                            # zod-validated env
@@ -221,10 +251,12 @@ src/
 │   │   ├── query-keys.ts                 # centralized TanStack keys
 │   │   └── hooks/                        # useSettings, useSkills, useConnectors, useEvals, useAgentTest, useDiscovery, useSession, useAgentEvent, …
 │   ├── schemas/                          # one zod schema per resource
+│   ├── help-docs.ts                      # parses docs/README.md into the help center nav
 │   ├── skill-templates.ts                # curated skill library
 │   ├── connector-templates.ts            # curated connector library
 │   ├── scenarios.ts                      # localStorage CRUD for saved chats
 │   ├── webhook-store.ts                  # in-memory ring buffer for received webhooks
+│   ├── ai/{index, document-generator}.ts # provider abstraction (Claude CLI / OpenAI-compat) + doc → FAQ/skill/connector prompt
 │   ├── utils/{cn, csv, agent-config}.ts
 │   └── ...
 ├── types/                                # API response types
@@ -235,8 +267,15 @@ src/
 │   ├── openapi.{yaml,json}               # spec source + generated JSON
 │   ├── samples/                          # sample CSVs for bulk import
 │   └── vendor/zudoku/                    # self-hosted OpenAPI renderer
+├── docs/                                 # user-facing help articles (rendered at /help)
+│   ├── README.md                         # source of truth for the help center index + sidebar
+│   ├── getting-started/                  # 7 articles: intro → onboard first agent
+│   ├── configure/                        # 13 articles: settings, business info, skills, knowledge, connectors, tools, doc-generation
+│   ├── ship/                             # 7 articles: chat, scenarios, evals, events, thread control, webhooks, playground
+│   ├── advanced/                         # 6 articles: export/import, read-only, dev drawer, AI provider, API reference viewer, theming
+│   └── reference/                        # 3 articles: security, deployment, troubleshooting
 ├── start.sh                              # POSIX-only deploy entrypoint
-└── middleware.ts                         # gates /dashboard/*, /home, /api-docs
+└── middleware.ts                         # gates /dashboard/*, /home, /api-docs (/, /help, /login are public)
 ```
 
 ## Scripts
@@ -267,7 +306,9 @@ src/
 
 - **Add a resource:** create a zod schema in `src/lib/schemas/`, response type in `src/types/`, hooks in `src/lib/client/hooks/`, and pages under `src/app/dashboard/[entityId]/…`. Wire the sidebar in `src/components/shell/Sidebar.tsx`. Add the endpoint to `public/openapi.yaml`; `next build` regenerates `openapi.json`.
 - **Add a channel** (Messenger/Instagram/etc.): today onboarding is hardcoded to `whatsapp`. To open it up, restore the channel picker in `src/app/dashboard/[entityId]/onboarding/page.tsx` and adjust the guard that checks for an existing WhatsApp agent.
-- **Add a skill/connector template:** append to `src/lib/skill-templates.ts` or `src/lib/connector-templates.ts` — no other wiring needed.
+- **Add a skill/connector template:** append to `src/lib/skill-templates.ts` or `src/lib/connector-templates.ts` — no other wiring needed. New connector-template slugs are automatically included in the document-generator's suggestion catalog.
+- **Add a new AI provider:** extend the `AiConfig` discriminated union in `src/lib/ai/index.ts` and add a `run<Provider>` branch. Everything else (settings UI, doc generator, draft-skill) uses `runPrompt(cfg, prompt, system)` so no downstream changes are needed.
+- **Support PDF/DOCX in the doc generator:** currently the generator accepts Markdown/text only. To add binary parsing, install `pdf-parse` + `mammoth`, dispatch on file extension inside `src/app/api/ai/generate-from-document/route.ts`, and relax the `accept` list in `src/components/ai-generator/DocumentGenerator.tsx`.
 - **Swap the proxy target:** change `META_API_BASE` in `.env.local`. All requests still route through the catch-all.
 
 ## License

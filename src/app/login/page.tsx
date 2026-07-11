@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bot } from "lucide-react";
+import { Logo } from "@/components/common/Logo";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -47,8 +47,8 @@ export default function LoginPage() {
       </div>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <Bot className="h-6 w-6" />
+          <div className="mx-auto mb-2 flex items-center justify-center">
+            <Logo size={48} />
           </div>
           <CardTitle className="text-xl">WhatsApp Business Agent Studio</CardTitle>
           <CardDescription>Paste your Meta access token to continue</CardDescription>

@@ -50,6 +50,18 @@ All Agent Platform calls include `X-API-Version: 2.0.0` (added by the proxy). Au
 
 ## Feature-by-feature map
 
+### `/` — public landing page — `src/app/page.tsx`
+Previously redirected. Now renders `<LandingPage authed={…}>` (`src/components/marketing/LandingPage.tsx`). Session cookie is read only to pick the CTA target: authed → `/home`, otherwise → `/login`. Middleware does NOT gate `/`. Marketing components live in `src/components/marketing/` (`LandingPage`, `MarketingNav`, `HeroPreview`). Nav has a single primary CTA labeled **Dashboard** in both desktop and mobile viewports; do NOT re-add a separate "Sign in" ghost button, that duplication was intentionally removed.
+
+### `/help` — in-app help center
+`src/app/help/page.tsx` (index, cards grouped by section) and `src/app/help/[...slug]/page.tsx` (article with breadcrumbs + prev/next). Not gated by middleware. `src/lib/help-docs.ts` parses `docs/README.md` at request time as the source of truth — a `##`-header line becomes a section, and a `- [Label](path/file.md), description` line becomes an entry. Two module-level regexes; if the doc format changes, both must be adjusted (or the sidebar silently drops items). Result is memoized in-module for the lifetime of the process.
+
+`src/components/help/DocContent.tsx` is an RSC that runs `react-markdown` + `remark-gfm` and overrides `<a>` to (a) treat `http://`/`https://` as external with `target="_blank"`, and (b) resolve any relative `.md` link (including `../` traversal) to `/help/…` via a small `resolveRelative(basePath, target)` helper. All prose styling comes from the `@tailwindcss/typography` `prose` classes (registered in `tailwind.config.ts` next to `tailwindcss-animate`).
+
+`generateStaticParams` in the article route prerenders every doc at build time, so any newly-added file appears in production only after a rebuild.
+
+The `docs/` folder is **user-facing only**. Do NOT drop developer notes, API paths, source paths, or component names into it — the rewriter that produced the current 37 files is intentional. If you need internal notes, put them in this file or a design doc under `~/.claude/plans/`.
+
 ### `/login` — `src/app/login/page.tsx`
 Paste access token → `POST /api/session` → verifies against Graph `/me` → session saved. On success, redirects to `/home`. Everything else lives behind the middleware in `middleware.ts` matching `/dashboard/*` and `/home`.
 
@@ -78,6 +90,7 @@ Cards + monospace textareas. Full CRUD across `/skills`, `/skills/new`, `/skills
 - **Export CSV** — `<ExportCsvButton>` streams the current list as `skills.csv`.
 - **Import CSV** — `<BulkImportDialog>` with `skillSchema`; sample at `/samples/skills.csv`.
 - **Templates** — `<SkillTemplatesDialog>` (`src/lib/skill-templates.ts`) picks from 10 curated templates. Dedupes against existing skill titles (shows "Added" badge).
+- **Draft with AI** — on `/skills/new`, an intent textarea + button hits `POST /api/ai/draft-skill` and pre-fills the form. Requires an AI provider configured under `/settings/ai`.
 
 ### Knowledge (files, websites, FAQs, allowlist)
 Tabs in `src/app/dashboard/[entityId]/knowledge/layout.tsx`.
@@ -96,6 +109,33 @@ Sample CSVs live at `/public/samples/{skills,faqs,allowlist}.csv` — realistic 
 ### Skill templates + Connector templates
 - `src/lib/skill-templates.ts` — 10 curated skills across 5 categories (Onboarding, Support, Sales, Escalation, Utility). Add more by appending to the array — no other wiring needed.
 - `src/lib/connector-templates.ts` — 8 prefilled connector shells (Shopify, Stripe, Zendesk, HubSpot, Salesforce, Twilio, SendGrid, Slack). Each has a proper `ConnectorInput` with the right `auth_type` and empty-value scaffolds. Picker routes to `/connectors/new?template=<slug>` which the New page reads via `useSearchParams`.
+
+### AI provider config — `/settings/ai`
+`src/app/settings/ai/page.tsx` (server, session-gated) → `<AiSettingsForm>` (client) + `<DocumentGenerator />` (utility mode). Provider abstraction lives in `src/lib/ai/index.ts`:
+- **Claude Agent SDK** — spawns the local `claude` binary via `child_process.spawn` in `-p` (print) mode. No API key; uses whatever session `claude` was signed in with. Error taxonomy: `not_installed` (ENOENT), `auth` (stderr mentions login), `runtime` (non-zero exit).
+- **OpenAI-compatible** — plain `POST /chat/completions` against `baseUrl` with optional Bearer auth. Works with OpenAI, Ollama, LM Studio, Together, Anthropic-via-proxy, etc.
+
+`readAiConfig(session)` returns `null` if `session.aiProvider` isn't set — every AI route hard-fails with a 400 "AI not configured" when that's the case. Client reads the config via `useSession()` (`data.ai.hasApiKey` is boolean; the actual key is never sent to the browser).
+
+**UX gotcha (fixed):** `<AiSettingsForm>` defaults the Claude radio locally; when the session has no `ai.provider` yet, the effect sets `dirty=true` so Save is immediately usable — otherwise the pre-selected radio looks "already configured" but nothing is persisted. `<DocumentGenerator>` derives `aiConfigured` from `useSession()` (not a prop), so the "not configured" banner clears the instant Save succeeds. Do NOT re-introduce a static prop for this.
+
+Related client hooks: `useSession()` returns `{ ai: { provider, baseUrl, model, hasApiKey } }`; PATCH payload uses `aiProvider|aiBaseUrl|aiApiKey|aiModel` (nullable to clear).
+
+### AI-assisted endpoints (`src/app/api/ai/`)
+Four routes, all Node runtime, all read `readAiConfig(session)` first:
+- `POST /api/ai/test` — one-shot ping to prove the provider works; returns `{ ok, provider, sample }`. Wired to the "Test connection" button in `<AiSettingsForm>`.
+- `POST /api/ai/list-models` — hits `${baseUrl}/models` for OpenAI-compatible endpoints and returns a string array. Not used for Claude (there's no equivalent).
+- `POST /api/ai/draft-skill` — takes `{ intent }`, returns `{ draft: { title, description, skill } }`. System prompt in the route enforces kebab-case title + trigger/actions/fallback structure. Robust JSON extraction (strips code fences, retries with `{…}` slice) since providers don't reliably honor JSON-only instructions.
+- `POST /api/ai/generate-from-document` — takes `{ text }`, returns `{ bundle: { faqs, skills, connectors } }`. Delegates to `generateFromText()` in `src/lib/ai/document-generator.ts`; text is clipped at 40k chars; the system prompt embeds the current `connectorTemplates()` catalog so the model biases toward known slugs. Post-parse normalization filters incomplete entries and coerces unknown slugs to `null` (freeform suggestion).
+
+Error codes flow through `AiFailure`: `not_configured` (400), `not_installed` (400 — Claude CLI missing), `auth` (400), `network` (502), `invalid_response` (502), `runtime` (502).
+
+### Generate-from-document flow
+Two mounting points, same `<DocumentGenerator>` component:
+- **Utility mode:** on `/settings/ai`, no `entityId` prop → shows preview cards + a "Copy JSON" button, no apply buttons.
+- **Apply mode:** on `/dashboard/[entityId]/generate` (sidebar item "Generate from doc", `Wand2` icon, under "Configure"), passes the current `entityId` → per-item checkboxes appear, plus a "Create N selected" button that sequentially fires `useCreateFaq` + `useCreateSkill` mutations (each write invalidates its list key). Connector cards deep-link to `/connectors/new?template=<slug>` when the AI matched a known template; freeform suggestions link to `/connectors/new` (blank).
+
+File input accepts `.md`/`.markdown`/`.txt` only, 2 MB cap, read via `FileReader.readAsText`. PDF/DOCX not supported — users are told to convert via pandoc first. Do NOT add server-side binary parsing without also adding `pdf-parse`/`mammoth` (currently intentional omission, see README "Extending").
 
 ### Agent config JSON export / import
 `src/lib/utils/agent-config.ts` + `src/components/config/AgentConfigActions.tsx`. Buttons on the entity overview header.
@@ -158,6 +198,8 @@ Small form posting to `/business/whatsapp/phone_numbers/{entity_id}/thread_contr
 ### API reference (`/api-docs`)
 `src/app/api-docs/page.tsx` (server, session-gated) → `ApiDocsClient.tsx` (client) → `<iframe src="/vendor/zudoku/docs.html">`. Zudoku runs **in the iframe**, not directly inside Next's React tree. Everything else in `public/vendor/zudoku/` is Zudoku's self-hosted standalone bundle (`main.js` loader + ~180 chunks + `zudoku.css`).
 
+**Iframe body background (light-mode fix):** `docs.html`'s inline `<style>` must set `html, body { background: #ffffff }` for light and `html.dark { background: #0a0a0a }` for dark. The original bundle hard-coded `#0a0a0a` for both, which showed through Zudoku's light-mode surfaces and rendered the page unreadable in light mode. If you ever re-vendor Zudoku, re-apply this two-line override.
+
 **Why iframe?** Zudoku's standalone bundle assumes it owns the page: it sets `basename: window.location.pathname`, injects its own React root, and reads `<title>` for the site header. When we tried to embed it directly under a Next-rendered page, it stalled in a mobile-collapsed layout (empty content area, "Menu" button only) because the parent layout + basename/route mismatch broke its router. Iframing gives Zudoku a clean top-level document (`/vendor/zudoku/docs.html`) — its basename is that path, the URL is a match, and there are no parent styles fighting it.
 
 **Theme sync.** `ApiDocsClient.tsx` uses `useTheme()` from `next-themes` and, on load and on theme change, sets/removes the `dark` class on the iframe document's `<html>`. Same-origin so this works. Zudoku's built-in dark-mode CSS then flips.
@@ -187,6 +229,8 @@ Session field `readOnly?: boolean`. `PATCH /api/session` accepts it; `GET /api/s
 
 ## Conventions
 
+- **Product logo mark.** `src/components/common/Logo.tsx` is the canonical SVG (same design as `src/app/icon.svg`: WhatsApp-green gradient rounded square, white speech bubble with tail, dark-green sparkle inside). Use it everywhere the product mark appears (login, sidebar, marketing nav, marketing footer, chat mock). Do NOT re-inline the old Bot-in-circle badge. The Apple touch icon is generated dynamically at `src/app/apple-icon.tsx` via `next/og` `ImageResponse` because Next only accepts raster for `apple-icon`; keep it visually aligned with the SVG.
+- **No em-dashes in UI copy or docs.** Use commas, colons, or split into sentences. Applies to landing page, help center pages, docs/*.md files, and any user-visible strings. Enforced by grep in review.
 - **Every form** uses `react-hook-form` + `@hookform/resolvers/zod`. Schemas colocated in `src/lib/schemas/`. Types inferred via `z.infer<typeof …>`.
 - **Every list hook** normalizes the API response — Meta returns bare arrays sometimes and `{ data: [...] }` other times. Grep for `toArray` in `src/lib/client/hooks/` for the pattern.
 - **Every mutation** invalidates its list key and, where applicable, the parent (e.g. creating a tool invalidates `qk.tools(entityId, connectorId)` and `qk.connector(...)`).
@@ -205,6 +249,11 @@ Session field `readOnly?: boolean`. `PATCH /api/session` accepts it; `GET /api/s
 - **`request_definition.body.params`** are stored as records in the API but edited as arrays in the form. `toolFromApi` / `toolToApi` bridge that.
 - The `RequiredParamsPicker` `useEffect` prunes stale entries — do not remove it; without it, renaming a param leaves a dangling name in `required`.
 - **AppShell layout has been tuned for the chat page.** `h-screen overflow-hidden` at the root; only `main` scrolls. Changing this affects every page.
+- **AI Settings pre-selected radio bug.** `<AiSettingsForm>` shows Claude Agent SDK selected by default before any save. If you rework the effect that reads `useSession().ai`, keep `setDirty(!ai.provider)` — without it, the Save button is greyed out and users cannot persist the pre-selected provider (leaving Test button + doc generator stuck at "not configured").
+- **Zudoku iframe background.** See "API reference" section — the light-mode fix in `docs.html` is a manual re-application when re-vendoring the bundle.
+- **Help center depends on `docs/README.md` formatting.** The parser in `src/lib/help-docs.ts` matches `## Section` lines for section labels and `- [Label](path/file.md), description` lines for entries. If a doc rewriter changes either shape, the `/help` sidebar and index silently drop entries. Verify the sidebar renders every article after any bulk rewrite. When adding a new article, add both the file AND a link line under the right section in `docs/README.md`; nothing else registers it.
+- **`react-markdown` component overrides.** `DocContent.tsx` overrides `<a>` to resolve `.md` links relative to `basePath` (the current article's slug). If you add another custom renderer, be aware that RSCs cannot use hooks — keep it pure or split into a client subtree.
+- **Landing page nav has a single CTA.** Marketing nav shows only the **Dashboard** button (label is fixed; href toggles between `/home` and `/login` on session). Do NOT re-add a separate "Sign in" ghost button; both used to point at the same destination and users complained.
 
 ## Scripts
 
@@ -233,6 +282,10 @@ Session field `readOnly?: boolean`. `PATCH /api/session` accepts it; `GET /api/s
 - `src/lib/client/query-keys.ts` — the source of truth for cache invalidation
 - `src/lib/client/fetcher.ts` — client fetch, read-only guard, dev-drawer instrumentation, MetaApiError
 - `src/lib/client/api-log.ts` — dev drawer ring buffer and cURL export
+- `src/lib/ai/index.ts` + `src/lib/ai/document-generator.ts` — provider abstraction and the doc → FAQ/skill/connector prompt pipeline
+- `src/lib/help-docs.ts` — help center parser (drives the `/help` sidebar from `docs/README.md`)
+- `src/components/marketing/LandingPage.tsx` — public landing shell + sections
+- `src/components/common/Logo.tsx` + `src/app/icon.svg` + `src/app/apple-icon.tsx` — the product mark trio; keep visually aligned
 
 ## Plan file
 

@@ -1,0 +1,84 @@
+import { promises as fs } from "node:fs";
+import path from "node:path";
+
+export interface DocEntry {
+  slug: string;
+  href: string;
+  label: string;
+  description: string;
+  file: string;
+}
+
+export interface DocSection {
+  label: string;
+  entries: DocEntry[];
+}
+
+const DOCS_DIR = path.join(process.cwd(), "docs");
+const INDEX_FILE = path.join(DOCS_DIR, "README.md");
+
+let cache: { sections: DocSection[]; flat: DocEntry[] } | null = null;
+
+async function loadIndex() {
+  if (cache) return cache;
+  const raw = await fs.readFile(INDEX_FILE, "utf8");
+  const sections: DocSection[] = [];
+  const flat: DocEntry[] = [];
+  let current: DocSection | null = null;
+
+  const lines = raw.split("\n");
+  for (const line of lines) {
+    const secMatch = line.match(/^##\s+(.+?)\s*$/);
+    if (secMatch) {
+      current = { label: secMatch[1].trim(), entries: [] };
+      sections.push(current);
+      continue;
+    }
+    const itemMatch = line.match(/^\-\s+\[([^\]]+)\]\(([^)]+)\)(?:,\s*(.+?))?\s*$/);
+    if (itemMatch && current) {
+      const [, label, relPath, description] = itemMatch;
+      const slug = relPath.replace(/\.md$/i, "");
+      const entry: DocEntry = {
+        slug,
+        href: `/help/${slug}`,
+        label: label.trim(),
+        description: (description ?? "").trim(),
+        file: path.join(DOCS_DIR, relPath),
+      };
+      current.entries.push(entry);
+      flat.push(entry);
+    }
+  }
+  cache = { sections, flat };
+  return cache;
+}
+
+export async function listSections(): Promise<DocSection[]> {
+  return (await loadIndex()).sections;
+}
+
+export async function findEntry(slug: string): Promise<DocEntry | null> {
+  const { flat } = await loadIndex();
+  return flat.find((e) => e.slug === slug) ?? null;
+}
+
+export async function readIndexMarkdown(): Promise<string> {
+  return fs.readFile(INDEX_FILE, "utf8");
+}
+
+export async function readDocMarkdown(entry: DocEntry): Promise<string> {
+  return fs.readFile(entry.file, "utf8");
+}
+
+export async function neighbours(slug: string): Promise<{
+  prev: DocEntry | null;
+  next: DocEntry | null;
+}> {
+  const { flat } = await loadIndex();
+  const i = flat.findIndex((e) => e.slug === slug);
+  if (i < 0) return { prev: null, next: null };
+  return {
+    prev: i > 0 ? flat[i - 1] : null,
+    next: i < flat.length - 1 ? flat[i + 1] : null,
+  };
+}

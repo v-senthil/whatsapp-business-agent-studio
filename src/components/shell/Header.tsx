@@ -2,7 +2,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, Eye, EyeOff, LogOut, Sparkles, User } from "lucide-react";
+import { Check, Eye, EyeOff, LogOut, Settings as SettingsIcon, Sparkles, User } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,17 +53,13 @@ export function Header({ user, entityId }: HeaderProps) {
         <ThemeToggle />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="gap-2">
-              <User className="h-4 w-4" />
-              {user?.name ?? "Account"}
+            <Button variant="ghost" size="icon" aria-label="Settings">
+              <SettingsIcon className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>{user?.name ?? "Account"}</DropdownMenuLabel>
+            <DropdownMenuLabel>Settings</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/home">Change phone number</Link>
-            </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href="/settings/ai"><Sparkles className="h-4 w-4" /> AI assistant</Link>
             </DropdownMenuItem>
@@ -72,6 +68,17 @@ export function Header({ user, entityId }: HeaderProps) {
               <span className="flex-1">{readOnly ? "Enable writes" : "Read-only mode"}</span>
               {readOnly && <Check className="h-3.5 w-3.5" />}
             </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="gap-2">
+              <User className="h-4 w-4" />
+              {user?.name ?? "Account"}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>{user?.name ?? "Account"}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout} className="text-destructive">
               <LogOut className="h-4 w-4" /> Sign out
