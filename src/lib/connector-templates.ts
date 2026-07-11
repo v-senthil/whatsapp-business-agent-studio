@@ -1,10 +1,13 @@
 import type { ConnectorInput } from "@/lib/schemas/connector";
 
+export type ConnectorVendor = "zoho" | "other";
+
 export interface ConnectorTemplate {
   slug: string;
   label: string;
   description: string;
   iconGlyph: string;
+  vendor: ConnectorVendor;
   category:
     | "Sales & CRM"
     | "Support"
@@ -16,14 +19,18 @@ export interface ConnectorTemplate {
     | "Analytics"
     | "Developer"
     | "Sign & Contracts"
-    | "Events & Learning";
+    | "Events & Learning"
+    | "E-commerce"
+    | "CRM"
+    | "Payments"
+    | "Communication";
   docs?: string;
   input: ConnectorInput;
 }
 
-// All templates are Zoho products. They share one accounts server for token
-// issuance. Users switch the .com suffix on both the token URL and the base
-// URL to match their data center: .in, .eu, .com.au, .jp, .com.cn, or .ca.
+// Zoho templates share one accounts server for token issuance. Users switch
+// the .com suffix on both the token URL and the base URL to match their data
+// center: .in, .eu, .com.au, .jp, .com.cn, or .ca.
 const ZOHO_TOKEN_URL_COM = "https://accounts.zoho.com/oauth/v2/token";
 
 function zoho(
@@ -41,6 +48,7 @@ function zoho(
     label,
     description,
     iconGlyph,
+    vendor: "zoho",
     category,
     docs,
     input: {
@@ -573,6 +581,390 @@ const TEMPLATES: ConnectorTemplate[] = [
     "WB",
     "https://www.zoho.com/meeting/api/",
   ),
+
+  // ==== Universally available third-party templates =====================
+  // Vendor: "other". Kept for teams that mix Zoho and non-Zoho tools. The
+  // picker defaults to Zoho-only; users flip to "Others" or "All" to see
+  // these.
+
+  // ---- E-commerce ------------------------------------------------------
+  {
+    slug: "shopify",
+    label: "Shopify Admin API",
+    description: "Orders, products, and customers via Shopify Admin API.",
+    iconGlyph: "S",
+    vendor: "other",
+    category: "E-commerce",
+    docs: "https://shopify.dev/docs/api/admin",
+    input: {
+      name: "Shopify",
+      description: "Query orders, products, and customers from a Shopify store.",
+      base_url: "https://YOUR-STORE.myshopify.com/admin/api/2024-10",
+      auth_type: "API_KEY",
+      auth_config: {
+        api_key: {
+          headers: [{ field_name: "X-Shopify-Access-Token", value: "", prefix: "" }],
+          query_params: [],
+          body_params: [],
+        },
+      },
+    },
+  },
+  {
+    slug: "woocommerce",
+    label: "WooCommerce",
+    description: "Orders, products, and customers on a WooCommerce store.",
+    iconGlyph: "W",
+    vendor: "other",
+    category: "E-commerce",
+    docs: "https://woocommerce.github.io/woocommerce-rest-api-docs/",
+    input: {
+      name: "WooCommerce",
+      description: "Query orders, products, and customers from a WooCommerce store.",
+      base_url: "https://YOUR-STORE.com/wp-json/wc/v3",
+      auth_type: "API_KEY",
+      auth_config: {
+        api_key: {
+          headers: [{ field_name: "Authorization", value: "", prefix: "Basic " }],
+          query_params: [],
+          body_params: [],
+        },
+      },
+    },
+  },
+
+  // ---- Payments --------------------------------------------------------
+  {
+    slug: "stripe",
+    label: "Stripe",
+    description: "Charges, customers, subscriptions, refunds.",
+    iconGlyph: "$",
+    vendor: "other",
+    category: "Payments",
+    docs: "https://stripe.com/docs/api",
+    input: {
+      name: "Stripe",
+      description: "Look up customers, charges, subscriptions, and issue refunds.",
+      base_url: "https://api.stripe.com/v1",
+      auth_type: "API_KEY",
+      auth_config: {
+        api_key: {
+          headers: [{ field_name: "Authorization", value: "", prefix: "Bearer " }],
+          query_params: [],
+          body_params: [],
+        },
+      },
+    },
+  },
+
+  // ---- Support ---------------------------------------------------------
+  {
+    slug: "zendesk",
+    label: "Zendesk Support",
+    description: "Tickets, users, organizations via Zendesk REST API.",
+    iconGlyph: "Z",
+    vendor: "other",
+    category: "Support",
+    docs: "https://developer.zendesk.com/api-reference/",
+    input: {
+      name: "Zendesk",
+      description: "Read and create Zendesk tickets, look up users and organizations.",
+      base_url: "https://YOUR-SUBDOMAIN.zendesk.com/api/v2",
+      auth_type: "API_KEY",
+      auth_config: {
+        api_key: {
+          headers: [{ field_name: "Authorization", value: "", prefix: "Basic " }],
+          query_params: [],
+          body_params: [],
+        },
+      },
+    },
+  },
+  {
+    slug: "freshdesk",
+    label: "Freshdesk",
+    description: "Tickets, contacts, and companies on Freshdesk Support.",
+    iconGlyph: "FD",
+    vendor: "other",
+    category: "Support",
+    docs: "https://developers.freshdesk.com/api/",
+    input: {
+      name: "Freshdesk",
+      description: "Read and create Freshdesk tickets, look up contacts and companies.",
+      base_url: "https://YOUR-DOMAIN.freshdesk.com/api/v2",
+      auth_type: "API_KEY",
+      auth_config: {
+        api_key: {
+          headers: [{ field_name: "Authorization", value: "", prefix: "Basic " }],
+          query_params: [],
+          body_params: [],
+        },
+      },
+    },
+  },
+  {
+    slug: "intercom",
+    label: "Intercom",
+    description: "Conversations, contacts, and companies on Intercom.",
+    iconGlyph: "IN",
+    vendor: "other",
+    category: "Support",
+    docs: "https://developers.intercom.com/docs/references/rest-api/",
+    input: {
+      name: "Intercom",
+      description: "Read and reply to Intercom conversations, look up contacts and companies.",
+      base_url: "https://api.intercom.io",
+      auth_type: "API_KEY",
+      auth_config: {
+        api_key: {
+          headers: [{ field_name: "Authorization", value: "", prefix: "Bearer " }],
+          query_params: [],
+          body_params: [],
+        },
+      },
+    },
+  },
+
+  // ---- CRM -------------------------------------------------------------
+  {
+    slug: "hubspot",
+    label: "HubSpot",
+    description: "Contacts, deals, tickets, and CRM objects.",
+    iconGlyph: "H",
+    vendor: "other",
+    category: "CRM",
+    docs: "https://developers.hubspot.com/docs/api/overview",
+    input: {
+      name: "HubSpot",
+      description: "Query and mutate HubSpot contacts, companies, deals, and tickets.",
+      base_url: "https://api.hubapi.com",
+      auth_type: "OAUTH2_CLIENT_CREDENTIALS",
+      auth_config: {
+        oauth2_client_credentials: {
+          token_url: "https://api.hubapi.com/oauth/v1/token",
+          scopes_to_request: ["crm.objects.contacts.read", "crm.objects.deals.read"],
+          client_id: "",
+          client_secret: "",
+          token_request_content_type: "application/x-www-form-urlencoded",
+        },
+      },
+    },
+  },
+  {
+    slug: "salesforce",
+    label: "Salesforce",
+    description: "Accounts, leads, opportunities via Salesforce REST API.",
+    iconGlyph: "SF",
+    vendor: "other",
+    category: "CRM",
+    docs: "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/",
+    input: {
+      name: "Salesforce",
+      description: "Query Salesforce accounts, leads, and opportunities.",
+      base_url: "https://YOUR-INSTANCE.my.salesforce.com/services/data/v60.0",
+      auth_type: "OAUTH2_CLIENT_CREDENTIALS",
+      auth_config: {
+        oauth2_client_credentials: {
+          token_url: "https://YOUR-INSTANCE.my.salesforce.com/services/oauth2/token",
+          scopes_to_request: ["api", "refresh_token"],
+          client_id: "",
+          client_secret: "",
+          token_request_content_type: "application/x-www-form-urlencoded",
+        },
+      },
+    },
+  },
+
+  // ---- Communication ---------------------------------------------------
+  {
+    slug: "twilio",
+    label: "Twilio",
+    description: "SMS, voice, WhatsApp business messaging.",
+    iconGlyph: "T",
+    vendor: "other",
+    category: "Communication",
+    docs: "https://www.twilio.com/docs/usage/api",
+    input: {
+      name: "Twilio",
+      description: "Send SMS, initiate calls, and query messaging logs on Twilio.",
+      base_url: "https://api.twilio.com/2010-04-01",
+      auth_type: "API_KEY",
+      auth_config: {
+        api_key: {
+          headers: [{ field_name: "Authorization", value: "", prefix: "Basic " }],
+          query_params: [],
+          body_params: [],
+        },
+      },
+    },
+  },
+  {
+    slug: "slack",
+    label: "Slack",
+    description: "Post messages, look up users and channels.",
+    iconGlyph: "SL",
+    vendor: "other",
+    category: "Communication",
+    docs: "https://api.slack.com/methods",
+    input: {
+      name: "Slack",
+      description: "Post messages, look up users and channels on Slack.",
+      base_url: "https://slack.com/api",
+      auth_type: "OAUTH2_CLIENT_CREDENTIALS",
+      auth_config: {
+        oauth2_client_credentials: {
+          token_url: "https://slack.com/api/oauth.v2.access",
+          scopes_to_request: ["chat:write", "users:read"],
+          client_id: "",
+          client_secret: "",
+          token_request_content_type: "application/x-www-form-urlencoded",
+        },
+      },
+    },
+  },
+
+  // ---- Marketing ------------------------------------------------------
+  {
+    slug: "sendgrid",
+    label: "SendGrid",
+    description: "Send transactional email via SendGrid v3 API.",
+    iconGlyph: "SG",
+    vendor: "other",
+    category: "Marketing",
+    docs: "https://docs.sendgrid.com/api-reference",
+    input: {
+      name: "SendGrid",
+      description: "Send transactional emails via SendGrid.",
+      base_url: "https://api.sendgrid.com/v3",
+      auth_type: "API_KEY",
+      auth_config: {
+        api_key: {
+          headers: [{ field_name: "Authorization", value: "", prefix: "Bearer " }],
+          query_params: [],
+          body_params: [],
+        },
+      },
+    },
+  },
+  {
+    slug: "mailchimp",
+    label: "Mailchimp",
+    description: "Lists, campaigns, and members via Mailchimp Marketing API.",
+    iconGlyph: "MC",
+    vendor: "other",
+    category: "Marketing",
+    docs: "https://mailchimp.com/developer/marketing/api/",
+    input: {
+      name: "Mailchimp",
+      description: "Manage lists, campaigns, and members on Mailchimp. Replace DC with your data center suffix (e.g. us14).",
+      base_url: "https://DC.api.mailchimp.com/3.0",
+      auth_type: "API_KEY",
+      auth_config: {
+        api_key: {
+          headers: [{ field_name: "Authorization", value: "", prefix: "Bearer " }],
+          query_params: [],
+          body_params: [],
+        },
+      },
+    },
+  },
+
+  // ---- Productivity ---------------------------------------------------
+  {
+    slug: "google-sheets",
+    label: "Google Sheets",
+    description: "Read and write spreadsheet data via the Sheets API.",
+    iconGlyph: "GS",
+    vendor: "other",
+    category: "Productivity",
+    docs: "https://developers.google.com/sheets/api/reference/rest",
+    input: {
+      name: "Google Sheets",
+      description: "Read and write ranges on Google Sheets.",
+      base_url: "https://sheets.googleapis.com/v4",
+      auth_type: "OAUTH2_CLIENT_CREDENTIALS",
+      auth_config: {
+        oauth2_client_credentials: {
+          token_url: "https://oauth2.googleapis.com/token",
+          scopes_to_request: ["https://www.googleapis.com/auth/spreadsheets"],
+          client_id: "",
+          client_secret: "",
+          token_request_content_type: "application/x-www-form-urlencoded",
+        },
+      },
+    },
+  },
+  {
+    slug: "google-calendar",
+    label: "Google Calendar",
+    description: "List free/busy, create events on Google Calendar.",
+    iconGlyph: "GC",
+    vendor: "other",
+    category: "Productivity",
+    docs: "https://developers.google.com/calendar/api",
+    input: {
+      name: "Google Calendar",
+      description: "Read availability and create events on Google Calendar.",
+      base_url: "https://www.googleapis.com/calendar/v3",
+      auth_type: "OAUTH2_CLIENT_CREDENTIALS",
+      auth_config: {
+        oauth2_client_credentials: {
+          token_url: "https://oauth2.googleapis.com/token",
+          scopes_to_request: ["https://www.googleapis.com/auth/calendar"],
+          client_id: "",
+          client_secret: "",
+          token_request_content_type: "application/x-www-form-urlencoded",
+        },
+      },
+    },
+  },
+  {
+    slug: "calendly",
+    label: "Calendly",
+    description: "Read event types and scheduled events from Calendly.",
+    iconGlyph: "CL",
+    vendor: "other",
+    category: "Productivity",
+    docs: "https://developer.calendly.com/api-docs",
+    input: {
+      name: "Calendly",
+      description: "List event types, read scheduled events, and generate booking links.",
+      base_url: "https://api.calendly.com",
+      auth_type: "API_KEY",
+      auth_config: {
+        api_key: {
+          headers: [{ field_name: "Authorization", value: "", prefix: "Bearer " }],
+          query_params: [],
+          body_params: [],
+        },
+      },
+    },
+  },
+  {
+    slug: "notion",
+    label: "Notion",
+    description: "Databases and pages on Notion.",
+    iconGlyph: "N",
+    vendor: "other",
+    category: "Productivity",
+    docs: "https://developers.notion.com/",
+    input: {
+      name: "Notion",
+      description: "Query Notion databases and update pages.",
+      base_url: "https://api.notion.com/v1",
+      auth_type: "API_KEY",
+      auth_config: {
+        api_key: {
+          headers: [
+            { field_name: "Authorization", value: "", prefix: "Bearer " },
+            { field_name: "Notion-Version", value: "2022-06-28", prefix: "" },
+          ],
+          query_params: [],
+          body_params: [],
+        },
+      },
+    },
+  },
 ];
 
 export function connectorTemplates(): ConnectorTemplate[] {

@@ -31,10 +31,11 @@ You pick the auth type when you create the connector. Switching auth types on an
 
 ### Create from a template
 
-The template library is Zoho-focused: every shell wires the correct base URL, OAuth 2.0 token URL (`accounts.zoho.com`), and a minimum viable scope set for the product.
+The template library has two families: **Zoho** (default, every Zoho product with a documented API, prefilled with OAuth 2.0 scopes and the `accounts.zoho.com` token URL) and **Others** (universally available third-party APIs).
 
 1. On the Connectors list page, click **From template** in the header.
-2. A dialog groups templates by Zoho product family:
+2. The dialog opens with a filter row at the top: **Zoho · Others · All**. It defaults to **Zoho**. Each tab shows a count next to its label so you know what's under each.
+3. Under **Zoho**, templates are grouped by product family:
    - **Sales & CRM**: CRM, Bigin, SalesIQ, Backstage.
    - **Support**: Desk, Assist, Lens.
    - **Finance**: Books, Invoice, Expense, Billing (formerly Subscriptions), Checkout, Practice.
@@ -46,11 +47,19 @@ The template library is Zoho-focused: every shell wires the correct base URL, OA
    - **Developer**: Creator, Flow, Catalyst, Directory.
    - **Sign & Contracts**: Sign, Contracts.
    - **Events & Learning**: Learn, Webinar.
-3. Pick one. You land on the New connector page with the fields prefilled.
-4. Register a client on the [Zoho API Console](https://api-console.zoho.com/) for the same data center you use, and paste the **Client ID** and **Client Secret** into the form.
-5. **Data center**: swap the `.com` suffix on both the token URL and the base URL if your Zoho org is in another region: `.in`, `.eu`, `.com.au`, `.jp`, `.com.cn`, or `.ca`.
-6. **Scopes**: the template ships with a minimum set. Add more if a tool needs them; keep the list tight so client-secret leaks have limited blast radius.
-7. Click **Save**.
+4. Under **Others**, templates are grouped by industry category and cover common non-Zoho integrations:
+   - **E-commerce**: Shopify, WooCommerce.
+   - **Payments**: Stripe.
+   - **Support**: Zendesk, Freshdesk, Intercom.
+   - **CRM**: HubSpot, Salesforce.
+   - **Communication**: Twilio, Slack.
+   - **Marketing**: SendGrid, Mailchimp.
+   - **Productivity**: Google Sheets, Google Calendar, Calendly, Notion.
+5. Pick one. You land on the New connector page with the fields prefilled.
+6. For Zoho templates, register a client on the [Zoho API Console](https://api-console.zoho.com/) for the same data center you use, and paste the **Client ID** and **Client Secret** into the form. For non-Zoho templates, follow the linked docs to mint the credentials the connector needs.
+7. **Data center for Zoho**: swap the `.com` suffix on both the token URL and the base URL if your Zoho org is in another region: `.in`, `.eu`, `.com.au`, `.jp`, `.com.cn`, or `.ca`.
+8. **Scopes**: the template ships with a minimum set. Add more if a tool needs them; keep the list tight so client-secret leaks have limited blast radius.
+9. Click **Save**.
 
 ### Zoho region cheatsheet
 
