@@ -24,7 +24,13 @@ log "Node $(node --version) · npm $(npm --version)"
 log "cwd: $(pwd)"
 log "PORT=${PORT:-3000}"
 
-export NODE_ENV=development
+# NODE_ENV is intentionally left unset here.
+# - npm install with --include=dev pulls devDependencies regardless of NODE_ENV.
+# - Next 15 sets NODE_ENV=production internally for `next build`. Setting it to
+#   anything else beforehand triggers a warning AND a known Next 15.1.4 bug
+#   where .next/server/pages-manifest.json is not emitted, causing the build
+#   to fail with ENOENT at the end. Do NOT export NODE_ENV=development here.
+unset NODE_ENV || true
 
 # ---- 1. Install ---------------------------------------------------------
 if [ -d "node_modules" ] && [ -x "node_modules/.bin/next" ]; then

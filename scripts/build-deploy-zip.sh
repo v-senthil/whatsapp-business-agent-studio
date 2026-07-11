@@ -63,6 +63,7 @@ zip -rq "$OUT" \
   tailwind.config.ts \
   src \
   public \
+  docs \
   node_modules \
   .next \
   scripts \

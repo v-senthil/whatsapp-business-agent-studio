@@ -267,9 +267,10 @@ Session field `readOnly?: boolean`. `PATCH /api/session` accepts it; `GET /api/s
 ## Deployment
 
 `start.sh` is POSIX-only (`/bin/sh`, no `pipefail`) because AppSail's shell is `dash`. It:
-1. Skips install if `node_modules/.bin/next` exists.
-2. Skips build if `.next/BUILD_ID` exists.
-3. `exec`s `next start -p $PORT -H 0.0.0.0`.
+1. `unset NODE_ENV` (do NOT re-add `export NODE_ENV=development`). Next 15.1.4 has a bug where `next build` fails at the end with `ENOENT: .next/server/pages-manifest.json` when `NODE_ENV` is any non-empty value other than `production` at build time. Next sets it to `production` internally when unset. Dev-deps are still installed because the install step uses `--include=dev`.
+2. Skips install if `node_modules/.bin/next` exists.
+3. Skips build if `.next/BUILD_ID` exists.
+4. `exec`s `next start -p $PORT -H 0.0.0.0`.
 
 `scripts/build-deploy-zip.sh` pre-builds the artifact locally so the deployed script does ~2s of work (well inside AppSail's ~15-30s startup timeout). Ship a source-only ZIP and AppSail will kill the process mid-install.
 
