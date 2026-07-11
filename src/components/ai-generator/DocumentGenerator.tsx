@@ -47,6 +47,7 @@ export function DocumentGenerator({ entityId }: Props) {
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [bundle, setBundle] = React.useState<GeneratedBundle | null>(null);
+  const [truncated, setTruncated] = React.useState(false);
   const [selectedFaqs, setSelectedFaqs] = React.useState<Set<number>>(new Set());
   const [selectedSkills, setSelectedSkills] = React.useState<Set<number>>(new Set());
   const [applying, setApplying] = React.useState(false);
@@ -79,14 +80,19 @@ export function DocumentGenerator({ entityId }: Props) {
   async function generate() {
     setError(null);
     setBundle(null);
+    setTruncated(false);
     setApplied(null);
     setBusy(true);
     try {
-      const resp = await fetcher<{ ok: boolean; bundle: GeneratedBundle }>("/api/ai/generate-from-document", {
-        method: "POST",
-        json: { text: text.trim() },
-      });
+      const resp = await fetcher<{ ok: boolean; bundle: GeneratedBundle; truncated?: boolean; sourceLength?: number }>(
+        "/api/ai/generate-from-document",
+        {
+          method: "POST",
+          json: { text: text.trim() },
+        },
+      );
       setBundle(resp.bundle);
+      setTruncated(!!resp.truncated);
       setSelectedFaqs(new Set(resp.bundle.faqs.map((_, i) => i)));
       setSelectedSkills(new Set(resp.bundle.skills.map((_, i) => i)));
     } catch (e) {
@@ -238,6 +244,15 @@ export function DocumentGenerator({ entityId }: Props) {
 
       {bundle && (
         <>
+          {truncated && (
+            <Alert variant="warning">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Long document truncated</AlertTitle>
+              <AlertDescription>
+                Only the first 40,000 characters were sent to the model. Some content near the end of the document may be missing from the results.
+              </AlertDescription>
+            </Alert>
+          )}
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="text-sm">
               <span className="font-medium">{bundle.faqs.length}</span> FAQ{bundle.faqs.length === 1 ? "" : "s"}

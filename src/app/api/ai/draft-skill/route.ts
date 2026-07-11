@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getSession } from "@/lib/session";
 import { AiFailure, readAiConfig, runPrompt } from "@/lib/ai";
+import { extractJsonObject } from "@/lib/ai/json-extract";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -78,24 +79,12 @@ function statusForCode(code: AiFailure["code"]): number {
   }
 }
 
-// The model might wrap the JSON in a code fence or preamble. Extract the
-// first {...} block and try to parse it.
-function extractJson(text: string): { title?: string; description?: string; skill?: string } | null {
-  // Strip common code-fence wrappers.
-  let s = text.trim();
-  s = s.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "");
-  // Try full string first.
-  const attempts = [s];
-  const braceStart = s.indexOf("{");
-  const braceEnd = s.lastIndexOf("}");
-  if (braceStart >= 0 && braceEnd > braceStart) attempts.push(s.slice(braceStart, braceEnd + 1));
-  for (const candidate of attempts) {
-    try {
-      const parsed = JSON.parse(candidate);
-      if (parsed && typeof parsed === "object" && ("title" in parsed || "skill" in parsed)) {
-        return parsed as { title?: string; description?: string; skill?: string };
-      }
-    } catch { /* try next */ }
-  }
-  return null;
+interface SkillDraft { title?: string; description?: string; skill?: string }
+
+function isSkillDraft(x: unknown): x is SkillDraft {
+  return !!x && typeof x === "object" && ("title" in x || "skill" in x);
+}
+
+function extractJson(text: string): SkillDraft | null {
+  return extractJsonObject<SkillDraft>(text, isSkillDraft) ?? null;
 }

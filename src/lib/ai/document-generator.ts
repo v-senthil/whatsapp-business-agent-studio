@@ -1,5 +1,6 @@
 import { AiFailure, type AiConfig, runPrompt } from "@/lib/ai";
 import { connectorTemplates } from "@/lib/connector-templates";
+import { extractJsonObject } from "@/lib/ai/json-extract";
 
 export interface GeneratedFaq {
   question: string;
@@ -24,12 +25,22 @@ export interface GeneratedBundle {
   connectors: GeneratedConnector[];
 }
 
-const MAX_TEXT_CHARS = 40_000;
+export const MAX_TEXT_CHARS = 40_000;
+
+// Building the catalog block dominates the prompt payload. Compute it once at
+// module load and drop the description so we stay well under any provider's
+// per-request token budget.
+let cachedCatalog: string | null = null;
+function catalogBlock(): string {
+  if (cachedCatalog !== null) return cachedCatalog;
+  cachedCatalog = connectorTemplates()
+    .map((t) => `- ${t.slug}: ${t.label} (${t.category})`)
+    .join("\n");
+  return cachedCatalog;
+}
 
 function buildSystemPrompt(): string {
-  const catalog = connectorTemplates()
-    .map((t) => `- ${t.slug}: ${t.label} (${t.category}) — ${t.description}`)
-    .join("\n");
+  const catalog = catalogBlock();
 
   return `You extract training material for a WhatsApp Business AI agent from a business's knowledge document.
 
@@ -50,42 +61,31 @@ ${catalog}
 - Keep everything grounded in the provided document text.`;
 }
 
-export async function generateFromText(cfg: AiConfig, text: string): Promise<GeneratedBundle> {
+export interface GenerateResult {
+  bundle: GeneratedBundle;
+  truncated: boolean;
+  sourceLength: number;
+}
+
+export async function generateFromText(cfg: AiConfig, text: string): Promise<GenerateResult> {
   const trimmed = text.trim();
   if (!trimmed) throw new AiFailure({ code: "invalid_response", message: "Document text is empty." });
 
-  const clipped =
-    trimmed.length > MAX_TEXT_CHARS
-      ? `${trimmed.slice(0, MAX_TEXT_CHARS)}\n\n[... truncated to ${MAX_TEXT_CHARS} chars]`
-      : trimmed;
+  const truncated = trimmed.length > MAX_TEXT_CHARS;
+  const clipped = truncated
+    ? `${trimmed.slice(0, MAX_TEXT_CHARS)}\n\n[... truncated to ${MAX_TEXT_CHARS} chars]`
+    : trimmed;
 
   const prompt = `Extract FAQs, skills, and connector suggestions from this document:\n\n---\n${clipped}\n---`;
   const raw = await runPrompt(cfg, prompt, buildSystemPrompt());
-  const parsed = extractJson(raw);
+  const parsed = extractJsonObject<unknown>(raw);
   if (!parsed) {
     throw new AiFailure({
       code: "invalid_response",
       message: `The model did not return a parseable JSON object. First 500 chars: ${raw.slice(0, 500)}`,
     });
   }
-  return normalize(parsed);
-}
-
-function extractJson(text: string): unknown | null {
-  let s = text.trim();
-  s = s.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "");
-  const attempts = [s];
-  const start = s.indexOf("{");
-  const end = s.lastIndexOf("}");
-  if (start >= 0 && end > start) attempts.push(s.slice(start, end + 1));
-  for (const c of attempts) {
-    try {
-      return JSON.parse(c);
-    } catch {
-      /* try next */
-    }
-  }
-  return null;
+  return { bundle: normalize(parsed), truncated, sourceLength: trimmed.length };
 }
 
 function normalize(raw: unknown): GeneratedBundle {

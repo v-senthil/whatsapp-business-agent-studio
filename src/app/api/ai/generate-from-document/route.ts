@@ -26,8 +26,13 @@ export async function POST(req: Request) {
   }
 
   try {
-    const bundle = await generateFromText(cfg, parsed.data.text);
-    return NextResponse.json({ ok: true, bundle });
+    const result = await generateFromText(cfg, parsed.data.text);
+    return NextResponse.json({
+      ok: true,
+      bundle: result.bundle,
+      truncated: result.truncated,
+      sourceLength: result.sourceLength,
+    });
   } catch (e) {
     if (e instanceof AiFailure) {
       return NextResponse.json({ title: titleFor(e.code), detail: e.message, code: e.code }, { status: statusFor(e.code) });
