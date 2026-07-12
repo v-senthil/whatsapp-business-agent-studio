@@ -1,0 +1,6 @@
+# Global owner. Every change in this repo requires review from @v-senthil.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-security/customizing-your-repository/about-code-owners
+# External contributors: fork the repo and open a pull request; do not push
+# directly to any branch.
+
+*       @v-senthil
