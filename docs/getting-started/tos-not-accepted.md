@@ -1,12 +1,14 @@
 # WABA terms not accepted
 
+![Dashboard blocked with a "Waiting for terms acceptance" screen and disabled sidebar](/help/screenshots/getting-started/tos-not-accepted/blocked-dashboard.png)
+
 The Meta Business Agent Platform is guarded by a per-WABA terms of service. If those terms have not been accepted for the WhatsApp Business Account behind the phone you are configuring, the app cannot read or write agent data.
 
 ## What you'll see
 
 - A yellow banner near the top of the dashboard that reads **"Meta Business Agent terms are not accepted for this WABA"**.
 - Every sidebar item under the current phone is greyed out and non-clickable. Only the dashboard itself and the top-level Home, Help, and API reference links remain active.
-- The banner explains the block and links back to the Home page.
+- The main content area shows a **Waiting for terms acceptance** message with an **Enable WhatsApp Business Agent** button that opens Meta Business Manager pre-filled with your Business ID and WABA ID.
 
 ## What triggers it
 

@@ -12,8 +12,9 @@ The dev drawer shows the last several API calls the app has made and lets you co
 
 ## Open the drawer
 
-Three ways:
+Four ways:
 
+- Open the **Settings** dropdown in the top-right of the header and toggle **Dev drawer**. A check mark appears next to it while the drawer is open.
 - Click the small **floating button** in the bottom-right corner of any page.
 - Press `Cmd+Shift+D` on macOS or `Ctrl+Shift+D` on Windows/Linux.
 - Add `?debug=1` to any URL.

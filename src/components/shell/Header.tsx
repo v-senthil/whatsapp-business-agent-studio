@@ -2,7 +2,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, Eye, EyeOff, LogOut, Settings as SettingsIcon, Sparkles, User } from "lucide-react";
+import { Check, Eye, EyeOff, LogOut, Settings as SettingsIcon, Sparkles, Terminal, User } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +18,11 @@ import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { usePhoneDetails, usePhones } from "@/lib/client/hooks/useDiscovery";
 import { useSession, usePatchSession } from "@/lib/client/hooks/useSession";
 import { fetcher } from "@/lib/client/fetcher";
+import {
+  getDevDrawerOpen,
+  subscribeDevDrawer,
+  toggleDevDrawer,
+} from "@/lib/client/dev-drawer";
 
 interface HeaderProps {
   user?: { id?: string; name?: string };
@@ -30,6 +35,8 @@ export function Header({ user, entityId }: HeaderProps) {
   const session = useSession();
   const patch = usePatchSession();
   const readOnly = !!session.data?.readOnly;
+  const [devOpen, setDevOpen] = React.useState<boolean>(() => getDevDrawerOpen());
+  React.useEffect(() => subscribeDevDrawer(setDevOpen), []);
 
   async function logout() {
     try {
@@ -108,6 +115,11 @@ export function Header({ user, entityId }: HeaderProps) {
               {readOnly ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
               <span className="flex-1">{readOnly ? "Enable writes" : "Read-only mode"}</span>
               {readOnly && <Check className="h-3.5 w-3.5" />}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => toggleDevDrawer()}>
+              <Terminal className="h-4 w-4" />
+              <span className="flex-1">Dev drawer</span>
+              {devOpen && <Check className="h-3.5 w-3.5" />}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

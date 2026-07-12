@@ -9,11 +9,17 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { JsonViewer } from "@/components/common/JsonViewer";
 import { cn } from "@/lib/utils/cn";
 import { clear, snapshot, subscribe, toCurl, type ApiCall } from "@/lib/client/api-log";
+import {
+  getDevDrawerOpen,
+  setDevDrawerOpen,
+  subscribeDevDrawer,
+  toggleDevDrawer,
+} from "@/lib/client/dev-drawer";
 
 export function DevDrawer() {
   const search = useSearchParams();
   const forceOpen = search?.get("debug") === "1";
-  const [open, setOpen] = React.useState(forceOpen);
+  const [open, setOpenState] = React.useState<boolean>(() => forceOpen || getDevDrawerOpen());
   const [calls, setCalls] = React.useState<ApiCall[]>(() => snapshot());
   const [selected, setSelected] = React.useState<string | null>(null);
 
@@ -21,12 +27,24 @@ export function DevDrawer() {
     return subscribe(() => setCalls(snapshot()));
   }, []);
 
+  // Sync the local `open` with the module-level store so the Header settings
+  // menu (or anywhere else that calls `toggleDevDrawer()`) can flip it.
+  React.useEffect(() => {
+    if (forceOpen) setDevDrawerOpen(true);
+    return subscribeDevDrawer((v) => setOpenState(v));
+  }, [forceOpen]);
+
+  const setOpen = React.useCallback((next: boolean | ((v: boolean) => boolean)) => {
+    const value = typeof next === "function" ? (next as (v: boolean) => boolean)(open) : next;
+    setDevDrawerOpen(value);
+  }, [open]);
+
   // Keyboard shortcut: Cmd+Shift+D (or Ctrl+Shift+D) toggles the drawer.
   React.useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === "d" || e.key === "D")) {
         e.preventDefault();
-        setOpen((v) => !v);
+        toggleDevDrawer();
       }
     }
     window.addEventListener("keydown", onKey);

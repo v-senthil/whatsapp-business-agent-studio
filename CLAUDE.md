@@ -236,7 +236,8 @@ Sidebar link sits at the bottom, below all resource groups.
 ### Dev drawer + Copy-as-cURL
 - `src/lib/client/api-log.ts` — module-level ring buffer (50 entries) with a subscribe/notify pattern. Not persisted.
 - `src/lib/client/fetcher.ts` is instrumented — every call records `{ method, url, requestHeaders, requestBody, ts }` on start and updates with `{ duration_ms, status, ok, responseBody, error }` on completion (or on network error).
-- `src/components/dev/DevDrawer.tsx` — slide-in panel with a call list + detail pane. Opens via a floating bottom-right button, `Cmd/Ctrl+Shift+D`, or `?debug=1`.
+- `src/components/dev/DevDrawer.tsx` — slide-in panel with a call list + detail pane. Opens via the floating bottom-right button, the **Dev drawer** item in the Header settings dropdown (with a check mark when open), `Cmd/Ctrl+Shift+D`, or `?debug=1`.
+- **Shared open/closed state**: `src/lib/client/dev-drawer.ts` is a module-level store (subscribe/notify, same shape as `api-log.ts`) so the Header's settings menu and the drawer stay in sync without a context provider. Anywhere in the app can call `toggleDevDrawer()` / `setDevDrawerOpen()` / `subscribeDevDrawer()`.
 - **Copy as cURL** in the detail pane synthesizes a runnable command from the recorded call (`toCurl` in `api-log.ts`). Omits the Cookie header so the copied command doesn't leak the session cookie.
 - Mounted at the root layout via `<DevDrawerMount>` (inside a Suspense boundary because `DevDrawer` uses `useSearchParams`).
 
