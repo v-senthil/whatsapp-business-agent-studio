@@ -48,32 +48,43 @@ export function Header({ user, entityId }: HeaderProps) {
   }
 
   // Fall back to the WABA-scoped phone_numbers list when the single-phone
-  // Graph endpoint omits display_phone_number / verified_name. Meta's list
-  // endpoint reliably returns the friendlier fields, so if the direct
-  // per-phone GET is empty, we look up the current entity by ID in the
-  // WABA's phone list.
+  // Graph endpoint fails or omits display_phone_number / verified_name.
+  // The list endpoint reliably returns the friendlier fields for every
+  // phone the token can see, so we always try it as a secondary source.
   const wabaId =
     phone.data?.whatsapp_business_account?.id ??
     session.data?.lastWabaId ??
     undefined;
-  const needsListFallback =
-    !!entityId && phone.isSuccess && !phone.data?.display_phone_number;
-  const wabaPhones = usePhones(needsListFallback ? wabaId : undefined);
+  const needListLookup =
+    !!entityId && (phone.isError || (phone.isSuccess && !phone.data?.display_phone_number));
+  const wabaPhones = usePhones(needListLookup ? wabaId : undefined);
   const listMatch = wabaPhones.data?.data?.find((p) => p.id === entityId);
 
   const displayPhone = phone.data?.display_phone_number ?? listMatch?.display_phone_number;
   const verifiedName = phone.data?.verified_name ?? listMatch?.verified_name;
   const phoneLoading =
-    !!entityId && (phone.isPending || (needsListFallback && wabaPhones.isPending));
+    !!entityId && (phone.isPending || (needListLookup && wabaPhones.isPending));
+  // A phone that Meta explicitly rejects (usually 400 GraphMethodException,
+  // "object does not exist / missing permissions") means the entity ID in
+  // the URL is not a real phone we can see. Say that clearly rather than
+  // parking on a generic placeholder.
+  const phoneNotFound =
+    !!entityId &&
+    phone.isError &&
+    (wabaPhones.isError || (wabaPhones.isSuccess && !listMatch));
   let primaryLabel: string;
   if (displayPhone) primaryLabel = displayPhone;
   else if (phoneLoading) primaryLabel = "Loading phone…";
+  else if (phoneNotFound) primaryLabel = "Phone not found";
   else if (verifiedName) primaryLabel = verifiedName;
   else primaryLabel = "Phone number";
-  // Secondary shows the verified name when the primary already carries the
-  // phone number. The raw phone_number_id is never rendered as the primary
-  // label; it lives in the popover contents when the user opens the picker.
-  const secondaryLabel = displayPhone ? verifiedName : undefined;
+  // Secondary shows either the verified name (when the primary is the phone
+  // number) or the raw entityId when we could not resolve the phone at all.
+  // The raw ID never sits alone as the primary label.
+  let secondaryLabel: string | undefined;
+  if (displayPhone) secondaryLabel = verifiedName;
+  else if (phoneNotFound) secondaryLabel = entityId;
+  else secondaryLabel = undefined;
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4">
