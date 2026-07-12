@@ -11,7 +11,7 @@ export async function GET(req: Request) {
   if (!phoneId) return NextResponse.json({ title: "Bad request", detail: "phone_number_id required" }, { status: 400 });
   const res = await graphFetch(
     session.token,
-    `${encodeURIComponent(phoneId)}?fields=display_phone_number,verified_name,quality_rating`,
+    `${encodeURIComponent(phoneId)}?fields=display_phone_number,verified_name,quality_rating,whatsapp_business_account{id,name}`,
   );
   if (!res.ok) {
     const err = await parseErrorBody(res);

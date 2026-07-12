@@ -2,13 +2,17 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowUpRight, ChevronsUpDown, PhoneCall } from "lucide-react";
+import { ArrowUpRight, Check, ChevronsUpDown, PhoneCall } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/common/FormField";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils/cn";
 import { fetcher } from "@/lib/client/fetcher";
+import { usePhoneDetails, usePhones } from "@/lib/client/hooks/useDiscovery";
 
 interface EntityPickerProps {
   currentEntityId?: string;
@@ -20,6 +24,10 @@ export function EntityPicker({ currentEntityId, primaryLabel, secondaryLabel }: 
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [manualId, setManualId] = React.useState("");
+  const currentPhone = usePhoneDetails(currentEntityId);
+  const wabaId = currentPhone.data?.whatsapp_business_account?.id;
+  const wabaName = currentPhone.data?.whatsapp_business_account?.name;
+  const siblings = usePhones(open ? wabaId : undefined);
 
   const select = React.useCallback(
     async (id: string) => {
@@ -29,6 +37,8 @@ export function EntityPicker({ currentEntityId, primaryLabel, secondaryLabel }: 
     },
     [router],
   );
+
+  const siblingPhones = (siblings.data?.data ?? []).filter((p) => p.id !== currentEntityId);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -48,6 +58,69 @@ export function EntityPicker({ currentEntityId, primaryLabel, secondaryLabel }: 
       </PopoverTrigger>
       <PopoverContent className="w-[360px] p-3" align="start">
         <div className="space-y-3">
+          {wabaId && (
+            <div>
+              <div className="mb-1 flex items-baseline justify-between gap-2">
+                <div className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+                  Other phones on this WABA
+                </div>
+                {wabaName && (
+                  <div className="truncate text-[11px] text-muted-foreground" title={wabaName}>
+                    {wabaName}
+                  </div>
+                )}
+              </div>
+              {siblings.isLoading && (
+                <div className="space-y-1">
+                  <Skeleton className="h-9" />
+                  <Skeleton className="h-9" />
+                </div>
+              )}
+              {!siblings.isLoading && siblingPhones.length === 0 && (
+                <p className="rounded-md border border-dashed px-2 py-1.5 text-xs text-muted-foreground">
+                  No other phones on this WABA.
+                </p>
+              )}
+              {!siblings.isLoading && siblingPhones.length > 0 && (
+                <ul className="max-h-56 space-y-1 overflow-y-auto">
+                  {siblingPhones.map((p) => (
+                    <li key={p.id}>
+                      <button
+                        type="button"
+                        onClick={() => select(p.id)}
+                        className={cn(
+                          "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
+                        )}
+                      >
+                        <PhoneCall className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm leading-tight">
+                            {p.display_phone_number ?? p.id}
+                          </span>
+                          <span className="block truncate text-xs leading-tight text-muted-foreground">
+                            {p.verified_name ?? "—"} · <span className="font-mono">{p.id}</span>
+                          </span>
+                        </span>
+                        {p.quality_rating && (
+                          <Badge variant="outline" className="shrink-0 text-[10px]">
+                            {p.quality_rating}
+                          </Badge>
+                        )}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {currentEntityId && currentPhone.data?.display_phone_number && (
+                <div className="mt-2 flex items-center gap-2 rounded-md bg-muted/60 px-2 py-1.5 text-xs text-muted-foreground">
+                  <Check className="h-3 w-3 text-emerald-500" />
+                  <span className="truncate">Currently on {currentPhone.data.display_phone_number}</span>
+                </div>
+              )}
+              <Separator className="mt-3" />
+            </div>
+          )}
+
           <Field label="Switch to a phone number ID" htmlFor="picker-manual">
             <div className="flex gap-2">
               <Input

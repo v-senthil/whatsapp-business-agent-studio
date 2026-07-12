@@ -4,7 +4,13 @@ import { fetcher } from "@/lib/client/fetcher";
 import { qk } from "@/lib/client/query-keys";
 
 export interface Waba { id: string; name?: string; }
-export interface PhoneNumber { id: string; display_phone_number?: string; verified_name?: string; quality_rating?: string; }
+export interface PhoneNumber {
+  id: string;
+  display_phone_number?: string;
+  verified_name?: string;
+  quality_rating?: string;
+  whatsapp_business_account?: { id: string; name?: string };
+}
 
 export function useWabas(businessId: string | undefined) {
   return useQuery({
