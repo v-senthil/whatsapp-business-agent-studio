@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { graphFetch } from "@/lib/api/meta-client";
 import { parseErrorBody } from "@/lib/api/errors";
+import { handleGraphPhone } from "@/lib/demo/router";
 
 export async function GET(req: Request) {
   const session = await getSession();
@@ -9,6 +10,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const phoneId = searchParams.get("phone_number_id");
   if (!phoneId) return NextResponse.json({ title: "Bad request", detail: "phone_number_id required" }, { status: 400 });
+  if (session.demo) return handleGraphPhone(phoneId);
   // NOTE: Meta rejects `whatsapp_business_account` as a nested field on this
   // node (400 OAuthException "nonexisting field"). The parent WABA is
   // therefore not returned from this endpoint. Callers that need the WABA ID

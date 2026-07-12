@@ -3,6 +3,7 @@ import { Header } from "@/components/shell/Header";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { Breadcrumbs } from "@/components/shell/Breadcrumbs";
 import { ReadOnlyBanner } from "@/components/shell/ReadOnlyBanner";
+import { DemoBanner } from "@/components/shell/DemoBanner";
 import { TosGateBanner } from "@/components/shell/TosGateBanner";
 
 interface AppShellProps {
@@ -17,6 +18,7 @@ export function AppShell({ entityId, user, children }: AppShellProps) {
       {entityId && <Sidebar entityId={entityId} />}
       <div className="flex min-w-0 flex-1 flex-col">
         <Header user={user} entityId={entityId} />
+        <DemoBanner />
         <ReadOnlyBanner />
         {entityId && <TosGateBanner entityId={entityId} />}
         <Breadcrumbs />

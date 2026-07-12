@@ -16,6 +16,7 @@ export interface ClientSession {
   lastBusinessId?: string | null;
   lastWabaId?: string | null;
   readOnly?: boolean;
+  demo?: boolean;
   ai?: ClientAiConfig;
 }
 

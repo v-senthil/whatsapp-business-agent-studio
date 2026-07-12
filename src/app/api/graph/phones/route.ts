@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { graphFetch } from "@/lib/api/meta-client";
 import { parseErrorBody } from "@/lib/api/errors";
+import { handleGraphPhones } from "@/lib/demo/router";
 
 export async function GET(req: Request) {
   const session = await getSession();
   if (!session.token) return NextResponse.json({ title: "Unauthorized", detail: "No session" }, { status: 401 });
+  if (session.demo) return handleGraphPhones();
   const { searchParams } = new URL(req.url);
   const wabaId = searchParams.get("waba_id");
   if (!wabaId) return NextResponse.json({ title: "Bad request", detail: "waba_id required" }, { status: 400 });

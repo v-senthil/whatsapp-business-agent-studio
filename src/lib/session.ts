@@ -12,6 +12,10 @@ export interface SessionData {
   lastBusinessId?: string;
   lastWabaId?: string;
   readOnly?: boolean;
+  // Demo mode: proxy short-circuits to in-memory fixtures instead of calling
+  // Meta. `token` is set to a sentinel so downstream `!session.token` guards
+  // still pass. `userId` doubles as the demo store key.
+  demo?: boolean;
   // AI-assist config — used server-side to route drafting requests.
   aiProvider?: AiProvider;
   aiBaseUrl?: string;    // OpenAI-compat only, e.g. https://api.openai.com/v1 or http://localhost:11434/v1

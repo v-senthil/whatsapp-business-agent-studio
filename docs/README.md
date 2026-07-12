@@ -5,6 +5,7 @@ Welcome to the help library for **WhatsApp Business Agent Studio**, a visual bui
 ## Getting started
 
 - [Introduction](getting-started/introduction.md), what the product is and the core concepts.
+- [Try the demo](getting-started/try-the-demo.md), explore every screen with seeded data and no Meta access token.
 - [Prerequisites](getting-started/prerequisites.md), the Meta accounts, phone numbers, and setup you need.
 - [Generating an access token](getting-started/access-token.md), how to mint a token in Meta Business Suite and rotate it safely.
 - [First run](getting-started/first-run.md), install, configure, and boot the app locally.

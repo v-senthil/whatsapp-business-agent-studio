@@ -49,15 +49,16 @@ function appPath(path: string): string {
 export function LandingPage({ authed }: Props) {
   const primaryCtaHref = authed ? appPath("/home") : appPath("/login");
   const primaryCtaLabel = "Dashboard";
-  // The help center is bundled into every build (main app + static-export
-  // marketing site), so /help stays same-origin regardless of APP_URL.
   const helpUrl = "/help";
   const signInUrl = appPath("/login");
-  // The Dashboard button only makes sense on the main-app landing where a
-  // signed-in visitor may want to jump to /home. On the off-origin marketing
-  // build (GitHub Pages), NEXT_PUBLIC_APP_URL is set and we hide it so the
-  // marketing surface stays informational.
-  const showDashboardCta = !APP_URL;
+  // Demo login. On the main app this is a same-origin relative path that the
+  // /login page auto-triggers on mount; on the GitHub Pages microsite it
+  // forwards to `${APP_URL}/login?demo=1` so the visitor lands on the real
+  // app and the demo runs there.
+  const demoHref = appPath("/login?demo=1");
+  // Dashboard CTA is always visible. On the main app it routes signed-in
+  // visitors to /home; on the microsite it forwards to `${APP_URL}/login`.
+  const showDashboardCta = true;
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
@@ -67,12 +68,14 @@ export function LandingPage({ authed }: Props) {
         primaryCtaLabel={primaryCtaLabel}
         helpUrl={helpUrl}
         showDashboardCta={showDashboardCta}
+        demoHref={demoHref}
       />
 
       <Hero
         primaryCtaHref={primaryCtaHref}
         primaryCtaLabel={primaryCtaLabel}
         showDashboardCta={showDashboardCta}
+        demoHref={demoHref}
       />
       <LogoBar />
       <BetaNotice />
@@ -85,6 +88,7 @@ export function LandingPage({ authed }: Props) {
         primaryCtaHref={primaryCtaHref}
         primaryCtaLabel={primaryCtaLabel}
         showDashboardCta={showDashboardCta}
+        demoHref={demoHref}
       />
       <Footer signInUrl={signInUrl} />
     </div>
@@ -115,10 +119,12 @@ function Hero({
   primaryCtaHref,
   primaryCtaLabel,
   showDashboardCta,
+  demoHref,
 }: {
   primaryCtaHref: string;
   primaryCtaLabel: string;
   showDashboardCta: boolean;
+  demoHref: string;
 }) {
   return (
     <section className="relative">
@@ -147,25 +153,20 @@ function Hero({
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Button asChild size="lg" className="w-full sm:w-auto">
+              <Link href={demoHref}>
+                <PlayCircle className="mr-1 h-4 w-4" />
+                Try the demo, no token needed
+              </Link>
+            </Button>
             {showDashboardCta ? (
-              <Button asChild size="lg" className="w-full sm:w-auto">
+              <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
                 <Link href={primaryCtaHref}>
                   {primaryCtaLabel}
                   <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
               </Button>
             ) : null}
-            <Button
-              asChild
-              size="lg"
-              variant={showDashboardCta ? "outline" : "default"}
-              className="w-full sm:w-auto"
-            >
-              <Link href="#features">
-                <PlayCircle className="mr-1 h-4 w-4" />
-                See what's inside
-              </Link>
-            </Button>
           </div>
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
@@ -669,10 +670,12 @@ function FinalCta({
   primaryCtaHref,
   primaryCtaLabel,
   showDashboardCta,
+  demoHref,
 }: {
   primaryCtaHref: string;
   primaryCtaLabel: string;
   showDashboardCta: boolean;
+  demoHref: string;
 }) {
   return (
     <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
@@ -688,17 +691,20 @@ function FinalCta({
             testing your first agent within the hour.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Button asChild size="lg">
+              <Link href={demoHref}>
+                <PlayCircle className="mr-1 h-4 w-4" />
+                Try the demo
+              </Link>
+            </Button>
             {showDashboardCta ? (
-              <Button asChild size="lg">
+              <Button asChild size="lg" variant="outline">
                 <Link href={primaryCtaHref}>
                   {primaryCtaLabel}
                   <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
               </Button>
             ) : null}
-            <Button asChild size="lg" variant={showDashboardCta ? "outline" : "default"}>
-              <Link href="#features">Explore the features</Link>
-            </Button>
           </div>
         </div>
       </div>

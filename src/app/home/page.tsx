@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UserMenuLogout } from "@/components/home/UserMenuLogout";
 import { HomeContent } from "@/components/home/HomeContent";
+import { DemoBanner } from "@/components/shell/DemoBanner";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { HelpButton } from "@/components/common/HelpButton";
 
@@ -48,6 +49,7 @@ export default async function HomePage() {
           </DropdownMenu>
         </div>
       </header>
+      <DemoBanner />
 
       <main className="mx-auto max-w-4xl space-y-6 px-6 py-8">
         <div>

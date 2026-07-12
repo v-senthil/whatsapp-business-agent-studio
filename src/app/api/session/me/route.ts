@@ -13,6 +13,7 @@ export async function GET() {
     lastBusinessId: session.lastBusinessId ?? null,
     lastWabaId: session.lastWabaId ?? null,
     readOnly: !!session.readOnly,
+    demo: !!session.demo,
     // AI-assist config — return the shape but scrub the actual API key.
     ai: {
       provider: session.aiProvider ?? null,

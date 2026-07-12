@@ -4,7 +4,12 @@ import { getSession } from "@/lib/session";
 import { graphFetch } from "@/lib/api/meta-client";
 import { parseErrorBody } from "@/lib/api/errors";
 
-const loginSchema = z.object({ token: z.string().min(10) });
+const loginSchema = z.union([
+  z.object({ token: z.string().min(10) }),
+  z.object({ demo: z.literal(true) }),
+]);
+
+const DEMO_TOKEN_SENTINEL = "__demo__";
 
 // Same-origin check for state-changing session requests. We accept absent
 // Origin headers (same-origin same-tab GETs can lack them) but reject any
@@ -29,6 +34,25 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ title: "Invalid body", detail: "Missing or invalid token" }, { status: 400 });
   }
+  if ("demo" in parsed.data) {
+    const session = await getSession();
+    session.token = DEMO_TOKEN_SENTINEL;
+    session.demo = true;
+    session.userId = "demo-user";
+    session.userName = "Demo user";
+    session.lastBusinessId = "demo-business";
+    session.lastWabaId = "demo-waba";
+    session.lastEntityId = "demo-phone-1";
+    // Scrub AI creds so a demo session starts from a clean slate.
+    session.aiApiKey = undefined;
+    session.aiProvider = undefined;
+    session.aiBaseUrl = undefined;
+    session.aiModel = undefined;
+    session.readOnly = undefined;
+    await session.save();
+    return NextResponse.json({ ok: true, demo: true, user: { id: session.userId, name: session.userName } });
+  }
+
   const { token } = parsed.data;
 
   const res = await graphFetch(token, "me?fields=id,name");
@@ -50,7 +74,9 @@ export async function POST(req: Request) {
     session.readOnly = undefined;
     session.lastEntityId = undefined;
     session.lastBusinessId = undefined;
+    session.lastWabaId = undefined;
   }
+  session.demo = undefined;
   session.token = token;
   session.userId = me.id;
   session.userName = me.name ?? me.id;

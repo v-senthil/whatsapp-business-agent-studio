@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { metaFetch } from "@/lib/api/meta-client";
+import { handleMetaDemo } from "@/lib/demo/router";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,6 +36,10 @@ async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] 
   const forwardHeaders = pickAllowedHeaders(req.headers);
 
   const method = req.method.toUpperCase();
+
+  if (session.demo) {
+    return handleMetaDemo(req, method, path, search, session.userId ?? "demo-user");
+  }
   // For non-multipart writes we buffer the body so metaFetch can retry on 429.
   // Multipart uploads must stay as a stream because the browser's boundary
   // parser cannot re-consume a stream once it has been forwarded, and we do

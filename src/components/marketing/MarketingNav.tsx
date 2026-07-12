@@ -18,6 +18,10 @@ interface Props {
   // is hidden. True on the main app where a signed-in visitor may want to
   // jump to /home from the landing.
   showDashboardCta?: boolean;
+  // Absolute or relative link that starts the demo login flow. Same-origin
+  // `/login?demo=1` on the main app; forwards to `${APP_URL}/login?demo=1`
+  // on the GitHub Pages microsite.
+  demoHref: string;
 }
 
 export function MarketingNav({
@@ -25,6 +29,7 @@ export function MarketingNav({
   primaryCtaLabel,
   helpUrl,
   showDashboardCta = true,
+  demoHref,
 }: Props) {
   const links = [
     { href: "#features", label: "Features" },
@@ -74,6 +79,9 @@ export function MarketingNav({
 
         <div className="hidden items-center gap-2 md:flex">
           <ThemeToggle variant="ghost" />
+          <Button asChild variant="outline" size="sm">
+            <Link href={demoHref}>Try the demo</Link>
+          </Button>
           {showDashboardCta ? (
             <Button asChild size="sm">
               <Link href={primaryCtaHref}>{primaryCtaLabel}</Link>
@@ -103,13 +111,18 @@ export function MarketingNav({
                 {l.label}
               </Link>
             ))}
-            <div className="mt-2 flex items-center gap-2 px-1">
-              <ThemeToggle variant="ghost" />
-              {showDashboardCta ? (
-                <Button asChild size="sm" className="flex-1">
-                  <Link href={primaryCtaHref}>{primaryCtaLabel}</Link>
-                </Button>
-              ) : null}
+            <div className="mt-2 flex flex-col gap-2 px-1">
+              <Button asChild variant="outline" size="sm" className="w-full">
+                <Link href={demoHref} onClick={() => setOpen(false)}>Try the demo</Link>
+              </Button>
+              <div className="flex items-center gap-2">
+                <ThemeToggle variant="ghost" />
+                {showDashboardCta ? (
+                  <Button asChild size="sm" className="flex-1">
+                    <Link href={primaryCtaHref}>{primaryCtaLabel}</Link>
+                  </Button>
+                ) : null}
+              </div>
             </div>
           </div>
         </div>
