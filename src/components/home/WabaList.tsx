@@ -1,12 +1,17 @@
 "use client";
 import Link from "next/link";
-import { Building2, PhoneCall } from "lucide-react";
+import { Building2, ExternalLink, PhoneCall } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { usePhones, useWabas, type PhoneNumber, type Waba } from "@/lib/client/hooks/useDiscovery";
+
+function businessAgentEnableUrl(businessId: string, wabaId: string) {
+  const params = new URLSearchParams({ business_id: businessId, asset_id: wabaId });
+  return `https://business.facebook.com/latest/whatsapp_manager/business_ai?${params.toString()}`;
+}
 
 async function selectEntity(id: string) {
   await fetch("/api/session", {
@@ -35,13 +40,24 @@ function PhoneRow({ phone }: { phone: PhoneNumber }) {
   );
 }
 
-function WabaBlock({ waba }: { waba: Waba }) {
+function WabaBlock({ waba, businessId }: { waba: Waba; businessId: string }) {
   const phones = usePhones(waba.id);
+  const enableUrl = businessAgentEnableUrl(businessId, waba.id);
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <div className="text-sm font-medium">{waba.name ?? "Unnamed WABA"}</div>
         <span className="text-xs text-muted-foreground font-mono">{waba.id}</span>
+        <a
+          href={enableUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ml-auto inline-flex items-center gap-1 rounded-md border border-amber-500/40 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-900 transition-colors hover:bg-amber-100 dark:bg-amber-950 dark:text-amber-100 dark:hover:bg-amber-900"
+          title="Opens Meta Business Manager so an admin can accept the WhatsApp Business Agent terms & conditions"
+        >
+          <ExternalLink className="h-3 w-3" />
+          Enable WhatsApp Business Agent
+        </a>
       </div>
       {phones.isLoading && (
         <div className="grid gap-2 md:grid-cols-2">
@@ -97,7 +113,7 @@ export function WabaList({ businessId }: { businessId: string }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {items.map((w) => <WabaBlock key={w.id} waba={w} />)}
+        {items.map((w) => <WabaBlock key={w.id} waba={w} businessId={businessId} />)}
       </CardContent>
     </Card>
   );

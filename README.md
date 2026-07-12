@@ -1,6 +1,14 @@
 # WhatsApp Business Agent Studio
 
-A visual builder for WhatsApp Business AI agents on the [Meta Business Agent Platform](https://developers.facebook.com/documentation/meta-business-agent/get-started). Wraps the entire Meta Business Agent Platform API and Meta Graph API behind a Next.js UI: discover WABAs and phone numbers, onboard an agent, configure settings/knowledge/skills, register external tool connectors, run evals, and chat-test — all without touching Postman.
+A visual builder for WhatsApp Business AI agents on the [Meta Business Agent Platform](https://developers.facebook.com/documentation/meta-business-agent/get-started). Wraps the entire Meta Business Agent Platform API and Meta Graph API behind a Next.js UI: discover WABAs and phone numbers, onboard an agent, configure settings/knowledge/skills, register external tool connectors, run evals, and chat-test, all without touching Postman.
+
+> **Beta notice.** WhatsApp Business Agent is currently in Beta and has not been released for general availability. To enable it for your WABA, an admin must accept the terms and conditions from Meta Business Manager at:
+>
+> ```
+> https://business.facebook.com/latest/whatsapp_manager/business_ai?business_id={Business ID}&asset_id={WABA ID}
+> ```
+>
+> Replace the placeholders with your own IDs. If the page loads and prompts you to accept the T&C, your WABA is eligible for the Beta. The studio also generates this link per WABA on the home page after you enter your Business ID, and mirrors the Beta callout on the public landing page and the help center home.
 
 ## Features
 
@@ -199,9 +207,9 @@ Open `http://localhost:3000` and you see the exact site GitHub Pages will serve.
 
 ## User flow
 
-0. **`/`** — public landing page. Signed-in visitors see a **Dashboard** button that jumps to `/home`; anyone else lands on `/login`. The marketing nav also links to the in-app **Docs** at `/help`, which is public.
+0. **`/`** — public landing page. Signed-in visitors see a **Dashboard** button that jumps to `/home`; anyone else lands on `/login`. The marketing nav also links to the in-app **Docs** at `/help`, which is public. A Beta banner explains the T&C requirement and shows the Meta Business Manager enable URL.
 1. **`/login`** — paste an access token. Verified server-side against `GET /me` on the Graph API before the session cookie is issued.
-2. **`/home`** — paste your Meta business ID. WABAs are fetched, each with its phones. Persisted to session as `lastBusinessId`.
+2. **`/home`** — paste your Meta business ID. WABAs are fetched, each with its phones. Persisted to session as `lastBusinessId`. Each WABA row shows an **Enable WhatsApp Business Agent** link that opens Business Manager with the current `business_id` and `asset_id` prefilled so an admin can accept the Beta T&C.
 3. **`/dashboard/[entityId]`** — pick a phone; the sidebar unlocks all configuration tabs for that phone. The onboarding checklist walks you through eligibility → agent → business info → skill → connector → rollout.
 4. **Onboarding** — creates the WhatsApp agent if one doesn't exist. Only one per phone.
 5. Configure → Test → Iterate. Use the Dev drawer (`Cmd/Ctrl+Shift+D`) at any time to inspect the underlying API calls.

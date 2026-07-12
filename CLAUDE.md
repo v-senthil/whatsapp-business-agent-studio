@@ -53,6 +53,10 @@ All Agent Platform calls include `X-API-Version: 2.0.0` (added by the proxy). Au
 ### `/` — public landing page — `src/app/page.tsx`
 Previously redirected. Now renders `<LandingPage authed={…}>` (`src/components/marketing/LandingPage.tsx`). Session cookie is read only to pick the CTA target: authed → `/home`, otherwise → `/login`. Middleware does NOT gate `/`. Marketing components live in `src/components/marketing/` (`LandingPage`, `MarketingNav`, `HeroPreview`). Nav has a single primary CTA labeled **Dashboard** in both desktop and mobile viewports; do NOT re-add a separate "Sign in" ghost button, that duplication was intentionally removed.
 
+The landing page carries a **Beta banner** in two forms: a compact amber pill above the hero platform pill ("WhatsApp Business Agent is in Beta, not yet generally available") and a full `<BetaNotice>` section between `<LogoBar>` and `<Features>` with the enable-URL template (`https://business.facebook.com/latest/whatsapp_manager/business_ai?business_id={Business ID}&asset_id={WABA ID}`) and a `<CopyButton>` for it. Keep the same messaging on `/home` and `/help` in sync.
+
+**Beta callout on `/help` index.** `src/app/help/page.tsx` renders an amber callout under the `<h1>` with the same enable-URL template and a link to `/help/getting-started/pick-business-and-phone` for the full walkthrough. This is the third mirror of the Beta message (after `/` and `/home`); update all three together.
+
 ### `/help` — in-app help center
 `src/app/help/page.tsx` (index, cards grouped by section) and `src/app/help/[...slug]/page.tsx` (article with breadcrumbs + prev/next). Not gated by middleware. `src/lib/help-docs.ts` parses `docs/README.md` at request time as the source of truth — a `##`-header line becomes a section, and a `- [Label](path/file.md), description` line becomes an entry. Two module-level regexes; if the doc format changes, both must be adjusted (or the sidebar silently drops items). Result is memoized in-module for the lifetime of the process.
 
@@ -69,6 +73,8 @@ Paste access token → `POST /api/session` → verifies against Graph `/me` → 
 
 ### `/home` — `src/app/home/page.tsx`
 Server component; reads `lastBusinessId` from session and hands to `HomeContent` (`src/components/home/`). The user pastes a business ID via `BusinessIdInput`; on submit it PATCHes the session and triggers `WabaList` which chains `useWabas(businessId)` → per-WABA `usePhones(wabaId)`. Clicking a phone routes to `/dashboard/[entityId]` and PATCHes `lastEntityId`.
+
+**Beta callout.** `HomeContent` renders an amber `Alert` (variant `warning`) above `BusinessIdInput` explaining that WhatsApp Business Agent is in Beta and requires an admin to accept the Meta T&C. Once WABAs are loaded, each `WabaBlock` in `WabaList` renders an **Enable WhatsApp Business Agent** link (opens in a new tab) that points to `https://business.facebook.com/latest/whatsapp_manager/business_ai?business_id={businessId}&asset_id={wabaId}`. The URL is built by `businessAgentEnableUrl(businessId, wabaId)` at the top of `WabaList.tsx`. The same Beta messaging is duplicated in three places on purpose — `HomeContent` (dashboard entry), `LandingPage` (`<BetaNotice>` section), and `/help` index. Keep them in sync if the wording changes.
 
 Note: `/me/businesses` discovery is intentionally NOT called — the user chose to input a business ID rather than list all. If you re-add auto-discovery, restore `src/app/api/graph/businesses/route.ts` and `useBusinesses` hook.
 

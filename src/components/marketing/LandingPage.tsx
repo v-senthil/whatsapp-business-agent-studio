@@ -75,6 +75,7 @@ export function LandingPage({ authed }: Props) {
         showDashboardCta={showDashboardCta}
       />
       <LogoBar />
+      <BetaNotice />
       <Features />
       <Workflow />
       <PlatformDeepDive />
@@ -123,6 +124,10 @@ function Hero({
     <section className="relative">
       <div className="mx-auto max-w-7xl px-4 pb-16 pt-16 sm:px-6 sm:pt-24 lg:px-8 lg:pb-24">
         <div className="mx-auto max-w-3xl text-center">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-100">
+            <Sparkles className="h-3 w-3" />
+            WhatsApp Business Agent is in Beta, not yet generally available
+          </div>
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs text-muted-foreground backdrop-blur">
             <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
             Built on the Meta Business Agent Platform
@@ -224,6 +229,50 @@ function CommandRow({ value }: { value: string }) {
       <code className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">{value}</code>
       <CopyButton value={value} />
     </div>
+  );
+}
+
+function BetaNotice() {
+  const urlTemplate =
+    "https://business.facebook.com/latest/whatsapp_manager/business_ai?business_id={Business ID}&asset_id={WABA ID}";
+  return (
+    <section id="beta" className="mx-auto max-w-4xl px-4 pt-16 sm:px-6 lg:px-8">
+      <div className="rounded-2xl border border-amber-500/40 bg-amber-50 p-6 shadow-sm dark:bg-amber-950/40 sm:p-8">
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/15 text-amber-700 ring-1 ring-amber-500/30 dark:text-amber-300">
+            <Sparkles className="h-4 w-4" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-lg font-semibold tracking-tight text-amber-900 dark:text-amber-100">
+              WhatsApp Business Agent is currently in Beta
+            </h3>
+            <p className="mt-2 text-sm text-amber-900/90 dark:text-amber-100/90">
+              This feature is not yet released for general availability. To enable it for your
+              WhatsApp Business Account, an admin must open Meta Business Manager and accept the
+              WhatsApp Business Agent terms and conditions.
+            </p>
+            <div className="mt-4 space-y-2">
+              <div className="text-[11px] font-medium uppercase tracking-widest text-amber-900/70 dark:text-amber-100/70">
+                Enable URL
+              </div>
+              <div className="flex items-center gap-2 rounded-md bg-background/70 px-3 py-1.5 ring-1 ring-amber-500/20 dark:bg-amber-950/60">
+                <code className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">
+                  {urlTemplate}
+                </code>
+                <CopyButton value={urlTemplate} />
+              </div>
+              <p className="text-xs text-amber-900/80 dark:text-amber-100/80">
+                Replace <code className="font-mono">{"{Business ID}"}</code> and{" "}
+                <code className="font-mono">{"{WABA ID}"}</code> with your own IDs. If the page
+                loads and prompts you to accept the T&amp;C, your WABA is eligible for the Beta.
+                After signing in, the studio also generates this link for each of your WABAs on the
+                home page.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
