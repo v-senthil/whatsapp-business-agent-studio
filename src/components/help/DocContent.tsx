@@ -7,6 +7,13 @@ interface Props {
   basePath?: string;
 }
 
+// Next auto-prefixes basePath on <Link> and next/image, but the raw <img> that
+// react-markdown emits is left alone — so on GitHub Pages, absolute paths like
+// `/help/screenshots/foo.png` resolve to the site root instead of
+// `/<repo>/help/screenshots/foo.png`. Read the marketing build's
+// NEXT_PUBLIC_BASE_PATH once at module load and prepend it here.
+const IMG_BASE_PATH = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/$/, "");
+
 function resolveRelative(base: string, target: string): string {
   const baseParts = base.split("/").filter(Boolean);
   baseParts.pop();
@@ -17,6 +24,15 @@ function resolveRelative(base: string, target: string): string {
     else baseParts.push(part);
   }
   return "/" + baseParts.join("/");
+}
+
+function resolveImageSrc(src: string): string {
+  if (!IMG_BASE_PATH) return src;
+  if (/^https?:\/\//i.test(src)) return src;
+  if (src.startsWith("data:")) return src;
+  if (!src.startsWith("/")) return src;
+  if (src.startsWith(`${IMG_BASE_PATH}/`)) return src;
+  return `${IMG_BASE_PATH}${src}`;
 }
 
 export function DocContent({ markdown, basePath = "help" }: Props) {
@@ -48,6 +64,11 @@ export function DocContent({ markdown, basePath = "help" }: Props) {
               internal = resolveRelative(basePath, targetPath);
             }
             return <Link href={internal + anchor}>{children}</Link>;
+          },
+          img: ({ src, alt, ...rest }) => {
+            if (!src || typeof src !== "string") return <img alt={alt ?? ""} {...rest} />;
+            // eslint-disable-next-line @next/next/no-img-element
+            return <img src={resolveImageSrc(src)} alt={alt ?? ""} {...rest} />;
           },
         }}
       >
