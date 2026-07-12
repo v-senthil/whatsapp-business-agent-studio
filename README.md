@@ -64,7 +64,8 @@ A visual builder for WhatsApp Business AI agents on the [Meta Business Agent Pla
 
 ### Marketing and help
 
-- **Public landing page** at `/` — full marketing site (hero, feature bento, workflow, platform deep-dive, FAQ, final CTA) shown to anyone. Session-aware nav: a single **Dashboard** button jumps signed-in visitors straight to `/home` and non-authed visitors to `/login`.
+- **Public landing page** at `/` — full marketing site (hero, feature bento, workflow, platform deep-dive, FAQ, final CTA) shown to anyone. Nav and every hero/final CTA pair a **Try the demo** button with a **Dashboard** button; the Dashboard button routes signed-in visitors to `/home` and everyone else to `/login`.
+- **Demo mode** — a self-contained tour that runs the whole studio with seeded data and no Meta credentials. Kick it off from the landing page **Try the demo** buttons or the `/login` page. Server-side `session.demo = true` short-circuits every Meta / Graph proxy to `src/lib/demo/` fixtures; creates and edits go to a per-session in-memory store and reset on sign-out. Full walk-through at `docs/getting-started/try-the-demo.md`.
 - **In-app help center** at `/help` — every article in the `docs/` tree rendered as browsable help pages with a left sidebar, breadcrumbs, per-article prev/next pager, and internal link resolution. Backed by `react-markdown` + `remark-gfm` + `@tailwindcss/typography`; the sidebar and index are built from `docs/README.md` at request time so a Markdown edit is all it takes to add a new topic. Includes an instant search box at the top of every help page (press `/` to focus) that ranks matches across article titles, descriptions, section names, and body text with highlighted snippets.
 - **Contextual Help button on every page** — a small **Help** chip in the top-right of each dashboard page opens the matching article in a new tab. The mapping from route to article lives in `src/lib/help-links.ts`.
 - **Shared product mark** — `src/components/common/Logo.tsx` renders the same green-gradient speech-bubble sparkle used by the favicon (`src/app/icon.svg`) and Apple touch icon (`src/app/apple-icon.tsx`). Reused across login, dashboard sidebar, marketing nav/footer, and the chat mock.
@@ -99,7 +100,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to hit the landing page, click **Dashboard** to jump to `/login`, paste a Meta access token, then a business ID (or a phone number ID directly). The in-app help center is at [/help](http://localhost:3000/help).
+Open [http://localhost:3000](http://localhost:3000) to hit the landing page. If you don't have a Meta access token yet, click **Try the demo** to explore the whole studio with seeded data — nothing hits Meta. Otherwise click **Dashboard** to jump to `/login`, paste a Meta access token, then a business ID (or a phone number ID directly). The in-app help center is at [/help](http://localhost:3000/help).
 
 ### Environment
 
@@ -114,7 +115,9 @@ GRAPH_API_BASE=https://graph.facebook.com/v20.0
 # META_WEBHOOK_VERIFY_TOKEN=
 # Optional — session lifetime, defaults to 8 hours (28800 seconds):
 # WABIZ_SESSION_TTL_SECONDS=28800
-# Optional — expected host for same-origin CSRF check behind a reverse proxy:
+# Optional — expected host for same-origin CSRF check. Only needed if
+# your reverse proxy strips X-Forwarded-Host (rare); AppSail, nginx,
+# and Cloudflare all set it, and the check auto-picks it up.
 # WABIZ_PUBLIC_HOST=agents.example.com
 ```
 
@@ -161,7 +164,8 @@ GRAPH_API_BASE=https://graph.facebook.com/v20.0
 # META_WEBHOOK_VERIFY_TOKEN=
 # Optional, session lifetime in seconds (default 28800 = 8 hours)
 # WABIZ_SESSION_TTL_SECONDS=28800
-# Optional, expected host for same-origin CSRF check behind a reverse proxy
+# Optional, expected host for same-origin CSRF check. Only needed if
+# your reverse proxy strips X-Forwarded-Host (rare); AppSail sets it.
 # WABIZ_PUBLIC_HOST=agents.example.com
 ```
 
@@ -207,8 +211,8 @@ Open `http://localhost:3000` and you see the exact site GitHub Pages will serve.
 
 ## User flow
 
-0. **`/`** — public landing page. Signed-in visitors see a **Dashboard** button that jumps to `/home`; anyone else lands on `/login`. The marketing nav also links to the in-app **Docs** at `/help`, which is public. A Beta banner explains the T&C requirement and shows the Meta Business Manager enable URL.
-1. **`/login`** — paste an access token. Verified server-side against `GET /me` on the Graph API before the session cookie is issued.
+0. **`/`** — public landing page. **Try the demo** starts a seeded, no-Meta walk-through; **Dashboard** routes signed-in visitors to `/home` and everyone else to `/login`. The marketing nav also links to the in-app **Docs** at `/help`, which is public. A Beta banner explains the T&C requirement and shows the Meta Business Manager enable URL.
+1. **`/login`** — paste an access token, or click **Try the demo (no token)** for the seeded tour. Real tokens are verified server-side against `GET /me` on the Graph API before the session cookie is issued; the demo path skips verification and seeds an in-memory tenant.
 2. **`/home`** — paste your Meta business ID **or** a WABA ID directly. WABAs are fetched, each with its phones. Persisted to session as `lastBusinessId` / `lastWabaId`. Each WABA row shows an **Enable WhatsApp Business Agent** link that opens Business Manager with the current `business_id` and `asset_id` prefilled so an admin can accept the Beta T&C.
 3. **`/dashboard/[entityId]`** — pick a phone. `<EntityGate>` calls `agent_eligibility` first and shows a **Checking eligibility…** spinner. Only after that resolves successfully do downstream Meta calls fire and the sidebar tabs unlock. If Meta returns the 403 "Meta Business AI Terms of Service" error, the main content becomes a **Waiting for terms acceptance** panel with an amber **Enable WhatsApp Business Agent** button (pre-filled with your Business ID and WABA ID), and every per-entity sidebar tab is greyed out until an admin approves the T&C.
 4. **Onboarding checklist** walks you through eligibility → agent → business info → skill → connector → rollout.
@@ -277,7 +281,7 @@ src/
 │       └── meta/[...path]/               # catch-all proxy → api.facebook.com
 ├── components/
 │   ├── ui/                               # shadcn-style primitives (self-built)
-│   ├── shell/                            # AppShell, Sidebar, Header, Breadcrumbs, EntityPicker, ReadOnlyBanner, EntityGate, TosGateBanner
+│   ├── shell/                            # AppShell, Sidebar, Header, Breadcrumbs, EntityPicker, ReadOnlyBanner, DemoBanner, EntityGate, TosGateBanner
 │   ├── marketing/                        # LandingPage, MarketingNav, HeroPreview (used by src/app/page.tsx)
 │   ├── help/                             # HelpShell, HelpSidebar, DocContent (Markdown renderer)
 │   ├── dev/                              # DevDrawer + DevDrawerMount
@@ -305,6 +309,7 @@ src/
 │   ├── connector-templates.ts            # curated connector library
 │   ├── scenarios.ts                      # localStorage CRUD for saved chats
 │   ├── webhook-store.ts                  # in-memory ring buffer for received webhooks
+│   ├── demo/{fixtures, store, router}.ts # demo mode: seeded tenant + per-session in-memory writes + proxy short-circuit
 │   ├── ai/{index, document-generator}.ts # provider abstraction (Claude CLI / OpenAI-compat) + doc → FAQ/skill/connector prompt
 │   ├── utils/{cn, csv, agent-config}.ts
 │   └── ...

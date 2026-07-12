@@ -11,6 +11,8 @@ A Next.js 15 App Router wrapper over the Meta Business Agent Platform API + Meta
 3. **Graph API discovery is a separate proxy family** (`/api/graph/wabas`, `/api/graph/phones`) because the base host and error shape differ from the Agent Platform.
 4. **Every resource has the same 4-file rhythm.** Schema (`src/lib/schemas/<x>.ts`) → response type (`src/types/<x>.ts`) → hook (`src/lib/client/hooks/use<X>.ts`) → page/component. Follow the pattern of any existing resource (Skills is the simplest CRUD reference).
 5. **The build sometimes fails on first run** with `PageNotFoundError: /_document`. Just re-run `npm run build`. It's a Next 15.1.4 quirk, not a bug in our code.
+6. **Demo mode short-circuits every Meta/Graph proxy.** When `session.demo === true`, the `/api/meta/[...path]` catch-all and the `/api/graph/{wabas,phones,phone}` routes delegate to `src/lib/demo/router.ts` and return fixture data. Nothing touches Meta. Writes go to a per-session `Map` in `src/lib/demo/store.ts` keyed by `session.userId` (`"demo-user"` by default), attached to `globalThis` so hot reload doesn't wipe it. Any new client hook that hits a new endpoint MUST be handled in `handleMetaDemo` or the demo will 404 that surface. `session.token` is set to `"__demo__"` so the existing `!session.token` guards still pass. Demo login: `POST /api/session { demo: true }` — the login page auto-triggers this when `?demo=1` is present; the landing page nav / hero / final CTAs point there. See `src/lib/demo/fixtures.ts` for the seeded Nimbus Coffee tenant.
+7. **Same-origin check trusts `X-Forwarded-Host`.** `src/app/api/session/route.ts` `isSameOrigin` picks the expected host in the order `WABIZ_PUBLIC_HOST` → `X-Forwarded-Host` → `Host`. Behind AppSail (or any proxy) the internal `Host` is different from the public origin, so without this fallback DELETE/PATCH `/api/session` 403s ("Cross-origin request rejected"). Do NOT remove the header fallback — the End demo button, read-only toggle, and every session PATCH depend on it.
 
 ## Meta API cheatsheet
 
@@ -51,7 +53,9 @@ All Agent Platform calls include `X-API-Version: 2.0.0` (added by the proxy). Au
 ## Feature-by-feature map
 
 ### `/` — public landing page — `src/app/page.tsx`
-Previously redirected. Now renders `<LandingPage authed={…}>` (`src/components/marketing/LandingPage.tsx`). Session cookie is read only to pick the CTA target: authed → `/home`, otherwise → `/login`. Middleware does NOT gate `/`. Marketing components live in `src/components/marketing/` (`LandingPage`, `MarketingNav`, `HeroPreview`). Nav has a single primary CTA labeled **Dashboard** in both desktop and mobile viewports; do NOT re-add a separate "Sign in" ghost button, that duplication was intentionally removed.
+Previously redirected. Now renders `<LandingPage authed={…}>` (`src/components/marketing/LandingPage.tsx`). Session cookie is read only to pick the Dashboard CTA target: authed → `/home`, otherwise → `/login`. Middleware does NOT gate `/`. Marketing components live in `src/components/marketing/` (`LandingPage`, `MarketingNav`, `HeroPreview`). The nav and every hero/final CTA pair the primary **Try the demo** button (points at `/login?demo=1` via `appPath()`) with the secondary **Dashboard** button. Do NOT re-add a "Sign in" ghost button — the CTA lineup was deliberately tightened to demo + Dashboard.
+
+The `appPath(path)` helper adds `NEXT_PUBLIC_APP_URL` in front when set (the GitHub Pages microsite build). On the main app it's unset and returns same-origin relative paths. That's how the demo CTA works both places: same-origin here, forwarded to `${APP_URL}/login?demo=1` on the microsite.
 
 The landing page carries a **Beta banner** in two forms: a compact amber pill above the hero platform pill ("WhatsApp Business Agent is in Beta, not yet generally available") and a full `<BetaNotice>` section between `<LogoBar>` and `<Features>` with the enable-URL template (`https://business.facebook.com/latest/whatsapp_manager/business_ai?business_id={Business ID}&asset_id={WABA ID}`) and a `<CopyButton>` for it. Keep the same messaging on `/home` and `/help` in sync.
 
@@ -69,10 +73,10 @@ The landing page carries a **Beta banner** in two forms: a compact amber pill ab
 The `docs/` folder is **user-facing only**. Do NOT drop developer notes, API paths, source paths, or component names into it — the rewriter that produced the current 37 files is intentional. If you need internal notes, put them in this file or a design doc under `~/.claude/plans/`.
 
 ### `/login` — `src/app/login/page.tsx`
-Paste access token → `POST /api/session` → verifies against Graph `/me` → session saved. On success, redirects to `/home`. Everything else lives behind the middleware in `middleware.ts` matching `/dashboard/*` and `/home`.
+Paste access token → `POST /api/session` → verifies against Graph `/me` → session saved. On success, redirects to `/home`. Everything else lives behind the middleware in `middleware.ts` matching `/dashboard/*` and `/home`. **Demo login.** The same page also renders a "Try the demo (no token)" button that POSTs `{ demo: true }` to `/api/session` (no Graph call), seeds `demo-user` / `demo-business` / `demo-waba` / `demo-phone-1`, and redirects to `/home`. Visiting `/login?demo=1` auto-triggers the demo button on mount — this is how the marketing landing page CTAs drop straight into demo mode. The page is wrapped in a `<Suspense>` boundary because `useSearchParams()` requires one for the static prerender.
 
 ### `/home` — `src/app/home/page.tsx`
-Server component; reads `lastBusinessId` from session and hands to `HomeContent` (`src/components/home/`). The user pastes a business ID via `BusinessIdInput`; on submit it PATCHes the session and triggers `WabaList` which chains `useWabas(businessId)` → per-WABA `usePhones(wabaId)`. Clicking a phone routes to `/dashboard/[entityId]` and PATCHes `lastEntityId`.
+Server component; reads `lastBusinessId` from session and hands to `HomeContent` (`src/components/home/`). The user pastes a business ID via `BusinessIdInput`; on submit it PATCHes the session and triggers `WabaList` which chains `useWabas(businessId)` → per-WABA `usePhones(wabaId)`. Clicking a phone routes to `/dashboard/[entityId]` and PATCHes `lastEntityId`. `<DemoBanner>` is mounted directly under the header (mirrors what `AppShell` does for dashboard pages) — this is the only page outside the shell where demo users land, so the banner has to be added manually.
 
 **Direct WABA ID entry.** Below `BusinessIdInput` there is a second card, `WabaIdInput`, that accepts a WABA ID directly and renders `<DirectWabaPhones>` (`src/components/home/DirectWabaPhones.tsx`) — reuses `usePhones(wabaId)` and the exported `PhoneRow` from `WabaList.tsx`. The Enable-URL link is only shown when the user has also entered their Business ID above, because Meta needs both `business_id` and `asset_id` (WABA ID) in the URL. `HomeContent` renders `DirectWabaPhones` when a direct WABA ID is set (short-circuits the Business ID → WABAs flow); otherwise falls back to the existing `WabaList`.
 
@@ -249,6 +253,19 @@ Session field `readOnly?: boolean`. `PATCH /api/session` accepts it; `GET /api/s
 - Toggle in the account dropdown in `Header.tsx`.
 - When mounting new mutation flows, no per-hook action needed — the fetcher intercepts.
 
+### Demo mode
+Session field `demo?: boolean`. Set by `POST /api/session { demo: true }` (no Graph verification, seeds `demo-user`/`demo-business`/`demo-waba`/`demo-phone-1`, sets `session.token = "__demo__"` sentinel). Returned by `GET /api/session/me`. Everything is server-side; the client just calls the same hooks and gets fixture data back.
+
+- `src/lib/demo/fixtures.ts` — canned Nimbus Coffee tenant (1 WABA, 2 phones, 1 agent, 3 skills, 3 FAQs, 2 websites, 2 allowlist, 1 file, 1 connector w/ 2 tools, 4 eval cases). Plus a keyword-driven `demoAgentReply(userMsg)` that varies replies for `NC-#####`, `recommend`, `hours`, `refund`, etc.
+- `src/lib/demo/store.ts` — per-session `Map`s (skills, faqs, websites, allowlist, connectors, tools, agentEvents, evalJobs) attached to `globalThis.__wabizDemoState` so hot reload doesn't wipe demo state. Seeded from fixtures on first access. `nextDemoId(state, prefix)` mints IDs.
+- `src/lib/demo/router.ts` — `handleMetaDemo(req, method, path, search, sessionKey)` pattern-matches every endpoint the client can call. The `agent_event` handler flips `processing → success` after 6s via `setTimeout(...).unref()`. The `agent-eval/run` handler advances `PENDING → RUNNING → SUCCEEDED` on a 12s timeline based on `Date.now() - startedAt`. When adding a new endpoint to a hook, extend this router or the UI will 404 in demo. Also exposes `handleGraphWabas() / handleGraphPhones() / handleGraphPhone(id)` for the Graph proxies.
+- Proxy short-circuits: `src/app/api/meta/[...path]/route.ts` and each of `src/app/api/graph/{wabas,phones,phone}/route.ts` check `session.demo` right after `getSession()` and return early.
+- `<DemoBanner>` (`src/components/shell/DemoBanner.tsx`) — emerald banner between `Header` and `ReadOnlyBanner` in `AppShell`, plus mounted in `/home` header. Reads `useSession().data.demo`. "End demo" calls `DELETE /api/session` (same-origin check).
+- Entry points: `/login` "Try the demo (no token)" button; `/login?demo=1` auto-triggers on mount; marketing landing (`LandingPage.tsx` + `MarketingNav.tsx`) hero, nav, and final CTAs all point at `/login?demo=1` (via `appPath` — same-origin on the main app, forwarded to `${APP_URL}/login?demo=1` on the GH Pages microsite).
+- Carve-outs: file uploads accept multipart but discard the binary (metadata only). AI-assist routes still need a real provider under `/settings/ai` — the demo router doesn't stub them. Webhook receiver + thread control return canned success.
+
+Any new client hook that hits a new Meta path MUST be handled in `handleMetaDemo` — otherwise the demo will 404 that surface. When adding a resource, wire it into the demo router at the same time.
+
 ## Conventions
 
 - **Product logo mark.** `src/components/common/Logo.tsx` is the canonical SVG (same design as `src/app/icon.svg`: WhatsApp-green gradient rounded square, white speech bubble with tail, dark-green sparkle inside). Use it everywhere the product mark appears (login, sidebar, marketing nav, marketing footer, chat mock). Do NOT re-inline the old Bot-in-circle badge. The Apple touch icon is generated dynamically at `src/app/apple-icon.tsx` via `next/og` `ImageResponse` because Next only accepts raster for `apple-icon`; keep it visually aligned with the SVG.
@@ -318,6 +335,8 @@ Session field `readOnly?: boolean`. `PATCH /api/session` accepts it; `GET /api/s
 - `src/components/common/Logo.tsx` + `src/app/icon.svg` + `src/app/apple-icon.tsx` — the product mark trio; keep visually aligned
 - `src/components/shell/EntityGate.tsx` — the eligibility-first gate that decides whether the dashboard shows a spinner, the ToS block, or the actual content
 - `src/lib/client/dev-drawer.ts` — module-level store keeping the header Settings toggle and the drawer in sync
+- `src/lib/demo/router.ts` + `src/lib/demo/store.ts` + `src/lib/demo/fixtures.ts` — the demo-mode surface. Extend `handleMetaDemo` when adding new Meta endpoints or the demo will 404 them.
+- `src/app/api/session/route.ts` — session lifecycle (login, demo login, logout, PATCH). Home of the `isSameOrigin` check with the `WABIZ_PUBLIC_HOST` → `X-Forwarded-Host` → `Host` precedence.
 
 ## Plan file
 
