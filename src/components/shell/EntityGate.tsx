@@ -1,14 +1,13 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { ExternalLink, ShieldAlert } from "lucide-react";
+import { ExternalLink, Loader2, ShieldAlert } from "lucide-react";
 import { useEligibility } from "@/lib/client/hooks/useSettings";
 import { useSession } from "@/lib/client/hooks/useSession";
 import { usePhoneDetails } from "@/lib/client/hooks/useDiscovery";
 import { isTosNotAccepted } from "@/lib/api/errors";
 import { ErrorState } from "@/components/common/ErrorState";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface Props {
   entityId: string;
@@ -37,14 +36,17 @@ export function EntityGate({ entityId, children }: Props) {
 
   if (eligibility.isPending) {
     return (
-      <div className="space-y-4 pt-8">
-        <Skeleton className="h-8 w-72" />
-        <Skeleton className="h-4 w-96" />
-        <Skeleton className="h-40" />
-        <div className="grid gap-4 md:grid-cols-2">
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
-        </div>
+      <div
+        className="mx-auto flex max-w-sm flex-col items-center pt-24 text-center"
+        role="status"
+        aria-live="polite"
+      >
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="mt-4 text-sm font-medium">Checking eligibility…</div>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Confirming this phone number can host a Meta Business Agent before loading the
+          rest of the dashboard.
+        </p>
       </div>
     );
   }
