@@ -100,10 +100,11 @@ export function EntityPicker({ currentEntityId, primaryLabel, secondaryLabel }: 
                         <PhoneCall className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm leading-tight">
-                            {p.display_phone_number ?? p.id}
+                            {p.display_phone_number ?? p.verified_name ?? "Unnamed phone"}
                           </span>
                           <span className="block truncate text-xs leading-tight text-muted-foreground">
-                            {p.verified_name ?? "—"} · <span className="font-mono">{p.id}</span>
+                            {p.display_phone_number && p.verified_name ? `${p.verified_name} · ` : ""}
+                            <span className="font-mono">{p.id}</span>
                           </span>
                         </span>
                         {p.quality_rating && (

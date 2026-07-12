@@ -55,11 +55,10 @@ export function Header({ user, entityId }: HeaderProps) {
   else if (phoneLoading) primaryLabel = "Loading phone…";
   else if (verifiedName) primaryLabel = verifiedName;
   else primaryLabel = "Phone number";
-  // Secondary always shows the verified name and the raw ID, preferring the
-  // name when it is distinct from the primary.
-  const secondaryLabel = displayPhone && verifiedName
-    ? `${verifiedName} · ${entityId ?? ""}`
-    : entityId;
+  // Secondary shows the verified name when the primary already carries the
+  // phone number. The raw phone_number_id is never rendered as the primary
+  // label; it lives in the popover contents when the user opens the picker.
+  const secondaryLabel = displayPhone ? verifiedName : undefined;
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4">

@@ -61,27 +61,16 @@ export function EntityGate({ entityId, children }: Props) {
             before this app can configure the agent.
           </p>
           {enableUrl ? (
-            <div className="space-y-3">
-              <Button
-                asChild
-                size="lg"
-                className="w-full border border-amber-500/50 bg-amber-500 text-amber-950 shadow-sm hover:bg-amber-400 dark:bg-amber-500 dark:text-amber-950 dark:hover:bg-amber-400 sm:w-auto"
-              >
-                <a href={enableUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4" />
-                  Enable WhatsApp Business Agent
-                </a>
-              </Button>
-              <p className="text-xs text-muted-foreground">
-                Opens Meta Business Manager with your{" "}
-                <span className="font-mono text-foreground">business_id</span> and{" "}
-                <span className="font-mono text-foreground">asset_id</span> prefilled.
-              </p>
-              <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-left text-xs text-muted-foreground">
-                <div className="mb-1 font-medium uppercase tracking-widest">Enable URL</div>
-                <code className="break-all font-mono text-[11px] text-foreground">{enableUrl}</code>
-              </div>
-            </div>
+            <Button
+              asChild
+              size="lg"
+              className="w-full border border-amber-500/50 bg-amber-500 text-amber-950 shadow-sm hover:bg-amber-400 dark:bg-amber-500 dark:text-amber-950 dark:hover:bg-amber-400 sm:w-auto"
+            >
+              <a href={enableUrl} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-4 w-4" />
+                Enable WhatsApp Business Agent
+              </a>
+            </Button>
           ) : (
             <p className="text-sm text-muted-foreground">
               Go back to <Link href="/home" className="underline underline-offset-2 hover:text-foreground">Home</Link>,
