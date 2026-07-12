@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { EntityPicker } from "@/components/shell/EntityPicker";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
-import { usePhoneDetails } from "@/lib/client/hooks/useDiscovery";
+import { usePhoneDetails, usePhones } from "@/lib/client/hooks/useDiscovery";
 import { useSession, usePatchSession } from "@/lib/client/hooks/useSession";
 import { fetcher } from "@/lib/client/fetcher";
 
@@ -47,9 +47,24 @@ export function Header({ user, entityId }: HeaderProps) {
     );
   }
 
-  const displayPhone = phone.data?.display_phone_number;
-  const verifiedName = phone.data?.verified_name;
-  const phoneLoading = !!entityId && phone.isPending;
+  // Fall back to the WABA-scoped phone_numbers list when the single-phone
+  // Graph endpoint omits display_phone_number / verified_name. Meta's list
+  // endpoint reliably returns the friendlier fields, so if the direct
+  // per-phone GET is empty, we look up the current entity by ID in the
+  // WABA's phone list.
+  const wabaId =
+    phone.data?.whatsapp_business_account?.id ??
+    session.data?.lastWabaId ??
+    undefined;
+  const needsListFallback =
+    !!entityId && phone.isSuccess && !phone.data?.display_phone_number;
+  const wabaPhones = usePhones(needsListFallback ? wabaId : undefined);
+  const listMatch = wabaPhones.data?.data?.find((p) => p.id === entityId);
+
+  const displayPhone = phone.data?.display_phone_number ?? listMatch?.display_phone_number;
+  const verifiedName = phone.data?.verified_name ?? listMatch?.verified_name;
+  const phoneLoading =
+    !!entityId && (phone.isPending || (needsListFallback && wabaPhones.isPending));
   let primaryLabel: string;
   if (displayPhone) primaryLabel = displayPhone;
   else if (phoneLoading) primaryLabel = "Loading phone…";
