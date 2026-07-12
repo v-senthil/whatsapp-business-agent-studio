@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BookOpen } from "lucide-react";
+import { ArrowRight, BookOpen, Sparkles } from "lucide-react";
 import { HelpShell } from "@/components/help/HelpShell";
 import { listSections } from "@/lib/help-docs";
 
@@ -24,6 +24,42 @@ export default async function HelpIndex() {
           Step-by-step guides for every feature and setting in WhatsApp Business Agent Studio.
           Pick a section below, or jump straight to a topic from the sidebar.
         </p>
+
+        <div className="mt-6 max-w-3xl rounded-2xl border border-amber-500/40 bg-amber-50 p-5 shadow-sm dark:bg-amber-950/40">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/15 text-amber-700 ring-1 ring-amber-500/30 dark:text-amber-300">
+              <Sparkles className="h-4 w-4" />
+            </span>
+            <div className="min-w-0 flex-1 text-sm">
+              <div className="font-semibold text-amber-900 dark:text-amber-100">
+                WhatsApp Business Agent is currently in Beta
+              </div>
+              <p className="mt-1 text-amber-900/90 dark:text-amber-100/90">
+                The feature has not been released for general availability. To enable it for your
+                WABA, an admin must accept the terms and conditions from Meta Business Manager.
+              </p>
+              <div className="mt-3 space-y-1">
+                <div className="text-[11px] font-medium uppercase tracking-widest text-amber-900/70 dark:text-amber-100/70">
+                  Enable URL
+                </div>
+                <code className="block truncate rounded-md bg-background/70 px-3 py-1.5 font-mono text-xs text-foreground ring-1 ring-amber-500/20 dark:bg-amber-950/60">
+                  https://business.facebook.com/latest/whatsapp_manager/business_ai?business_id={"{Business ID}"}&amp;asset_id={"{WABA ID}"}
+                </code>
+                <p className="text-xs text-amber-900/80 dark:text-amber-100/80">
+                  Replace the placeholders with your own IDs. If the page loads and prompts an
+                  admin to accept the T&amp;C, your WABA is eligible for the Beta. See{" "}
+                  <Link
+                    href="/help/getting-started/pick-business-and-phone"
+                    className="underline underline-offset-2 hover:text-foreground"
+                  >
+                    Picking a business and phone
+                  </Link>{" "}
+                  for the full walkthrough.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="space-y-10">
