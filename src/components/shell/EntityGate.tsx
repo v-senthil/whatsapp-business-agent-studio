@@ -7,7 +7,6 @@ import { useSession } from "@/lib/client/hooks/useSession";
 import { usePhoneDetails } from "@/lib/client/hooks/useDiscovery";
 import { isTosNotAccepted } from "@/lib/api/errors";
 import { ErrorState } from "@/components/common/ErrorState";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface Props {
@@ -62,12 +61,15 @@ export function EntityGate({ entityId, children }: Props) {
           </p>
           {enableUrl ? (
             <div className="space-y-3">
-              <Button asChild size="lg">
-                <a href={enableUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4" />
-                  Open Meta Business Manager to accept the terms
-                </a>
-              </Button>
+              <a
+                href={enableUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-md border border-amber-500/40 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-900 shadow-sm transition-colors hover:bg-amber-100 dark:bg-amber-950 dark:text-amber-100 dark:hover:bg-amber-900"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Enable WhatsApp Business Agent
+              </a>
               <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-left text-xs text-muted-foreground">
                 <div className="mb-1 font-medium uppercase tracking-widest">Enable URL</div>
                 <code className="break-all font-mono text-[11px] text-foreground">{enableUrl}</code>
