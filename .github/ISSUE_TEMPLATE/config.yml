@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security disclosure
+    url: https://github.com/v-senthil/whatsapp-business-agent-studio/security/policy
+    about: Report a vulnerability privately. Do not use public issues.
+  - name: Meta Business Agent Platform docs
+    url: https://developers.facebook.com/documentation/meta-business-agent/get-started
+    about: Upstream API questions and eligibility requirements.

@@ -2,6 +2,17 @@
   "name": "wabizagent",
   "version": "0.1.0",
   "private": true,
+  "description": "WhatsApp Business Agent Studio — a visual builder for WhatsApp Business AI agents on the Meta Business Agent Platform.",
+  "author": "Senthil Pitchappan V <senthilpitchappanv@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/v-senthil/whatsapp-business-agent-studio#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/v-senthil/whatsapp-business-agent-studio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/v-senthil/whatsapp-business-agent-studio/issues"
+  },
   "scripts": {
     "dev": "next dev",
     "prebuild": "node scripts/openapi-yaml-to-json.mjs",
