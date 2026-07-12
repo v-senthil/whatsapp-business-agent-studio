@@ -5,7 +5,7 @@ import { useTosStatus } from "@/lib/client/hooks/useTosStatus";
 
 export function TosGateBanner({ entityId }: { entityId?: string }) {
   const status = useTosStatus(entityId);
-  if (!status.blocked) return null;
+  if (!status.tosBlocked) return null;
   return (
     <div className="border-b border-amber-500/40 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950/60 dark:text-amber-100">
       <div className="flex items-start gap-3">

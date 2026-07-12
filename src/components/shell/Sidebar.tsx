@@ -91,8 +91,8 @@ export function Sidebar({ entityId }: SidebarProps) {
   const apiDocsActive = pathname?.startsWith("/api-docs");
   const helpActive = pathname?.startsWith("/help");
   const tos = useTosStatus(entityId);
-  const blocked = tos.blocked;
-  // Keep the dashboard reachable so the user can read the block message.
+  // The dashboard root stays reachable so the user can see the pending /
+  // blocked state message from `<EntityGate>`.
   const alwaysEnabled = new Set<string>([`/dashboard/${entityId}`]);
   return (
     <aside className="hidden h-full w-60 shrink-0 flex-col border-r bg-muted/30 md:flex">
@@ -130,14 +130,17 @@ export function Sidebar({ entityId }: SidebarProps) {
                 const active =
                   pathname === item.href ||
                   (item.href !== `/dashboard/${entityId}` && pathname?.startsWith(item.href));
-                const disabled = blocked && !alwaysEnabled.has(item.href);
+                const disabled = tos.disabled && !alwaysEnabled.has(item.href);
                 const Icon = item.icon;
                 if (disabled) {
+                  const title = tos.tosBlocked
+                    ? "Meta Business Agent terms not accepted for this WABA"
+                    : "Checking eligibility for this phone number";
                   return (
                     <li key={item.href}>
                       <span
                         aria-disabled="true"
-                        title="Meta Business Agent terms not accepted for this WABA"
+                        title={title}
                         className="flex cursor-not-allowed items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground/50"
                       >
                         <Icon className="h-4 w-4" />
