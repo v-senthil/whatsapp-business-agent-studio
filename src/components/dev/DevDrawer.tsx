@@ -2,6 +2,9 @@
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { AlertCircle, CheckCircle2, ChevronRight, Copy, Terminal, Trash2, X } from "lucide-react";
+// The floating bottom-right toggle button was removed in favor of the "Dev
+// drawer" item in the Header settings dropdown. Keyboard shortcut and
+// ?debug=1 remain the other entry points.
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,17 +58,6 @@ export function DevDrawer() {
 
   return (
     <>
-      {/* Floating toggle */}
-      <Button
-        variant="outline"
-        size="icon"
-        aria-label="Toggle dev drawer"
-        className="fixed bottom-4 right-4 z-40 h-9 w-9 rounded-full shadow-lg"
-        onClick={() => setOpen((v) => !v)}
-      >
-        <Terminal className="h-4 w-4" />
-      </Button>
-
       {open && (
         <div
           className="fixed inset-y-0 right-0 z-50 flex w-full max-w-3xl flex-col border-l bg-background shadow-2xl md:w-[min(48rem,66vw)]"
