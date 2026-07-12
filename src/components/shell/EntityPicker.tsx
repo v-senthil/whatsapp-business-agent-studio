@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils/cn";
 import { fetcher } from "@/lib/client/fetcher";
 import { usePhoneDetails, usePhones } from "@/lib/client/hooks/useDiscovery";
+import { useSession } from "@/lib/client/hooks/useSession";
 
 interface EntityPickerProps {
   currentEntityId?: string;
@@ -25,7 +26,11 @@ export function EntityPicker({ currentEntityId, primaryLabel, secondaryLabel }: 
   const [open, setOpen] = React.useState(false);
   const [manualId, setManualId] = React.useState("");
   const currentPhone = usePhoneDetails(currentEntityId);
-  const wabaId = currentPhone.data?.whatsapp_business_account?.id;
+  const session = useSession();
+  const wabaId =
+    currentPhone.data?.whatsapp_business_account?.id ??
+    session.data?.lastWabaId ??
+    undefined;
   const wabaName = currentPhone.data?.whatsapp_business_account?.name;
   const siblings = usePhones(open ? wabaId : undefined);
 

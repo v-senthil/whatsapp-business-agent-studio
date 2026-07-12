@@ -11,6 +11,7 @@ export async function GET() {
     user: { id: session.userId, name: session.userName },
     lastEntityId: session.lastEntityId ?? null,
     lastBusinessId: session.lastBusinessId ?? null,
+    lastWabaId: session.lastWabaId ?? null,
     readOnly: !!session.readOnly,
     // AI-assist config — return the shape but scrub the actual API key.
     ai: {

@@ -14,6 +14,7 @@ export interface ClientSession {
   user?: { id?: string; name?: string };
   lastEntityId?: string | null;
   lastBusinessId?: string | null;
+  lastWabaId?: string | null;
   readOnly?: boolean;
   ai?: ClientAiConfig;
 }
@@ -21,6 +22,7 @@ export interface ClientSession {
 export interface SessionPatch {
   lastEntityId?: string | null;
   lastBusinessId?: string | null;
+  lastWabaId?: string | null;
   readOnly?: boolean;
   aiProvider?: "claude" | "openai" | null;
   aiBaseUrl?: string | null;

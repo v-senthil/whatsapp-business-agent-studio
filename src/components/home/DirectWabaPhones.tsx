@@ -50,7 +50,7 @@ export function DirectWabaPhones({ wabaId, businessId }: Props) {
         {phones.error && <ErrorState error={phones.error} />}
         {phones.data && phones.data.data && phones.data.data.length > 0 ? (
           <div className="grid gap-2 md:grid-cols-2">
-            {phones.data.data.map((p) => <PhoneRow key={p.id} phone={p} />)}
+            {phones.data.data.map((p) => <PhoneRow key={p.id} phone={p} wabaId={wabaId} />)}
           </div>
         ) : (
           !phones.isLoading && !phones.error && (

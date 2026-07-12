@@ -10,6 +10,7 @@ export interface SessionData {
   userName?: string;
   lastEntityId?: string;
   lastBusinessId?: string;
+  lastWabaId?: string;
   readOnly?: boolean;
   // AI-assist config — used server-side to route drafting requests.
   aiProvider?: AiProvider;

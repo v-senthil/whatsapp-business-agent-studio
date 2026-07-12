@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { AppShell } from "@/components/shell/AppShell";
+import { EntityGate } from "@/components/shell/EntityGate";
 import { EntityProvider } from "@/components/providers/EntityProvider";
 
 export default async function EntityLayout({
@@ -16,7 +17,7 @@ export default async function EntityLayout({
   return (
     <EntityProvider entityId={entityId}>
       <AppShell entityId={entityId} user={{ id: session.userId, name: session.userName }}>
-        {children}
+        <EntityGate entityId={entityId}>{children}</EntityGate>
       </AppShell>
     </EntityProvider>
   );

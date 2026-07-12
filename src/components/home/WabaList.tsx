@@ -13,19 +13,19 @@ export function businessAgentEnableUrl(businessId: string, wabaId: string) {
   return `https://business.facebook.com/latest/whatsapp_manager/business_ai?${params.toString()}`;
 }
 
-async function selectEntity(id: string) {
+async function selectEntity(id: string, wabaId?: string) {
   await fetch("/api/session", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ lastEntityId: id }),
+    body: JSON.stringify({ lastEntityId: id, ...(wabaId ? { lastWabaId: wabaId } : {}) }),
   });
 }
 
-export function PhoneRow({ phone }: { phone: PhoneNumber }) {
+export function PhoneRow({ phone, wabaId }: { phone: PhoneNumber; wabaId?: string }) {
   return (
     <Link
       href={`/dashboard/${phone.id}`}
-      onClick={() => selectEntity(phone.id)}
+      onClick={() => selectEntity(phone.id, wabaId)}
       className="flex items-center gap-3 rounded-md border p-3 transition-colors hover:bg-accent"
     >
       <PhoneCall className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -67,7 +67,7 @@ function WabaBlock({ waba, businessId }: { waba: Waba; businessId: string }) {
       {phones.error && <ErrorState error={phones.error} />}
       {phones.data && phones.data.data && phones.data.data.length > 0 ? (
         <div className="grid gap-2 md:grid-cols-2">
-          {phones.data.data.map((p) => <PhoneRow key={p.id} phone={p} />)}
+          {phones.data.data.map((p) => <PhoneRow key={p.id} phone={p} wabaId={waba.id} />)}
         </div>
       ) : (
         !phones.isLoading && !phones.error && (

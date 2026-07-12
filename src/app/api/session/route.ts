@@ -74,6 +74,7 @@ const patchSchema = z.object({
   // "" outright, which used to overwrite the id with an empty string.
   lastEntityId: z.string().nullish(),
   lastBusinessId: z.string().nullish(),
+  lastWabaId: z.string().nullish(),
   readOnly: z.boolean().optional(),
   aiProvider: z.enum(["claude", "openai"]).nullish(),
   aiBaseUrl: z.string().optional().nullable(),
@@ -96,6 +97,9 @@ export async function PATCH(req: Request) {
   }
   if (d.lastBusinessId !== undefined) {
     session.lastBusinessId = d.lastBusinessId ? d.lastBusinessId : undefined;
+  }
+  if (d.lastWabaId !== undefined) {
+    session.lastWabaId = d.lastWabaId ? d.lastWabaId : undefined;
   }
   if (d.readOnly !== undefined) session.readOnly = d.readOnly;
   if (d.aiProvider !== undefined) session.aiProvider = d.aiProvider ?? undefined;

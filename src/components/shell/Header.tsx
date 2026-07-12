@@ -47,8 +47,13 @@ export function Header({ user, entityId }: HeaderProps) {
     );
   }
 
-  const primaryLabel = phone.data?.display_phone_number ?? entityId ?? "Select phone number";
-  const secondaryLabel = phone.data?.verified_name;
+  const displayPhone = phone.data?.display_phone_number;
+  const verifiedName = phone.data?.verified_name;
+  const primaryLabel = displayPhone ?? verifiedName ?? entityId ?? "Select phone number";
+  const secondaryParts: string[] = [];
+  if (displayPhone && verifiedName) secondaryParts.push(verifiedName);
+  if (entityId && primaryLabel !== entityId) secondaryParts.push(entityId);
+  const secondaryLabel = secondaryParts.length > 0 ? secondaryParts.join(" · ") : undefined;
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4">
