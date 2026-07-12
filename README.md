@@ -52,7 +52,7 @@ A visual builder for WhatsApp Business AI agents on the [Meta Business Agent Pla
 
 ### Developer tools
 
-- **Dev drawer** with **Copy as cURL** — floating button (or `Cmd/Ctrl+Shift+D`, or `?debug=1`) opens a slide-in panel of the last 50 client-side API calls. Each has request headers/body, response body, status, duration, and a one-click cURL export.
+- **Dev drawer** with **Copy as cURL** — the **Dev drawer** item in the header Settings dropdown (or `Cmd/Ctrl+Shift+D`, or `?debug=1`) opens a slide-in panel of the last 50 client-side API calls. Each has request headers/body, response body, status, duration, and a one-click cURL export.
 - **API playground** — `/dashboard/[entityId]/playground`. Free-form request builder scoped to the current phone number: method + path + query + JSON body. Seven quick-call presets (Eligibility, List settings, Business info, List skills, List connectors, Eval cases, Test message). Response viewer with pretty/raw tabs.
 - **Read-only mode** — session flag that blocks any `POST/PUT/PATCH/DELETE` against `/api/meta/*` client-side. Amber banner shows the state; toggle from the account menu. Useful for demos and shift-handoffs.
 - **OpenAPI reference** — `/api-docs` renders the whole Meta Business Agent Platform spec via [Zudoku](https://zudoku.dev/). Kept in sync with `public/openapi.yaml`; a `prebuild` hook regenerates `openapi.json` on every `next build`.
@@ -68,12 +68,12 @@ A visual builder for WhatsApp Business AI agents on the [Meta Business Agent Pla
 - **In-app help center** at `/help` — every article in the `docs/` tree rendered as browsable help pages with a left sidebar, breadcrumbs, per-article prev/next pager, and internal link resolution. Backed by `react-markdown` + `remark-gfm` + `@tailwindcss/typography`; the sidebar and index are built from `docs/README.md` at request time so a Markdown edit is all it takes to add a new topic. Includes an instant search box at the top of every help page (press `/` to focus) that ranks matches across article titles, descriptions, section names, and body text with highlighted snippets.
 - **Contextual Help button on every page** — a small **Help** chip in the top-right of each dashboard page opens the matching article in a new tab. The mapping from route to article lives in `src/lib/help-links.ts`.
 - **Shared product mark** — `src/components/common/Logo.tsx` renders the same green-gradient speech-bubble sparkle used by the favicon (`src/app/icon.svg`) and Apple touch icon (`src/app/apple-icon.tsx`). Reused across login, dashboard sidebar, marketing nav/footer, and the chat mock.
-- **User-facing help library** in `docs/` — 37 Markdown files (Getting started, Configure, Ship, Advanced, Reference) with imperative step-by-step instructions and no developer internals; safe to lift into any static site generator later.
+- **User-facing help library** in `docs/` — 38 Markdown files (Getting started, Configure, Ship, Advanced, Reference) with imperative step-by-step instructions and no developer internals; safe to lift into any static site generator later. Every article carries an inline product screenshot from `public/help/screenshots/`; the marketing Pages build reuses the same PNGs via a symlink at `marketing/public/help/screenshots`.
 
 ### Polish
 
 - **Dark mode** — `next-themes` with `attribute="class"`, `enableSystem`; all colors go through CSS vars. Theme toggle in the dashboard header, home header, and login page.
-- **Session persistence** — last-used business ID and phone number auto-selected on next visit.
+- **Session persistence** — last-used business ID, WABA, and phone number auto-selected on next visit.
 - **Copy buttons** everywhere long IDs appear.
 - **Multipart file uploads** stream straight through the proxy (no header rewriting); progress bar per file, cancel via `XMLHttpRequest.abort()`.
 
@@ -209,10 +209,11 @@ Open `http://localhost:3000` and you see the exact site GitHub Pages will serve.
 
 0. **`/`** — public landing page. Signed-in visitors see a **Dashboard** button that jumps to `/home`; anyone else lands on `/login`. The marketing nav also links to the in-app **Docs** at `/help`, which is public. A Beta banner explains the T&C requirement and shows the Meta Business Manager enable URL.
 1. **`/login`** — paste an access token. Verified server-side against `GET /me` on the Graph API before the session cookie is issued.
-2. **`/home`** — paste your Meta business ID. WABAs are fetched, each with its phones. Persisted to session as `lastBusinessId`. Each WABA row shows an **Enable WhatsApp Business Agent** link that opens Business Manager with the current `business_id` and `asset_id` prefilled so an admin can accept the Beta T&C.
-3. **`/dashboard/[entityId]`** — pick a phone; the sidebar unlocks all configuration tabs for that phone. The onboarding checklist walks you through eligibility → agent → business info → skill → connector → rollout.
-4. **Onboarding** — creates the WhatsApp agent if one doesn't exist. Only one per phone.
-5. Configure → Test → Iterate. Use the Dev drawer (`Cmd/Ctrl+Shift+D`) at any time to inspect the underlying API calls.
+2. **`/home`** — paste your Meta business ID **or** a WABA ID directly. WABAs are fetched, each with its phones. Persisted to session as `lastBusinessId` / `lastWabaId`. Each WABA row shows an **Enable WhatsApp Business Agent** link that opens Business Manager with the current `business_id` and `asset_id` prefilled so an admin can accept the Beta T&C.
+3. **`/dashboard/[entityId]`** — pick a phone. `<EntityGate>` calls `agent_eligibility` first and shows a **Checking eligibility…** spinner. Only after that resolves successfully do downstream Meta calls fire and the sidebar tabs unlock. If Meta returns the 403 "Meta Business AI Terms of Service" error, the main content becomes a **Waiting for terms acceptance** panel with an amber **Enable WhatsApp Business Agent** button (pre-filled with your Business ID and WABA ID), and every per-entity sidebar tab is greyed out until an admin approves the T&C.
+4. **Onboarding checklist** walks you through eligibility → agent → business info → skill → connector → rollout.
+5. **Onboarding** — creates the WhatsApp agent if one doesn't exist. Only one per phone.
+6. Configure → Test → Iterate. Open the Dev drawer from the header **Settings** menu (or `Cmd/Ctrl+Shift+D`) at any time to inspect the underlying API calls.
 
 ## Architecture
 
@@ -276,11 +277,11 @@ src/
 │       └── meta/[...path]/               # catch-all proxy → api.facebook.com
 ├── components/
 │   ├── ui/                               # shadcn-style primitives (self-built)
-│   ├── shell/                            # AppShell, Sidebar, Header, Breadcrumbs, EntityPicker, ReadOnlyBanner
+│   ├── shell/                            # AppShell, Sidebar, Header, Breadcrumbs, EntityPicker, ReadOnlyBanner, EntityGate, TosGateBanner
 │   ├── marketing/                        # LandingPage, MarketingNav, HeroPreview (used by src/app/page.tsx)
 │   ├── help/                             # HelpShell, HelpSidebar, DocContent (Markdown renderer)
 │   ├── dev/                              # DevDrawer + DevDrawerMount
-│   ├── home/                             # BusinessIdInput, WabaList, HomeContent
+│   ├── home/                             # BusinessIdInput, WabaIdInput, WabaList, DirectWabaPhones, HomeContent
 │   ├── overview/                         # OnboardingChecklist
 │   ├── config/                           # AgentConfigActions (export/import JSON)
 │   ├── skills/, knowledge/, connectors/, tools/, evals/, test/
@@ -295,8 +296,9 @@ src/
 │   ├── client/
 │   │   ├── fetcher.ts                    # instrumented client fetch + read-only guard + MetaApiError
 │   │   ├── api-log.ts                    # ring buffer for the dev drawer
+│   │   ├── dev-drawer.ts                 # shared open/closed store for the dev drawer (Settings menu + panel)
 │   │   ├── query-keys.ts                 # centralized TanStack keys
-│   │   └── hooks/                        # useSettings, useSkills, useConnectors, useEvals, useAgentTest, useDiscovery, useSession, useAgentEvent, …
+│   │   └── hooks/                        # useSettings, useSkills, useConnectors, useEvals, useAgentTest, useDiscovery, useSession, useAgentEvent, useTosStatus, …
 │   ├── schemas/                          # one zod schema per resource
 │   ├── help-docs.ts                      # parses docs/README.md into the help center nav
 │   ├── skill-templates.ts                # curated skill library
@@ -313,6 +315,7 @@ src/
 ├── public/
 │   ├── openapi.{yaml,json}               # spec source + generated JSON
 │   ├── samples/                          # sample CSVs for bulk import
+│   ├── help/screenshots/                 # per-article product screenshots (marketing symlinks here)
 │   └── vendor/zudoku/                    # self-hosted OpenAPI renderer
 ├── docs/                                 # user-facing help articles (rendered at /help)
 │   ├── README.md                         # source of truth for the help center index + sidebar

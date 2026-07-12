@@ -90,7 +90,7 @@ Shows `agent_eligibility`, lists configured agents from `agent_config/settings`,
 - `<Sidebar>` calls `useTosStatus(entityId)` and renders every per-entity nav item as a disabled `<span>` (cursor-not-allowed, muted). The current dashboard route is kept enabled so the user can read the banner. Home/Help/API reference (footer links) remain active.
 - The detection hook is `useTosStatus` in `src/lib/client/hooks/useTosStatus.ts` — wraps `useEligibility(entityId)` and returns `{ blocked, message, learnMoreUrl }`. React Query dedupes so mounting it in both Sidebar and Banner does not double-fetch.
 
-**Eligibility-first gate.** `<EntityGate>` (`src/components/shell/EntityGate.tsx`) wraps every child of the entity layout (`src/app/dashboard/[entityId]/layout.tsx`). It runs `useEligibility(entityId)` and only renders `{children}` after the request resolves successfully. While pending it shows a skeleton; on TOS-403 it shows a "Waiting for terms acceptance" screen with a directly-clickable Meta Business Manager enable URL (built from `session.lastBusinessId` + `session.lastWabaId` / `usePhoneDetails().whatsapp_business_account.id`); on other errors it renders `<ErrorState>`. This means downstream hooks (`useSettings`, `useSkills`, `useConnectors`, etc.) never fire until we know the phone can host an agent — every other Meta Agent Platform call is short-circuited when the browser is still checking eligibility or when eligibility failed. `<Sidebar>` disables every per-entity tab whenever `useTosStatus(...).disabled` is true (which covers both "still checking eligibility" and "ToS blocked"), not just the TOS-blocked case; only the dashboard root stays clickable so the user can read the state.
+**Eligibility-first gate.** `<EntityGate>` (`src/components/shell/EntityGate.tsx`) wraps every child of the entity layout (`src/app/dashboard/[entityId]/layout.tsx`). It runs `useEligibility(entityId)` and only renders `{children}` after the request resolves successfully. While pending it shows a centered `Loader2` spinner with a **Checking eligibility…** caption (was a wireframe skeleton — dropped because it read as broken layout); on TOS-403 it shows a "Waiting for terms acceptance" screen with a full-width amber **Enable WhatsApp Business Agent** button whose href is pre-built from `session.lastBusinessId` + `session.lastWabaId` / `usePhoneDetails().whatsapp_business_account.id`; on other errors it renders `<ErrorState>`. Downstream hooks (`useSettings`, `useSkills`, `useConnectors`, etc.) never fire until eligibility resolves. `<Sidebar>` disables every per-entity tab whenever `useTosStatus(...).disabled` is true (which covers both "still checking" and "ToS blocked"); only the dashboard root stays clickable so the user can read the state.
 
 **Persist `lastWabaId`.** Session now stores `lastWabaId` in addition to `lastEntityId` and `lastBusinessId`. When the user clicks a phone in `WabaList` or `DirectWabaPhones`, we PATCH the session with both `lastEntityId` and `lastWabaId`. `EntityPicker` falls back to `session.lastWabaId` when `usePhoneDetails(entityId).data?.whatsapp_business_account?.id` is missing (e.g. Graph API omits it) so the sibling-phones list still renders reliably.
 
@@ -284,7 +284,24 @@ Session field `readOnly?: boolean`. `PATCH /api/session` accepts it; `GET /api/s
 - `npm run build` — production build (re-run if you see the transient `_document` error). `prebuild` hook auto-regenerates `public/openapi.json` from the YAML.
 - `npm run openapi:build` — regenerate `openapi.json` manually.
 - `npm run typecheck` — `tsc --noEmit`
-- `npm run deploy:start` / `sh start.sh` — one-shot install + build + start for
+- `npm run deploy:start` / `sh start.sh` — one-shot install + build + start for AppSail.
+- `sh scripts/build-deploy-zip.sh` — build the pre-installed, pre-built ZIP for AppSail.
+
+## Deployment
+
+`start.sh` is POSIX-only (`/bin/sh`, no `pipefail`) because AppSail's shell is `dash`. It:
+1. `unset NODE_ENV` (do NOT re-add `export NODE_ENV=development`). Next 15.1.4 has a bug where `next build` fails at the end with `ENOENT: .next/server/pages-manifest.json` when `NODE_ENV` is any non-empty value other than `production` at build time. Next sets it to `production` internally when unset. Dev-deps are still installed because the install step uses `--include=dev`.
+2. Skips install if `node_modules/.bin/next` exists.
+3. Skips build if `.next/BUILD_ID` exists.
+4. `exec`s `next start -p $PORT -H 0.0.0.0`.
+
+`scripts/build-deploy-zip.sh` pre-builds the artifact locally so the deployed script does ~2s of work (well inside AppSail's ~15–30s startup timeout). Ship a source-only ZIP and AppSail will kill the process mid-install.
+
+## Screenshots + help docs pipeline
+
+- `public/help/screenshots/<section>/<slug>/*.png` — per-article product screenshots referenced from `docs/**/*.md` as absolute paths like `/help/screenshots/getting-started/onboard-your-first-agent/overview-checklist.png`.
+- `marketing/public/help/screenshots` is a **relative symlink** to `../../../public/help/screenshots`, so the Pages export bundles the same PNGs without duplicating them. `git ls-files --stage` shows `120000` on the symlink; do NOT commit it as a directory.
+- Screenshots are taken at 1440×900 via Chrome DevTools MCP; retake all of them together when the shell UI shifts so the docs stay in sync (see the commit history for `screenshots refresh` messages).
 
 ## Files worth reading before deep changes
 
@@ -299,3 +316,9 @@ Session field `readOnly?: boolean`. `PATCH /api/session` accepts it; `GET /api/s
 - `src/lib/help-docs.ts` — help center parser (drives the `/help` sidebar from `docs/README.md`)
 - `src/components/marketing/LandingPage.tsx` — public landing shell + sections
 - `src/components/common/Logo.tsx` + `src/app/icon.svg` + `src/app/apple-icon.tsx` — the product mark trio; keep visually aligned
+- `src/components/shell/EntityGate.tsx` — the eligibility-first gate that decides whether the dashboard shows a spinner, the ToS block, or the actual content
+- `src/lib/client/dev-drawer.ts` — module-level store keeping the header Settings toggle and the drawer in sync
+
+## Plan file
+
+Original design plan for the whole app is at `/Users/senthil-11424/.claude/plans/mellow-growing-grove.md` — good context if you need to understand why a particular choice was made.
