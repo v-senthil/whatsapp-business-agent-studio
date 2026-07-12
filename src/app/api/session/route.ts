@@ -13,13 +13,17 @@ const DEMO_TOKEN_SENTINEL = "__demo__";
 
 // Same-origin check for state-changing session requests. We accept absent
 // Origin headers (same-origin same-tab GETs can lack them) but reject any
-// Origin whose host does not match the request Host. Environments behind a
-// reverse proxy can pin the expected host with WABIZ_PUBLIC_HOST.
+// Origin whose host does not match the expected host. Precedence:
+//   1. WABIZ_PUBLIC_HOST env var — explicit operator override.
+//   2. X-Forwarded-Host header — set by most reverse proxies (AppSail,
+//      nginx, Cloudflare, ...) to carry the original public hostname.
+//   3. Host header — direct request, no proxy in front.
 function isSameOrigin(req: Request): boolean {
   const origin = req.headers.get("origin");
   if (!origin) return true;
+  const forwardedHost = req.headers.get("x-forwarded-host");
   const host = req.headers.get("host") ?? "";
-  const expectedHost = process.env.WABIZ_PUBLIC_HOST ?? host;
+  const expectedHost = process.env.WABIZ_PUBLIC_HOST ?? forwardedHost ?? host;
   try {
     const originUrl = new URL(origin);
     return originUrl.host === expectedHost;
