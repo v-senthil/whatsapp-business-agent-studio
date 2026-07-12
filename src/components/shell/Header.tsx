@@ -49,11 +49,17 @@ export function Header({ user, entityId }: HeaderProps) {
 
   const displayPhone = phone.data?.display_phone_number;
   const verifiedName = phone.data?.verified_name;
-  const primaryLabel = displayPhone ?? verifiedName ?? entityId ?? "Select phone number";
-  const secondaryParts: string[] = [];
-  if (displayPhone && verifiedName) secondaryParts.push(verifiedName);
-  if (entityId && primaryLabel !== entityId) secondaryParts.push(entityId);
-  const secondaryLabel = secondaryParts.length > 0 ? secondaryParts.join(" · ") : undefined;
+  const phoneLoading = !!entityId && phone.isPending;
+  let primaryLabel: string;
+  if (displayPhone) primaryLabel = displayPhone;
+  else if (phoneLoading) primaryLabel = "Loading phone…";
+  else if (verifiedName) primaryLabel = verifiedName;
+  else primaryLabel = "Phone number";
+  // Secondary always shows the verified name and the raw ID, preferring the
+  // name when it is distinct from the primary.
+  const secondaryLabel = displayPhone && verifiedName
+    ? `${verifiedName} · ${entityId ?? ""}`
+    : entityId;
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4">
