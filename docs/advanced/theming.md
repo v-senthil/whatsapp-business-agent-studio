@@ -1,5 +1,7 @@
 # Theming and dark mode
 
+![Theme menu](/help/screenshots/advanced/theming/theme-menu.png)
+
 The app supports **Light**, **Dark**, and **System** themes. Your preference is remembered per browser.
 
 ## What you'll do

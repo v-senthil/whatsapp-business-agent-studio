@@ -1,5 +1,7 @@
 # Dev drawer and Copy as cURL
 
+![Dev drawer open](/help/screenshots/advanced/dev-drawer/drawer-open.png)
+
 The dev drawer shows the last several API calls the app has made and lets you copy any of them as a runnable cURL command. Handy when a screen doesn't behave, or when you want to reproduce a call outside the app.
 
 ## What you'll do

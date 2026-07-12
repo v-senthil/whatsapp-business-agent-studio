@@ -1,5 +1,7 @@
 # Picking a business and phone
 
+![Home page with WABAs and phone numbers loaded](/help/screenshots/getting-started/pick-business-and-phone/home-picker.png)
+
 The home page is where you enter a Meta Business ID, browse its WABAs, and click through to a specific phone number.
 
 ## Beta notice

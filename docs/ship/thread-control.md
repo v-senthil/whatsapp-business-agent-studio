@@ -1,5 +1,7 @@
 # Thread control
 
+![Thread control page](/help/screenshots/ship/thread-control/thread-control.png)
+
 Release or pass thread control on the Cloud API for a specific consumer. Use this when a human agent needs to take over the conversation.
 
 ## What you'll do

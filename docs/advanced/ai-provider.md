@@ -1,5 +1,7 @@
 # AI provider settings
 
+![AI provider settings](/help/screenshots/advanced/ai-provider/ai-provider.png)
+
 The **AI provider** settings page picks which AI powers **Draft with AI** on the Skills page and **Generate from document**. Two options are supported: the local Claude Agent SDK, or any OpenAI-compatible endpoint.
 
 ## What you'll do

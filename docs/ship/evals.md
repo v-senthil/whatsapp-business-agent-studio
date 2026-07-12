@@ -1,5 +1,7 @@
 # Evals
 
+![Evals page](/help/screenshots/ship/evals/evals.png)
+
 Run Meta's pre-seeded eval cases against your agent, then inspect per-case transcripts and summaries.
 
 ## What you'll do

@@ -1,5 +1,7 @@
 # Knowledge, allowlist
 
+![Allowlist tab](/help/screenshots/configure/knowledge-allowlist/allowlist.png)
+
 The **Allowlist** tab under Knowledge manages the list of consumer phone numbers the agent will respond to when AI audience is restricted.
 
 ## What you'll do

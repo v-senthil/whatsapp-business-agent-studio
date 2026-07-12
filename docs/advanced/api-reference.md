@@ -1,5 +1,7 @@
 # API reference viewer
 
+![API reference viewer](/help/screenshots/advanced/api-reference/api-docs.png)
+
 The app ships an interactive API reference for the underlying Meta Business Agent Platform. It is useful when you want to look up an endpoint's exact request shape or explore what else is possible beyond the UI.
 
 ## What you'll do

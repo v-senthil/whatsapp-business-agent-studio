@@ -1,5 +1,7 @@
 # Scenarios, save and replay
 
+![Scenarios list](/help/screenshots/ship/scenarios/scenarios.png)
+
 Scenarios let you snapshot a Test-chat conversation and replay it later against the live agent. It is a simple regression harness: you record a "known good" conversation, then re-run it whenever you change skills or knowledge to see whether the agent still answers the same way.
 
 ## What you'll do

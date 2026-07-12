@@ -1,5 +1,7 @@
 # Webhooks
 
+![Webhook receiver page](/help/screenshots/ship/webhooks/webhooks.png)
+
 Receive Meta webhook events on a live page, filter by phone number and signature status, and register a per-phone callback URL without leaving the app.
 
 ## What you'll do

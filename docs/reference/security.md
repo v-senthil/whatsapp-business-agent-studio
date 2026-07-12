@@ -1,5 +1,7 @@
 # Security
 
+![Login screen where the token is entered](/help/screenshots/reference/security/login.png)
+
 Summary of how the app keeps your access token private, how sessions work, and how webhook signatures are verified.
 
 ## Access token handling

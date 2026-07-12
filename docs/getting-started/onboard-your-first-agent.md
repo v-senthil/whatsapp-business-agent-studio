@@ -1,5 +1,7 @@
 # Onboarding your first agent
 
+![Onboarding checklist on the agent overview](/help/screenshots/getting-started/onboard-your-first-agent/overview-checklist.png)
+
 The dashboard for a phone number is the overview page. From here you attach a WhatsApp agent and follow the onboarding checklist.
 
 ## What you'll do

@@ -1,5 +1,7 @@
 # Agent settings
 
+![Agent settings page](/help/screenshots/configure/settings/settings.png)
+
 The **Settings** page groups the four cards that control agent behavior: **Rollout**, **Handoff**, **Follow-up**, and **AI audience**.
 
 ## What you'll do

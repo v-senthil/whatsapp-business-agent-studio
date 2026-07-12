@@ -1,5 +1,7 @@
 # Knowledge, FAQs
 
+![Knowledge FAQs tab](/help/screenshots/configure/knowledge-faqs/faqs.png)
+
 The **FAQs** tab under Knowledge manages question and answer pairs the agent can pull from verbatim.
 
 ## What you'll do

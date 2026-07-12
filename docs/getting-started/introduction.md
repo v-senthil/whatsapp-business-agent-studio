@@ -1,5 +1,7 @@
 # Introduction
 
+![Landing page hero](/help/screenshots/getting-started/introduction/landing-hero.png)
+
 **WhatsApp Business Agent Studio** is a visual builder for WhatsApp Business AI agents. Instead of stitching together raw API calls, you configure your agent through a friendly UI: onboard a phone number, add skills and knowledge, connect external APIs, test conversations, and ship.
 
 ## What you'll do

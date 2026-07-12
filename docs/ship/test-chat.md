@@ -1,5 +1,7 @@
 # Test chat
 
+![Test chat](/help/screenshots/ship/test-chat/chat.png)
+
 The **Test** page is a WhatsApp-style bubble UI. Use it to sanity-check any change before shipping to real consumers.
 
 ## What you'll do

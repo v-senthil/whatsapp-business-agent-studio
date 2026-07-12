@@ -1,5 +1,7 @@
 # Signing in
 
+![Sign-in screen](/help/screenshots/getting-started/sign-in/login-page.png)
+
 The login screen is a single field: your Meta access token. Everything else in the app is behind sign-in.
 
 ## What you'll do

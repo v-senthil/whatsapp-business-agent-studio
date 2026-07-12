@@ -1,5 +1,7 @@
 # Skills
 
+![Skills list](/help/screenshots/configure/skills/skills-list.png)
+
 Skills are free-form instructions the model follows in specific scenarios. Each skill has a title, a description, and a body. This page covers manual authoring, CSV bulk operations, the template library, and AI drafting.
 
 ## What you'll do

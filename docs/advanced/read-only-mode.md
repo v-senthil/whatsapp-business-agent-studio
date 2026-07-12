@@ -1,5 +1,7 @@
 # Read-only mode
 
+![Dashboard header with the read-only toggle](/help/screenshots/advanced/read-only-mode/header.png)
+
 Toggle **Read-only mode** to block every write action against the Meta Agent Platform. Useful for demos, shared browsers, and shift handoffs where you want to browse the configuration without risking a mistake.
 
 ## What you'll do

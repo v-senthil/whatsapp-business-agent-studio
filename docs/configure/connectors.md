@@ -1,5 +1,7 @@
 # Connectors
 
+![Connectors list](/help/screenshots/configure/connectors/list.png)
+
 Connectors are external APIs the agent can call. Each connector defines a base URL and one auth method, and hosts one or more tools that describe individual operations.
 
 ## What you'll do

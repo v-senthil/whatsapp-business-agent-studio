@@ -1,5 +1,7 @@
 # Business info
 
+![Business info form](/help/screenshots/configure/business-info/business-info.png)
+
 The **Business info** page collects the business-facing metadata your agent uses in its answers: description, contact email, and policy fields.
 
 ## What you'll do

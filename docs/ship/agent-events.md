@@ -1,5 +1,7 @@
 # Agent events
 
+![Agent events page](/help/screenshots/ship/agent-events/events.png)
+
 Trigger partner-defined events (like `document_verified` or `payment_received`) and watch their status update in place.
 
 ## What you'll do

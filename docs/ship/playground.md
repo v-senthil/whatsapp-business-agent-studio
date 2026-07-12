@@ -1,5 +1,7 @@
 # API playground
 
+![API playground](/help/screenshots/ship/playground/playground.png)
+
 The **Playground** page is a free-form request builder scoped to the current phone. Useful for testing endpoints that do not yet have a dedicated UI.
 
 ## What you'll do

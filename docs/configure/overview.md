@@ -1,5 +1,7 @@
 # Configure overview
 
+![Agent overview dashboard](/help/screenshots/configure/overview/dashboard.png)
+
 The phone dashboard is the hub for one phone number. This page explains how the layout is structured and how to move between sections.
 
 ## What you'll do

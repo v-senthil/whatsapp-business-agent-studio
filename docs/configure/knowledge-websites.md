@@ -1,5 +1,7 @@
 # Knowledge, websites
 
+![Knowledge websites tab](/help/screenshots/configure/knowledge-websites/websites.png)
+
 The **Websites** tab under Knowledge lets you register URLs the agent will crawl for knowledge.
 
 ## What you'll do

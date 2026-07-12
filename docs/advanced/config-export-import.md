@@ -1,5 +1,7 @@
 # Config export and import
 
+![Export / Import config buttons on the overview](/help/screenshots/advanced/config-export-import/buttons.png)
+
 Bundle everything about an agent's configuration into a single JSON file, then reimport it on another phone to promote staging to prod (or to hand a config to a teammate).
 
 ## What you'll do

@@ -1,5 +1,7 @@
 # Generate from document
 
+![Generate from document](/help/screenshots/configure/generate-from-document/generate.png)
+
 Paste or upload a Markdown or plain-text document about your business, and the AI drafts FAQs, skills, and connector suggestions in one shot.
 
 ## What you'll do

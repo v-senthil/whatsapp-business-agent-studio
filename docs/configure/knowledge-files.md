@@ -1,5 +1,7 @@
 # Knowledge, files
 
+![Knowledge files tab](/help/screenshots/configure/knowledge-files/files.png)
+
 The **Files** tab under Knowledge lets you upload documents the agent can use as knowledge.
 
 ## What you'll do
