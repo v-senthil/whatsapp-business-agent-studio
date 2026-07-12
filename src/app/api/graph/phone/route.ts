@@ -9,9 +9,14 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const phoneId = searchParams.get("phone_number_id");
   if (!phoneId) return NextResponse.json({ title: "Bad request", detail: "phone_number_id required" }, { status: 400 });
+  // NOTE: Meta rejects `whatsapp_business_account` as a nested field on this
+  // node (400 OAuthException "nonexisting field"). The parent WABA is
+  // therefore not returned from this endpoint. Callers that need the WABA ID
+  // for the current phone can fall back to session.lastWabaId which is
+  // persisted whenever the user picks a phone from /home.
   const res = await graphFetch(
     session.token,
-    `${encodeURIComponent(phoneId)}?fields=display_phone_number,verified_name,quality_rating,whatsapp_business_account{id,name}`,
+    `${encodeURIComponent(phoneId)}?fields=display_phone_number,verified_name,quality_rating`,
   );
   if (!res.ok) {
     const err = await parseErrorBody(res);
