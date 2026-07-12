@@ -18,10 +18,14 @@ If that page loads and prompts for a T&C acceptance, your WABA is eligible for t
 
 ## What you'll do
 
-- Paste a Business ID.
+- Paste a Business ID, **or** paste a WABA ID to jump straight to that WABA's phone numbers.
 - Browse WABAs and their phone numbers.
 - Confirm the WABA is enrolled in the Beta via the enable link.
 - Enter the per-phone dashboard.
+
+## Enter a WABA ID directly
+
+If you already know the WABA ID and want to skip the Business step, use the second card labeled **WhatsApp Business Account ID**. Paste the ID, press **Load phones**, and the page renders the phone numbers on that WABA. The **Enable WhatsApp Business Agent** link is only shown when you have also entered your Business ID above, because Meta Business Manager needs both IDs in the URL.
 
 ## Step-by-step
 

@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { usePhones, useWabas, type PhoneNumber, type Waba } from "@/lib/client/hooks/useDiscovery";
 
-function businessAgentEnableUrl(businessId: string, wabaId: string) {
+export function businessAgentEnableUrl(businessId: string, wabaId: string) {
   const params = new URLSearchParams({ business_id: businessId, asset_id: wabaId });
   return `https://business.facebook.com/latest/whatsapp_manager/business_ai?${params.toString()}`;
 }
@@ -21,7 +21,7 @@ async function selectEntity(id: string) {
   });
 }
 
-function PhoneRow({ phone }: { phone: PhoneNumber }) {
+export function PhoneRow({ phone }: { phone: PhoneNumber }) {
   return (
     <Link
       href={`/dashboard/${phone.id}`}

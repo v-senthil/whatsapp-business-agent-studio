@@ -74,12 +74,19 @@ Paste access token → `POST /api/session` → verifies against Graph `/me` → 
 ### `/home` — `src/app/home/page.tsx`
 Server component; reads `lastBusinessId` from session and hands to `HomeContent` (`src/components/home/`). The user pastes a business ID via `BusinessIdInput`; on submit it PATCHes the session and triggers `WabaList` which chains `useWabas(businessId)` → per-WABA `usePhones(wabaId)`. Clicking a phone routes to `/dashboard/[entityId]` and PATCHes `lastEntityId`.
 
+**Direct WABA ID entry.** Below `BusinessIdInput` there is a second card, `WabaIdInput`, that accepts a WABA ID directly and renders `<DirectWabaPhones>` (`src/components/home/DirectWabaPhones.tsx`) — reuses `usePhones(wabaId)` and the exported `PhoneRow` from `WabaList.tsx`. The Enable-URL link is only shown when the user has also entered their Business ID above, because Meta needs both `business_id` and `asset_id` (WABA ID) in the URL. `HomeContent` renders `DirectWabaPhones` when a direct WABA ID is set (short-circuits the Business ID → WABAs flow); otherwise falls back to the existing `WabaList`.
+
 **Beta callout.** `HomeContent` renders an amber `Alert` (variant `warning`) above `BusinessIdInput` explaining that WhatsApp Business Agent is in Beta and requires an admin to accept the Meta T&C. Once WABAs are loaded, each `WabaBlock` in `WabaList` renders an **Enable WhatsApp Business Agent** link (opens in a new tab) that points to `https://business.facebook.com/latest/whatsapp_manager/business_ai?business_id={businessId}&asset_id={wabaId}`. The URL is built by `businessAgentEnableUrl(businessId, wabaId)` at the top of `WabaList.tsx`. The same Beta messaging is duplicated in three places on purpose — `HomeContent` (dashboard entry), `LandingPage` (`<BetaNotice>` section), and `/help` index. Keep them in sync if the wording changes.
 
 Note: `/me/businesses` discovery is intentionally NOT called — the user chose to input a business ID rather than list all. If you re-add auto-discovery, restore `src/app/api/graph/businesses/route.ts` and `useBusinesses` hook.
 
 ### `/dashboard/[entityId]` — overview
 Shows `agent_eligibility`, lists configured agents from `agent_config/settings`, and renders **`<OnboardingChecklist>`** (`src/components/overview/OnboardingChecklist.tsx`) at the top. When a WhatsApp agent already exists, footer CTA is "Configure agent"; otherwise "Onboard WhatsApp agent". A phone can host at most one agent per channel — we currently allow only `whatsapp`. The overview header also exposes **`<AgentConfigActions>`** (Export/Import config JSON).
+
+**TOC-not-accepted gate.** When `agent_eligibility` returns 403 with detail matching "Meta Business AI Terms" (see `isTosNotAccepted` in `src/lib/api/errors.ts`), the dashboard switches to a blocked state:
+- `<TosGateBanner>` (`src/components/shell/TosGateBanner.tsx`) mounts between `<ReadOnlyBanner>` and `<Breadcrumbs>` in `AppShell`, showing the block message and a link back to `/home`.
+- `<Sidebar>` calls `useTosStatus(entityId)` and renders every per-entity nav item as a disabled `<span>` (cursor-not-allowed, muted). The current dashboard route is kept enabled so the user can read the banner. Home/Help/API reference (footer links) remain active.
+- The detection hook is `useTosStatus` in `src/lib/client/hooks/useTosStatus.ts` — wraps `useEligibility(entityId)` and returns `{ blocked, message, learnMoreUrl }`. React Query dedupes so mounting it in both Sidebar and Banner does not double-fetch.
 
 ### Onboarding checklist
 `src/components/overview/OnboardingChecklist.tsx`. 6 steps derived live from the existing hooks — no new API calls: eligibility (`useEligibility`), agent onboarded (`useSettings` where a WhatsApp entry exists), business info filled (`useBusinessInfo` — any of description/email/return_policy), at least one skill (`useSkills.length > 0`), at least one connector (`useConnectors.length > 0`, marked optional), rollout enabled (`useSettings` rollout.enabled). Progress bar, next-actionable step highlighted with a right arrow, auto-hides once all 6 are done. Do NOT add API-hitting logic to this component — every signal must come from a hook that some other page already runs, so we don't inflate the network graph.
@@ -270,18 +277,7 @@ Session field `readOnly?: boolean`. `PATCH /api/session` accepts it; `GET /api/s
 - `npm run build` — production build (re-run if you see the transient `_document` error). `prebuild` hook auto-regenerates `public/openapi.json` from the YAML.
 - `npm run openapi:build` — regenerate `openapi.json` manually.
 - `npm run typecheck` — `tsc --noEmit`
-- `npm run deploy:start` / `sh start.sh` — one-shot install + build + start for AppSail.
-- `sh scripts/build-deploy-zip.sh` — build the pre-installed, pre-built ZIP for AppSail.
-
-## Deployment
-
-`start.sh` is POSIX-only (`/bin/sh`, no `pipefail`) because AppSail's shell is `dash`. It:
-1. `unset NODE_ENV` (do NOT re-add `export NODE_ENV=development`). Next 15.1.4 has a bug where `next build` fails at the end with `ENOENT: .next/server/pages-manifest.json` when `NODE_ENV` is any non-empty value other than `production` at build time. Next sets it to `production` internally when unset. Dev-deps are still installed because the install step uses `--include=dev`.
-2. Skips install if `node_modules/.bin/next` exists.
-3. Skips build if `.next/BUILD_ID` exists.
-4. `exec`s `next start -p $PORT -H 0.0.0.0`.
-
-`scripts/build-deploy-zip.sh` pre-builds the artifact locally so the deployed script does ~2s of work (well inside AppSail's ~15-30s startup timeout). Ship a source-only ZIP and AppSail will kill the process mid-install.
+- `npm run deploy:start` / `sh start.sh` — one-shot install + build + start for
 
 ## Files worth reading before deep changes
 
@@ -296,7 +292,3 @@ Session field `readOnly?: boolean`. `PATCH /api/session` accepts it; `GET /api/s
 - `src/lib/help-docs.ts` — help center parser (drives the `/help` sidebar from `docs/README.md`)
 - `src/components/marketing/LandingPage.tsx` — public landing shell + sections
 - `src/components/common/Logo.tsx` + `src/app/icon.svg` + `src/app/apple-icon.tsx` — the product mark trio; keep visually aligned
-
-## Plan file
-
-Original design plan for the whole app is at `/Users/senthil-11424/.claude/plans/mellow-growing-grove.md` — good context if you need to understand why a particular choice was made.

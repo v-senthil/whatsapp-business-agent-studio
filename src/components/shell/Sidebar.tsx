@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { Logo } from "@/components/common/Logo";
+import { useTosStatus } from "@/lib/client/hooks/useTosStatus";
 
 interface SidebarProps { entityId: string; }
 
@@ -89,6 +90,10 @@ export function Sidebar({ entityId }: SidebarProps) {
   const nav = groups(entityId);
   const apiDocsActive = pathname?.startsWith("/api-docs");
   const helpActive = pathname?.startsWith("/help");
+  const tos = useTosStatus(entityId);
+  const blocked = tos.blocked;
+  // Keep the dashboard reachable so the user can read the block message.
+  const alwaysEnabled = new Set<string>([`/dashboard/${entityId}`]);
   return (
     <aside className="hidden h-full w-60 shrink-0 flex-col border-r bg-muted/30 md:flex">
       <div className="flex h-14 shrink-0 items-center border-b px-4">
@@ -125,7 +130,22 @@ export function Sidebar({ entityId }: SidebarProps) {
                 const active =
                   pathname === item.href ||
                   (item.href !== `/dashboard/${entityId}` && pathname?.startsWith(item.href));
+                const disabled = blocked && !alwaysEnabled.has(item.href);
                 const Icon = item.icon;
+                if (disabled) {
+                  return (
+                    <li key={item.href}>
+                      <span
+                        aria-disabled="true"
+                        title="Meta Business Agent terms not accepted for this WABA"
+                        className="flex cursor-not-allowed items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground/50"
+                      >
+                        <Icon className="h-4 w-4" />
+                        {item.label}
+                      </span>
+                    </li>
+                  );
+                }
                 return (
                   <li key={item.href}>
                     <Link

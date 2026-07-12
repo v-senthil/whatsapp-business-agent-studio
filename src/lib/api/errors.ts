@@ -20,6 +20,16 @@ export class MetaApiError extends Error {
   }
 }
 
+export function isTosNotAccepted(err: unknown): err is MetaApiError {
+  if (!(err instanceof MetaApiError)) return false;
+  if (err.status !== 403) return false;
+  const detail = err.detail?.toLowerCase() ?? "";
+  return (
+    detail.includes("meta business ai terms") ||
+    detail.includes("terms of service must be accepted")
+  );
+}
+
 export async function parseErrorBody(res: Response): Promise<MetaApiErrorShape> {
   const text = await res.text();
   if (!text) {

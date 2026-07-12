@@ -4,10 +4,13 @@ import { Sparkles } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BusinessIdInput } from "@/components/home/BusinessIdInput";
+import { WabaIdInput } from "@/components/home/WabaIdInput";
 import { WabaList } from "@/components/home/WabaList";
+import { DirectWabaPhones } from "@/components/home/DirectWabaPhones";
 
 export function HomeContent({ initialBusinessId }: { initialBusinessId: string }) {
   const [businessId, setBusinessId] = React.useState(initialBusinessId);
+  const [directWabaId, setDirectWabaId] = React.useState("");
 
   return (
     <div className="space-y-6">
@@ -30,14 +33,29 @@ export function HomeContent({ initialBusinessId }: { initialBusinessId: string }
         onChange={setBusinessId}
       />
 
-      {businessId ? (
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+          <div className="w-full border-t border-border" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-background px-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+            Or
+          </span>
+        </div>
+      </div>
+
+      <WabaIdInput activeWabaId={directWabaId} onChange={setDirectWabaId} />
+
+      {directWabaId ? (
+        <DirectWabaPhones wabaId={directWabaId} businessId={businessId || undefined} />
+      ) : businessId ? (
         <WabaList businessId={businessId} />
       ) : (
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm">Waiting for a business ID</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm">Waiting for a business ID or WABA ID</CardTitle></CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Paste your Meta business ID above and click <strong>Load WABAs</strong> to see the phone numbers you can build agents on.
+              Paste your Meta business ID above to browse its WABAs, or paste a WABA ID directly to jump to its phone numbers.
             </p>
           </CardContent>
         </Card>

@@ -11,6 +11,7 @@ Welcome to the help library for **WhatsApp Business Agent Studio**, a visual bui
 - [Signing in](getting-started/sign-in.md), how the login screen works.
 - [Picking a business and phone](getting-started/pick-business-and-phone.md), choosing which WABA and phone number to work on.
 - [Onboarding your first agent](getting-started/onboard-your-first-agent.md), eligibility checks, the onboarding checklist, and the one-agent-per-channel rule.
+- [WABA terms not accepted](getting-started/tos-not-accepted.md), what the block banner means and how to unblock the dashboard.
 
 ## Configure your agent
 
