@@ -27,9 +27,9 @@ log "PORT=${PORT:-3000}"
 # NODE_ENV is intentionally left unset here.
 # - npm install with --include=dev pulls devDependencies regardless of NODE_ENV.
 # - Next 15 sets NODE_ENV=production internally for `next build`. Setting it to
-#   anything else beforehand triggers a warning AND a known Next 15.1.4 bug
-#   where .next/server/pages-manifest.json is not emitted, causing the build
-#   to fail with ENOENT at the end. Do NOT export NODE_ENV=development here.
+#   any non-empty non-"production" value before invoking build has historically
+#   caused missing pages-manifest.json errors on some patch versions. Leaving
+#   it unset is the safe default.
 unset NODE_ENV || true
 
 # ---- 1. Install ---------------------------------------------------------

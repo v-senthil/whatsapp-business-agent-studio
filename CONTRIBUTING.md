@@ -30,7 +30,7 @@ Open http://localhost:3000 and either paste a Meta access token or click **Try t
 ## Working on the code
 
 - `npm run typecheck` — must pass before you push.
-- `npm run build` — must succeed. If the first run fails with `PageNotFoundError: /_document`, that's a Next 15.1.4 flake — re-run it.
+- `npm run build` — must succeed. If a first-run `PageNotFoundError: /_document` ever crops up, re-run it — it's a known Next flake and the retry is harmless.
 - `npm run dev` — hot-reloads. The dev drawer (Cmd/Ctrl+Shift+D) records every client → server call and can export any of them as cURL.
 - No test suite yet; verify UI changes by hand in the browser and mention what you clicked through in the PR description.
 
