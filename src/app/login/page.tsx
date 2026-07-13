@@ -1,6 +1,7 @@
 "use client";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Logo } from "@/components/common/Logo";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +23,7 @@ export default function LoginPage() {
 function LoginPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const qc = useQueryClient();
   const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
   const [demoLoading, setDemoLoading] = useState(false);
@@ -37,6 +39,9 @@ function LoginPageInner() {
         method: "POST",
         json: { token },
       });
+      // Reset any cached session state (in particular `demo: true` from a
+      // prior tour) before the shell reads it on /home.
+      qc.removeQueries({ queryKey: ["session"] });
       toast.success(`Welcome ${data.user?.name ?? ""}`);
       router.replace("/home");
     } catch (err) {
@@ -58,6 +63,7 @@ function LoginPageInner() {
         method: "POST",
         json: { demo: true },
       });
+      qc.removeQueries({ queryKey: ["session"] });
       toast.success("Demo mode started");
       router.replace("/home");
     } catch (err) {

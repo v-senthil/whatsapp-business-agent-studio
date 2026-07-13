@@ -2,6 +2,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Check, Eye, EyeOff, LogOut, Settings as SettingsIcon, Sparkles, Terminal, User } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ interface HeaderProps {
 
 export function Header({ user, entityId }: HeaderProps) {
   const router = useRouter();
+  const qc = useQueryClient();
   const phone = usePhoneDetails(entityId);
   const session = useSession();
   const patch = usePatchSession();
@@ -44,6 +46,7 @@ export function Header({ user, entityId }: HeaderProps) {
     } catch {
       // even on failure, push the user to /login to break the local UI state
     }
+    qc.clear();
     router.replace("/login");
   }
 

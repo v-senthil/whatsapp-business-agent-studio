@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,11 +11,13 @@ import { fetcher } from "@/lib/client/fetcher";
 export function DemoBanner() {
   const { data } = useSession();
   const router = useRouter();
+  const qc = useQueryClient();
   if (!data?.demo) return null;
 
   async function onExit() {
     try {
       await fetcher("/api/session", { method: "DELETE" });
+      qc.clear();
       toast.success("Demo ended");
       router.replace("/login");
     } catch {
