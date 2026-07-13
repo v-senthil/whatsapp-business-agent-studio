@@ -46,6 +46,85 @@ Read [`CLAUDE.md`](./CLAUDE.md) before making non-trivial changes. It documents 
 - No em-dashes in user-facing copy or docs. Prefer commas or colons.
 - Default to writing no code comments. Only add one when the *why* is non-obvious.
 
+## Walkthrough: add a new resource
+
+The studio ships every resource on the same rhythm. Once you've done one, the rest are copy-paste. Here's the full path for a hypothetical new resource called **Announcements** (a per-agent list of messages the agent can broadcast on demand).
+
+### 1. Schema
+
+Create `src/lib/schemas/announcement.ts`:
+
+```ts
+import { z } from "zod";
+
+export const announcementSchema = z.object({
+  title: z.string().min(1).max(120),
+  body: z.string().min(1).max(5000),
+  channel: z.enum(["whatsapp"]).default("whatsapp"),
+});
+
+export type AnnouncementInput = z.infer<typeof announcementSchema>;
+```
+
+### 2. Response type
+
+Create `src/types/announcement.ts`:
+
+```ts
+export interface Announcement {
+  id: string;
+  title: string;
+  body: string;
+  channel?: "whatsapp";
+  created_at?: number;
+}
+```
+
+### 3. Hooks
+
+Create `src/lib/client/hooks/useAnnouncements.ts`, mirroring `useSkills.ts`. Wire the same normalize pattern (`Array.isArray(r) ? r : r?.data ?? []`), and invalidate `qk.announcements(entityId)` on every mutation. Add the query key to `src/lib/client/query-keys.ts`.
+
+### 4. Pages
+
+Create the pages under `src/app/dashboard/[entityId]/announcements/`:
+
+- `page.tsx` — list view
+- `new/page.tsx` — creation form
+- `[announcementId]/page.tsx` — edit view
+
+Use existing skill pages as a template. Every form uses `react-hook-form` + `zod` resolvers, and the mutations come from your new hooks.
+
+### 5. Sidebar
+
+Add an entry to `src/components/shell/Sidebar.tsx` under the appropriate group.
+
+### 6. Demo router
+
+Extend `src/lib/demo/router.ts` to handle the new endpoint. Add fixture data to `src/lib/demo/fixtures.ts` and a `Map<string, Announcement>` to `src/lib/demo/store.ts`. Without this, the demo will 404 on your new page.
+
+### 7. OpenAPI
+
+Add the endpoint to `public/openapi.yaml`. The `prebuild` hook regenerates `public/openapi.json`, which Zudoku reads for the `/api-docs` page.
+
+### 8. Help doc
+
+Write `docs/configure/announcements.md` explaining the resource from a user perspective. Add a line under the right section in `docs/README.md` so the `/help` sidebar picks it up. This is required, not optional; PRs that add a feature without touching the docs are considered incomplete.
+
+### 9. Config export/import
+
+If your resource should promote across phones, add it to `src/lib/utils/agent-config.ts`. If not (per-agent-only, like session settings), skip.
+
+### Rough time budget
+
+For an experienced contributor working on a resource that follows an existing pattern (roughly like Skills), expect:
+
+- 30 minutes for schema, type, hooks.
+- 60 to 90 minutes for the three pages.
+- 15 minutes for sidebar and demo router.
+- 30 minutes for OpenAPI and the help doc.
+
+Total: half a day for a straightforward CRUD resource, more if the resource has custom sub-forms or multi-step flows (see Connectors and Tools for examples of the harder end).
+
 ## Pull requests
 
 - Branch from `main`. Keep PRs focused — one feature or fix per PR.

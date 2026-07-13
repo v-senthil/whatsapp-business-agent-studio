@@ -26,6 +26,9 @@ Welcome to the help library for **WhatsApp Business Agent Studio**, a visual bui
 - [Knowledge, allowlist](configure/knowledge-allowlist.md), consumer phone numbers that gate the audience.
 - [Connectors](configure/connectors.md), external APIs and the template gallery.
 - [Connector auth rotation](configure/connector-auth-rotation.md), how to swap API keys, OAuth secrets, and certificates.
+- [Connector auth, API key (Stripe example)](configure/connector-auth-api-key-stripe.md), where to get the key, where it goes, and rotation.
+- [Connector auth, OAuth client credentials (Salesforce example)](configure/connector-auth-oauth-salesforce.md), Connected App setup and token exchange.
+- [Connector auth, mTLS (bank example)](configure/connector-auth-mtls-bank.md), client certificates, CSRs, and rotation.
 - [Connector health](configure/connector-health.md), 24-hour stats and top failure patterns.
 - [Tools](configure/tools.md), building tool operations on a connector.
 - [Generate from document](configure/generate-from-document.md), draft FAQs, skills, and connectors from a Markdown or text file.
@@ -49,8 +52,25 @@ Welcome to the help library for **WhatsApp Business Agent Studio**, a visual bui
 - [API reference viewer](advanced/api-reference.md), how to browse the API reference inside the app.
 - [Theming and dark mode](advanced/theming.md), Light, Dark, and System modes.
 
+## Recipes
+
+- [Build a payment reminder agent](recipes/payment-reminder-agent.md), end-to-end walkthrough that stitches skills, connectors, and settings together.
+- [Handle refund escalations](recipes/refund-escalations.md), triage skill, handoff, and never-promise-a-refund safety net.
+- [Wire your CRM as a connector](recipes/wire-your-crm.md), HubSpot walkthrough with adaptation notes for Salesforce, Zoho, and Pipedrive.
+
+## Migration
+
+- [Migrate from a custom Meta wrapper](migration/from-custom-meta-wrapper.md), step-by-step handover from a homegrown app.
+- [Migrate an API-configured agent](migration/from-api-configured-agent.md), adopt an agent that was set up entirely via curl or Postman.
+
 ## Reference
 
+- [Architecture and security](reference/architecture-and-security.md), where the token lives, the single-proxy hinge, and threat model summary.
 - [Security](reference/security.md), how the token is kept private and how webhooks are verified.
+- [Compliance notes](reference/compliance.md), GDPR posture, Meta ToS, retention, third-party data flows.
 - [Deployment](reference/deployment.md), the one-shot script and pre-built ZIP flow.
+- [Deploy on Vercel](reference/deploy-vercel.md), fastest path to a public URL.
+- [Deploy on Fly.io](reference/deploy-fly.md), dedicated VM with regional control.
+- [Deploy on Railway](reference/deploy-railway.md), managed container without a Dockerfile.
+- [Deploy with Docker Compose](reference/deploy-docker-compose.md), full control on your own hardware.
 - [Troubleshooting](reference/troubleshooting.md), common problems and how to fix them.
