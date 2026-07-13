@@ -188,11 +188,12 @@ The static site lives in `marketing/`. It reuses the same `LandingPage`, `HeroPr
 ### One-time GitHub setup
 
 1. In the repo's **Settings → Pages**, set **Source** to `GitHub Actions`.
-2. In **Settings → Secrets and variables → Actions → Variables**, add a repository variable named `APP_URL` pointing at your live app's origin (no trailing slash), for example:
+2. The workflow defaults `NEXT_PUBLIC_APP_URL` to the public Vercel deployment (`https://whatsapp-business-agent-studio.vercel.app`), so the Dashboard, Try-the-demo, and Sign-in CTAs on the exported landing point at the real app out of the box.
+3. To point at a different deployment (self-hosted, staging, or a fresh Vercel URL), add a repository variable in **Settings → Secrets and variables → Actions → Variables**:
    ```
-   APP_URL=https://whatsapp-business-agent-studio-50033550439.development.catalystappsail.in
+   APP_URL=https://your-app.example.com
    ```
-   The workflow feeds this to the marketing build as `NEXT_PUBLIC_APP_URL` so the Dashboard, Docs, and Sign-in CTAs on the exported landing point at the real app. Leaving it unset ships a landing whose CTAs are relative paths, which will 404 on Pages.
+   The workflow prefers `vars.APP_URL` when set and falls back to the Vercel default otherwise.
 
 ### How it deploys
 
