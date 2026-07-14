@@ -5,6 +5,7 @@ Welcome to the help library for **WhatsApp Business Agent Studio**, a visual bui
 ## Getting started
 
 - [Introduction](getting-started/introduction.md), what the product is and the core concepts.
+- [Concepts](getting-started/concepts.md), skills, knowledge, connectors, tools, and evals, plus how they fit together.
 - [Try the demo](getting-started/try-the-demo.md), explore every screen with seeded data and no Meta access token.
 - [Prerequisites](getting-started/prerequisites.md), the Meta accounts, phone numbers, and setup you need.
 - [Generating an access token](getting-started/access-token.md), how to mint a token in Meta Business Suite and rotate it safely.
@@ -20,6 +21,7 @@ Welcome to the help library for **WhatsApp Business Agent Studio**, a visual bui
 - [Agent settings](configure/settings.md), rollout, handoff, follow-up, and AI audience.
 - [Business info](configure/business-info.md), description, contact, and policies.
 - [Skills](configure/skills.md), authoring, CSV bulk operations, templates, and AI drafting.
+- [Writing good skills](configure/writing-good-skills.md), design guide for titles, descriptions, action bodies, and fallback handoffs.
 - [Knowledge, files](configure/knowledge-files.md), uploading documents the agent can use.
 - [Knowledge, websites](configure/knowledge-websites.md), URL management with CSV import and export.
 - [Knowledge, FAQs](configure/knowledge-faqs.md), question and answer pairs with CSV support.
@@ -32,6 +34,7 @@ Welcome to the help library for **WhatsApp Business Agent Studio**, a visual bui
 - [Connector auth, mTLS (bank example)](configure/connector-auth-mtls-bank.md), client certificates, CSRs, and rotation.
 - [Connector health](configure/connector-health.md), 24-hour stats and top failure patterns.
 - [Tools](configure/tools.md), building tool operations on a connector.
+- [Writing good tools](configure/writing-good-tools.md), design guide for tool descriptions, parameter shapes, and required flags.
 - [Generate from document](configure/generate-from-document.md), draft FAQs, skills, and connectors from a Markdown or text file.
 
 ## Ship and operate
@@ -58,6 +61,8 @@ Welcome to the help library for **WhatsApp Business Agent Studio**, a visual bui
 - [Build a payment reminder agent](recipes/payment-reminder-agent.md), end-to-end walkthrough that stitches skills, connectors, and settings together.
 - [Handle refund escalations](recipes/refund-escalations.md), triage skill, handoff, and never-promise-a-refund safety net.
 - [Wire your CRM as a connector](recipes/wire-your-crm.md), HubSpot walkthrough with adaptation notes for Salesforce, Zoho, and Pipedrive.
+- [Order tracking on WhatsApp](recipes/order-tracking.md), Shopify connector plus tools and skill for the "where is my order?" flow.
+- [Appointment booking on WhatsApp](recipes/appointment-booking.md), Calendly connector plus book, cancel, and reschedule skills.
 
 ## Migration
 
@@ -66,6 +71,8 @@ Welcome to the help library for **WhatsApp Business Agent Studio**, a visual bui
 
 ## Reference
 
+- [Pre-launch checklist](reference/pre-launch-checklist.md), the go-live gate covering config, testing, observability, safety, and rollback.
+- [Monitoring in production](reference/monitoring-in-production.md), daily and weekly checks, what each signal means, and what alerts to set.
 - [Architecture and security](reference/architecture-and-security.md), where the token lives, the single-proxy hinge, and threat model summary.
 - [Security](reference/security.md), how the token is kept private and how webhooks are verified.
 - [Compliance notes](reference/compliance.md), GDPR posture, Meta ToS, retention, third-party data flows.

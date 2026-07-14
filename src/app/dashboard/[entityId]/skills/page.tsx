@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BulkImportDialog } from "@/components/common/BulkImportDialog";
 import { ExportCsvButton } from "@/components/common/ExportCsvButton";
 import { SkillTemplatesDialog } from "@/components/skills/SkillTemplatesDialog";
+import { SkillCollisionCard } from "@/components/skills/SkillCollisionCard";
 import { useCreateSkill, useSkills } from "@/lib/client/hooks/useSkills";
 import { skillSchema } from "@/lib/schemas/skill";
 
@@ -53,6 +54,13 @@ export default function SkillsPage({ params }: { params: Promise<{ entityId: str
       </div>
 
       {error && <ErrorState error={error} />}
+
+      {data && data.length > 1 && (
+        <SkillCollisionCard
+          entityId={entityId}
+          skills={data.map((s) => ({ id: s.id, title: s.title, description: s.description }))}
+        />
+      )}
 
       {isLoading ? (
         <div className="grid gap-3 md:grid-cols-2">

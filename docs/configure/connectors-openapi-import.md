@@ -216,6 +216,20 @@ If a tool fails, an error toast appears and the import continues with the remain
 - **Adjust tools:** open any tool to edit its description, rename parameters, or fix body schemas that came in as `object`.
 - **Run a tool:** use the **Run** button on a tool to verify the request shape end-to-end before the agent uses it.
 
+## Re-sync when the spec changes
+
+When the API you imported from ships a new version of its spec, use **Re-sync from spec** on the connector's Tools page instead of re-importing from scratch. Re-sync compares the new spec against your existing tools by name and only adds the new operations. Existing tools stay exactly as they are (customized descriptions, tightened required flags, and all).
+
+1. Open **Connectors > your connector > Tools**.
+2. Click **Re-sync from spec** in the header.
+3. Upload or paste the updated OpenAPI spec.
+4. The preview shows a summary: **N new tools** and **M already exist and will be skipped**. Expand the already-exist section to double-check the name matching.
+5. Uncheck any of the new tools you do not want, then click **Add N tools**.
+
+Re-sync is additive only. It does not update or delete anything. If an operation was renamed in the spec, the studio treats the old name as an existing tool (untouched) and the new name as a new tool (added). Delete the old one manually if you no longer want it.
+
+If nothing is new (every operation in the spec already has a matching tool), the Add button disables and the preview shows the reason.
+
 ## Limitations
 
 - **Swagger 2.0 not supported.** Convert to OpenAPI 3.x using Swagger Editor.

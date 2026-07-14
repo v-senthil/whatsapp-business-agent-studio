@@ -9,18 +9,22 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTools } from "@/lib/client/hooks/useConnectors";
+import { OpenApiResyncDialog } from "@/components/connectors/OpenApiResyncDialog";
 
 export default function ToolsPage({ params }: { params: Promise<{ entityId: string; connectorId: string }> }) {
   const { entityId, connectorId } = use(params);
   const { data, isLoading, error } = useTools(entityId, connectorId);
   return (
     <div className="mx-auto max-w-4xl space-y-6 py-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-2xl font-semibold">Tools</h1>
           <p className="text-sm text-muted-foreground">Endpoints inside this connector the agent can call.</p>
         </div>
-        <Button asChild><Link href={`/dashboard/${entityId}/connectors/${connectorId}/tools/new`}><Plus className="h-4 w-4" /> New tool</Link></Button>
+        <div className="flex flex-wrap gap-2">
+          <OpenApiResyncDialog entityId={entityId} connectorId={connectorId} existingTools={data ?? []} />
+          <Button asChild><Link href={`/dashboard/${entityId}/connectors/${connectorId}/tools/new`}><Plus className="h-4 w-4" /> New tool</Link></Button>
+        </div>
       </div>
       {error && <ErrorState error={error} />}
       {isLoading ? (
