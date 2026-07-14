@@ -2,6 +2,8 @@
 
 Tools are the operations a connector exposes to the model. Each tool has a **request definition** (HTTP method, path, parameters) plus a description. At runtime the model picks arguments and calls the tool. This is the most involved surface in the app.
 
+If your target API publishes an OpenAPI 3.x spec, you can skip manual authoring and let the studio generate one tool per operation for you. See [Import connector from OpenAPI spec](connectors-openapi-import.md).
+
 ## What you'll do
 
 - Create a tool with a full request definition.

@@ -7,7 +7,7 @@ Connectors are external APIs the agent can call. Each connector defines a base U
 ## What you'll do
 
 - Understand the three connector auth types.
-- Create a connector manually or from a template.
+- Create a connector from a template, from an OpenAPI spec, or manually.
 - Move on to defining tools, rotating credentials, and reading the health card.
 
 ## Auth types
@@ -22,6 +22,36 @@ You pick the auth type when you create the connector. Switching auth types on an
 
 ## Step-by-step
 
+### Create from a template
+
+The template library ships 14 prefilled connector shells for common SaaS APIs, grouped by category:
+
+- **E-commerce**: Shopify, WooCommerce
+- **Payments**: Stripe
+- **Support**: Zendesk, Freshdesk, Intercom
+- **CRM**: HubSpot, Salesforce
+- **Communication**: Twilio, Slack
+- **Marketing**: SendGrid, Mailchimp
+- **Productivity**: Calendly, Notion
+
+Each template comes with the right `auth_type`, base URL, and (for OAuth templates) token URL and default scopes. You only need to fill in your own credentials.
+
+1. On the Connectors list page, click **From template** in the header.
+2. Pick a template. You land on the New connector page with the fields prefilled.
+3. Follow the linked docs on the template card to mint credentials for the target API (usually an API key or an OAuth client).
+4. Paste the credentials into the auth fields and click **Save**.
+
+### Create from an OpenAPI spec
+
+If you already have an OpenAPI 3.x spec for your API, you can create the whole connector plus one tool per operation in one step. This is the fastest path when the vendor publishes a spec and there is no template for it.
+
+1. On the Connectors list page, click **Import OpenAPI** in the header.
+2. Paste the spec into the text area (500 KB cap) or upload a `.yaml`, `.yml`, or `.json` file (2 MB cap).
+3. Review the auto-generated connector card, pick a server if the spec defines several, pick an auth scheme if it defines several, uncheck any tools you do not want, then click **Create**.
+4. Credentials stay empty. Open **Rotate credentials** on the new connector and fill them in.
+
+See [Import connector from OpenAPI spec](connectors-openapi-import.md) for the full walkthrough, including how each OpenAPI security scheme maps to a studio auth type.
+
 ### Create a connector manually
 
 1. Open **Connectors** from the sidebar.
@@ -30,62 +60,6 @@ You pick the auth type when you create the connector. Switching auth types on an
 4. Choose an **Auth type**. The form below switches to the fields for that auth type.
 5. Fill in the auth fields.
 6. Click **Save**.
-
-### Create from a template
-
-The template library has three families: **Zoho** (default, every Zoho product with a documented API), **Google** (Workspace, Marketing, and Cloud APIs), and **Others** (universally available third-party APIs). Every template ships with OAuth 2.0 scopes and the correct token URL preset.
-
-1. On the Connectors list page, click **From template** in the header.
-2. The dialog opens with a filter row at the top: **Zoho · Google · Others · All**. It defaults to **Zoho**. Each tab shows a count next to its label so you know what's under each.
-3. Under **Zoho**, templates are grouped by product family:
-   - **Sales & CRM**: CRM, Bigin, SalesIQ, Backstage.
-   - **Support**: Desk, Assist, Lens.
-   - **Finance**: Books, Invoice, Expense, Billing (formerly Subscriptions), Checkout, Practice.
-   - **Inventory & Commerce**: Inventory, Commerce.
-   - **HR & People**: People, Recruit, Payroll, Shifts.
-   - **Marketing**: Campaigns, Marketing Automation, Social, Survey, Forms, PageSense, Sites.
-   - **Productivity**: Mail, Cliq, Meeting, WorkDrive, Writer, Sheet, Show, Notebook, Bookings, Calendar, Vault, Connect.
-   - **Analytics**: Analytics, DataPrep.
-   - **Developer**: Creator, Flow, Catalyst, Directory.
-   - **Sign & Contracts**: Sign, Contracts.
-   - **Events & Learning**: Learn, Webinar.
-4. Under **Google**, templates are grouped by function:
-   - **Productivity**: Sheets, Docs, Slides, Drive, Calendar, Tasks, Contacts.
-   - **Communication**: Gmail, Chat, Meet.
-   - **Marketing**: Ads, Search Console, YouTube Data.
-   - **CRM**: Business Profile.
-   - **Analytics**: Google Analytics (GA4 Data API).
-   - **Developer**: Cloud Translation, Cloud Vision, Cloud Speech-to-Text, Cloud Text-to-Speech, Cloud Natural Language, Cloud Pub/Sub, Firebase Cloud Messaging.
-5. Under **Others**, templates are grouped by industry category:
-   - **E-commerce**: Shopify, WooCommerce.
-   - **Payments**: Stripe.
-   - **Support**: Zendesk, Freshdesk, Intercom.
-   - **CRM**: HubSpot, Salesforce.
-   - **Communication**: Twilio, Slack.
-   - **Marketing**: SendGrid, Mailchimp.
-   - **Productivity**: Calendly, Notion.
-6. Pick one. You land on the New connector page with the fields prefilled.
-7. Mint credentials for the target API:
-   - **Zoho** templates: register a client on the [Zoho API Console](https://api-console.zoho.com/) for your data center, then paste the **Client ID** and **Client Secret**.
-   - **Google** templates: create a project on [Google Cloud Console](https://console.cloud.google.com/), enable the specific API for the product you picked, create an OAuth 2.0 client, and paste its **Client ID** and **Client Secret**.
-   - **Others**: follow the linked docs on the template card to mint the credentials the connector needs (usually an API key or an OAuth client).
-8. **Data center for Zoho**: swap the `.com` suffix on both the token URL and the base URL if your Zoho org is in another region: `.in`, `.eu`, `.com.au`, `.jp`, `.com.cn`, or `.ca`.
-9. **Scopes**: each template ships with a minimum set. Add more if a tool needs them; keep the list tight so client-secret leaks have limited blast radius.
-10. Click **Save**.
-
-### Zoho region cheatsheet
-
-| Region                | Accounts server               | API host                        |
-|-----------------------|-------------------------------|---------------------------------|
-| United States         | `accounts.zoho.com`           | `www.zohoapis.com`              |
-| India                 | `accounts.zoho.in`            | `www.zohoapis.in`               |
-| Europe                | `accounts.zoho.eu`            | `www.zohoapis.eu`               |
-| Australia             | `accounts.zoho.com.au`        | `www.zohoapis.com.au`           |
-| Japan                 | `accounts.zoho.jp`            | `www.zohoapis.jp`               |
-| China                 | `accounts.zoho.com.cn`        | `www.zohoapis.com.cn`           |
-| Canada                | `accounts.zohocloud.ca`       | `www.zohoapis.ca`               |
-
-Update both the **token URL** in the OAuth section and the connector's **base URL** to match your region before saving.
 
 ### Edit or delete
 
