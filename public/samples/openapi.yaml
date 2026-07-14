@@ -1,0 +1,158 @@
+openapi: 3.0.3
+info:
+  title: Sample Store API
+  version: "1.0.0"
+  description: |
+    A tiny sample spec demonstrating how the studio maps OpenAPI operations to
+    connector tools. Two endpoints, three methods each, one bearer auth scheme.
+    Import this file to see the preview: it produces one connector plus six
+    tools with a mix of path parameters, query parameters, and JSON request
+    bodies.
+servers:
+  - url: https://api.sample-store.example.com/v1
+
+security:
+  - BearerAuth: []
+
+paths:
+  /customers/{customer_id}:
+    get:
+      operationId: get_customer
+      summary: Fetch a customer by ID
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          description: The unique customer identifier.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The customer record.
+
+    put:
+      operationId: update_customer
+      summary: Replace the customer record
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          description: The unique customer identifier.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email]
+              properties:
+                name:
+                  type: string
+                  description: Customer display name.
+                email:
+                  type: string
+                  description: Customer contact email (must be a valid address).
+                phone:
+                  type: string
+                  description: Optional E.164 phone number.
+      responses:
+        "200":
+          description: The updated customer record.
+
+    delete:
+      operationId: delete_customer
+      summary: Permanently delete a customer
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          description: The unique customer identifier.
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted.
+
+  /orders:
+    get:
+      operationId: list_orders
+      summary: List recent orders
+      parameters:
+        - name: customer_id
+          in: query
+          description: Filter to a specific customer.
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Filter by order status.
+          schema:
+            type: string
+            enum: [pending, paid, shipped, delivered, cancelled]
+        - name: limit
+          in: query
+          description: Maximum results to return (default 20, max 100).
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: An array of order records.
+
+    post:
+      operationId: create_order
+      summary: Create a new order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customer_id, items]
+              properties:
+                customer_id:
+                  type: string
+                  description: Customer placing the order.
+                items:
+                  type: array
+                  items:
+                    type: object
+                  description: Line items in the order.
+                notes:
+                  type: string
+                  description: Optional free-form order notes.
+      responses:
+        "201":
+          description: The newly created order.
+
+    patch:
+      operationId: bulk_update_orders
+      summary: Bulk update multiple orders
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [order_ids, status]
+              properties:
+                order_ids:
+                  type: array
+                  items:
+                    type: string
+                  description: IDs of orders to update.
+                status:
+                  type: string
+                  enum: [pending, paid, shipped, delivered, cancelled]
+                  description: New status to set on every listed order.
+      responses:
+        "200":
+          description: Bulk update result.
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: Store API bearer token.

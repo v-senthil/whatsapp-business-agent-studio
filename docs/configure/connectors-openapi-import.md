@@ -9,9 +9,119 @@ If you already have an OpenAPI 3.x spec for your API, you can import it directly
 
 Authentication credentials are always left empty after import. Use the **Rotate credentials** page on the connector to add them after creation.
 
+## Try it with the sample spec
+
+If you want to see the flow end-to-end before pointing it at your own API, [download the sample OpenAPI spec](/samples/openapi.yaml) and upload it in the dialog. It defines two endpoints (`/customers/{customer_id}` and `/orders`) with three methods each, so the preview shows six tools spanning path parameters, query parameters, and JSON request bodies.
+
+The full sample:
+
+```yaml
+openapi: 3.0.3
+info:
+  title: Sample Store API
+  version: "1.0.0"
+  description: A tiny sample spec demonstrating how the studio maps OpenAPI operations to connector tools.
+servers:
+  - url: https://api.sample-store.example.com/v1
+
+security:
+  - BearerAuth: []
+
+paths:
+  /customers/{customer_id}:
+    get:
+      operationId: get_customer
+      summary: Fetch a customer by ID
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          schema: { type: string }
+    put:
+      operationId: update_customer
+      summary: Replace the customer record
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email]
+              properties:
+                name: { type: string, description: Customer display name. }
+                email: { type: string, description: Customer contact email. }
+                phone: { type: string, description: Optional E.164 phone number. }
+    delete:
+      operationId: delete_customer
+      summary: Permanently delete a customer
+      parameters:
+        - name: customer_id
+          in: path
+          required: true
+          schema: { type: string }
+
+  /orders:
+    get:
+      operationId: list_orders
+      summary: List recent orders
+      parameters:
+        - name: customer_id
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, paid, shipped, delivered, cancelled]
+        - name: limit
+          in: query
+          schema: { type: integer }
+    post:
+      operationId: create_order
+      summary: Create a new order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customer_id, items]
+              properties:
+                customer_id: { type: string }
+                items: { type: array, items: { type: object } }
+                notes: { type: string }
+    patch:
+      operationId: bulk_update_orders
+      summary: Bulk update multiple orders
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [order_ids, status]
+              properties:
+                order_ids: { type: array, items: { type: string } }
+                status:
+                  type: string
+                  enum: [pending, paid, shipped, delivered, cancelled]
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: Store API bearer token.
+```
+
 ## Open the dialog
 
-Go to **Connectors** in the sidebar and click **Import OpenAPI** in the header.
+Go to **Connectors** in the sidebar and click **Import OpenAPI** in the header. The dialog itself also has a **Download sample spec** link at the bottom of the input step if you would rather grab it from there.
 
 ## Step 1: Provide the spec
 
@@ -20,7 +130,7 @@ You can provide the spec in two ways:
 - **Upload a file:** click **Upload file** and select a `.yaml`, `.yml`, or `.json` file. Maximum size is 2 MB.
 - **Paste text:** copy your spec and paste it into the text area. Maximum paste size is 500 KB. For larger specs, use file upload.
 
-Both YAML and JSON formats are accepted. OpenAPI 3.x only. Swagger 2.0 is not supported — use Swagger Editor's one-click convert to upgrade it first.
+Both YAML and JSON formats are accepted. OpenAPI 3.x only. Swagger 2.0 is not supported. Use Swagger Editor's one-click convert to upgrade it first.
 
 Click **Parse spec** when ready. Any syntax error is shown inline.
 

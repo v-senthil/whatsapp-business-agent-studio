@@ -2,7 +2,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { FileCode, AlertTriangle, ChevronDown, ChevronUp, Check } from "lucide-react";
+import { FileCode, AlertTriangle, ChevronDown, ChevronUp, Check, Download } from "lucide-react";
 import YAML from "yaml";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -378,6 +378,18 @@ export function OpenApiImportDialog({ entityId }: Props) {
             onChange={(e) => { setText(e.target.value); setParseError(null); }}
             className="h-48 font-mono text-xs"
           />
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs text-muted-foreground">
+            New to OpenAPI? Grab the sample spec and upload it to see the preview.
+          </p>
+          <a
+            href="/samples/openapi.yaml"
+            download
+            className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+          >
+            <Download className="h-3 w-3" /> Download sample spec
+          </a>
         </div>
         {parseError && (
           <div className="flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
