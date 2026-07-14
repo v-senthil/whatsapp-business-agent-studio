@@ -10,6 +10,7 @@ import { ErrorState } from "@/components/common/ErrorState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useConnectors } from "@/lib/client/hooks/useConnectors";
 import { ConnectorTemplatesDialog } from "@/components/connectors/ConnectorTemplatesDialog";
+import { OpenApiImportDialog } from "@/components/connectors/OpenApiImportDialog";
 
 export default function ConnectorsPage({ params }: { params: Promise<{ entityId: string }> }) {
   const { entityId } = use(params);
@@ -24,6 +25,7 @@ export default function ConnectorsPage({ params }: { params: Promise<{ entityId:
         </div>
         <div className="flex flex-wrap gap-2">
           <ConnectorTemplatesDialog entityId={entityId} />
+          <OpenApiImportDialog entityId={entityId} />
           <Button asChild>
             <Link href={`/dashboard/${entityId}/connectors/new`}><Plus className="h-4 w-4" /> New connector</Link>
           </Button>

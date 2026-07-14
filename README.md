@@ -20,7 +20,7 @@ A visual builder for WhatsApp Business AI agents on the [Meta Business Agent Pla
 - **Fill in** business info: description, contact, payment, returns, purchase, delivery
 - **Author skills** — free-form instructions the model follows in specific scenarios
 - **Manage knowledge** — upload files (PDF/DOCX/CSV/…), add crawlable websites, curate FAQs, and maintain an E.164 allowlist
-- **Register connectors** — external APIs the agent can call, with `API_KEY` / `OAUTH2_CLIENT_CREDENTIALS` / `MTLS` auth, plus per-tool `request_definition` schemas the model uses to decide arguments
+- **Register connectors** — external APIs the agent can call, with `API_KEY` / `OAUTH2_CLIENT_CREDENTIALS` / `MTLS` auth, plus per-tool `request_definition` schemas the model uses to decide arguments. Bring an OpenAPI 3.x spec (YAML or JSON) and the studio creates the connector plus one tool per operation in one step.
 - **Run tools** manually with custom JSON input to verify shape end-to-end
 - **Evaluate** the agent against pre-seeded eval cases and inspect per-case transcripts
 - **Test chat** the agent in a WhatsApp-style bubble UI with sticky `conversation_id`, quick-reply chips, and handoff banners
@@ -30,8 +30,9 @@ A visual builder for WhatsApp Business AI agents on the [Meta Business Agent Pla
 ### Bulk operations
 
 - **CSV import + export** for skills, FAQs, and allowlist entries. Downloads sample CSVs; per-row validation against the same zod schemas the forms use; preview with valid/invalid counts before submitting.
-- **Skill templates library** — 10 curated starter skills across five categories (Onboarding, Support, Sales, Escalation, Utility); multi-select and add.
-- **Connector templates library** — 8 prefilled shells (Shopify, Stripe, Zendesk, HubSpot, Salesforce, Twilio, SendGrid, Slack). Pick one, fill in credentials.
+- **Skill templates library** — 22 curated starter skills across five categories (Onboarding, Support, Sales, Escalation, Utility); multi-select and add.
+- **Connector templates library** — 14 prefilled shells (Shopify, WooCommerce, Stripe, Zendesk, Freshdesk, Intercom, HubSpot, Salesforce, Twilio, Slack, SendGrid, Mailchimp, Calendly, Notion). Pick one, fill in credentials.
+- **Import a connector from an OpenAPI spec** — paste or upload any OpenAPI 3.x YAML / JSON and the studio creates one connector plus one tool per operation. Auth type is inferred from `securitySchemes` (API key, HTTP bearer/basic, OAuth 2 client credentials, mTLS); parameters map to the studio's path/query/header/body slots; unchecked tools are skipped. Credentials stay empty and are rotated after import.
 - **Agent config JSON export / import** — bundle everything (settings, business info, skills, knowledge, allowlist, connectors + tools) into a single JSON, with optional credential strip. Reimport on another phone to promote staging → prod.
 
 ### AI-assisted authoring
@@ -308,6 +309,7 @@ src/
 │   ├── help-docs.ts                      # parses docs/README.md into the help center nav
 │   ├── skill-templates.ts                # curated skill library
 │   ├── connector-templates.ts            # curated connector library
+│   ├── openapi/                          # deterministic OpenAPI 3.x → connector+tools parser (parse, security-map, param-map, ref-resolver)
 │   ├── scenarios.ts                      # localStorage CRUD for saved chats
 │   ├── webhook-store.ts                  # in-memory ring buffer for received webhooks
 │   ├── demo/{fixtures, store, router}.ts # demo mode: seeded tenant + per-session in-memory writes + proxy short-circuit

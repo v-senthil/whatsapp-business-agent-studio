@@ -25,6 +25,7 @@ Welcome to the help library for **WhatsApp Business Agent Studio**, a visual bui
 - [Knowledge, FAQs](configure/knowledge-faqs.md), question and answer pairs with CSV support.
 - [Knowledge, allowlist](configure/knowledge-allowlist.md), consumer phone numbers that gate the audience.
 - [Connectors](configure/connectors.md), external APIs and the template gallery.
+- [Import connector from OpenAPI spec](configure/connectors-openapi-import.md), create a connector and tools in one step from a YAML or JSON spec file.
 - [Connector auth rotation](configure/connector-auth-rotation.md), how to swap API keys, OAuth secrets, and certificates.
 - [Connector auth, API key (Stripe example)](configure/connector-auth-api-key-stripe.md), where to get the key, where it goes, and rotation.
 - [Connector auth, OAuth client credentials (Salesforce example)](configure/connector-auth-oauth-salesforce.md), Connected App setup and token exchange.

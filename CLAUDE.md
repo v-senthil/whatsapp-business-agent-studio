@@ -114,7 +114,7 @@ Reads `agent_config/settings` first. If any entry has `channel == "whatsapp"`, r
 Cards + monospace textareas. Full CRUD across `/skills`, `/skills/new`, `/skills/[skillId]`. Header exposes three additional actions:
 - **Export CSV** — `<ExportCsvButton>` streams the current list as `skills.csv`.
 - **Import CSV** — `<BulkImportDialog>` with `skillSchema`; sample at `/samples/skills.csv`.
-- **Templates** — `<SkillTemplatesDialog>` (`src/lib/skill-templates.ts`) picks from 10 curated templates. Dedupes against existing skill titles (shows "Added" badge).
+- **Templates** — `<SkillTemplatesDialog>` (`src/lib/skill-templates.ts`) picks from 22 curated templates across five categories (Onboarding, Support, Sales, Escalation, Utility). Dedupes against existing skill titles (shows "Added" badge).
 - **Draft with AI** — on `/skills/new`, an intent textarea + button hits `POST /api/ai/draft-skill` and pre-fills the form. Requires an AI provider configured under `/settings/ai`.
 
 ### Knowledge (files, websites, FAQs, allowlist)
@@ -132,8 +132,8 @@ Tabs in `src/app/dashboard/[entityId]/knowledge/layout.tsx`.
 Sample CSVs live at `/public/samples/{skills,faqs,allowlist}.csv` — realistic multi-row examples with proper escaping (quoted multi-line skill bodies, JSON metadata in FAQs).
 
 ### Skill templates + Connector templates
-- `src/lib/skill-templates.ts` — 10 curated skills across 5 categories (Onboarding, Support, Sales, Escalation, Utility). Add more by appending to the array — no other wiring needed.
-- `src/lib/connector-templates.ts` — 8 prefilled connector shells (Shopify, Stripe, Zendesk, HubSpot, Salesforce, Twilio, SendGrid, Slack). Each has a proper `ConnectorInput` with the right `auth_type` and empty-value scaffolds. Picker routes to `/connectors/new?template=<slug>` which the New page reads via `useSearchParams`.
+- `src/lib/skill-templates.ts` — 22 curated skills across 5 categories (Onboarding, Support, Sales, Escalation, Utility). Add more by appending to the array — no other wiring needed.
+- `src/lib/connector-templates.ts` — 14 prefilled connector shells (Shopify, WooCommerce, Stripe, Zendesk, Freshdesk, Intercom, HubSpot, Salesforce, Twilio, Slack, SendGrid, Mailchimp, Calendly, Notion). Each has a proper `ConnectorInput` with the right `auth_type` and empty-value scaffolds. Picker routes to `/connectors/new?template=<slug>` which the New page reads via `useSearchParams`.
 
 ### AI provider config — `/settings/ai`
 `src/app/settings/ai/page.tsx` (server, session-gated) → `<AiSettingsForm>` (client) + `<DocumentGenerator />` (utility mode). Provider abstraction lives in `src/lib/ai/index.ts`:
@@ -169,12 +169,27 @@ File input accepts `.md`/`.markdown`/`.txt` only, 2 MB cap, read via `FileReader
 - **Import** parses the JSON, validates the shape via `isValidBundle`, shows a preview of counts per resource, then runs `runImport(entityId, bundle, onProgress)` — a sequential mutation plan with a live progress callback (business info → skills → websites → FAQs → allowlist → connectors → tools). If credentials weren't included, an amber alert warns that connectors will be created but need their auth rotated afterwards.
 
 ### Connectors
-`src/app/dashboard/[entityId]/connectors/…`. The complex UI. Auth is a **zod discriminated union** on `auth_type`. `ConnectorForm` switches sub-forms via `RadioGroup` + `React.useRef` stash so toggling auth types doesn't discard prior data. The list header has a **From template** button that opens `<ConnectorTemplatesDialog>` (see above).
+`src/app/dashboard/[entityId]/connectors/…`. The complex UI. Auth is a **zod discriminated union** on `auth_type`. `ConnectorForm` switches sub-forms via `RadioGroup` + `React.useRef` stash so toggling auth types doesn't discard prior data. The list header has a **From template** button that opens `<ConnectorTemplatesDialog>` (see above) and an **Import OpenAPI** button that opens `<OpenApiImportDialog>` (see below).
 
 Credential rotation lives at `/connectors/[connectorId]/auth` and posts to different endpoints depending on `auth_type`:
 - `API_KEY` → `upsertApiKey`
 - `OAUTH2_CLIENT_CREDENTIALS` → `upsertOAuth`
 - `MTLS` → `upsertCertificate` (PEM textareas)
+
+### Connectors, OpenAPI import
+`src/components/connectors/OpenApiImportDialog.tsx` + `src/lib/openapi/{parse,security-map,param-map,ref-resolver}.ts`. Deterministic client-side parser that turns any OpenAPI 3.x YAML / JSON into one `ConnectorInput` plus one `ToolInput` per operation. No new server route, no AI. Works in demo mode because it reuses the existing `agent_connectors` / `agent_connectors/{id}/tools` POST endpoints (already handled by `handleMetaDemo`).
+
+Dialog state machine: **input → preview → creating → done**. `input` accepts either a pasted spec (500 KB cap) or a file upload (`.yaml`/`.yml`/`.json`, 2 MB cap); JSON is tried first, then YAML. `preview` renders one connector card with editable name / description / base URL, a server dropdown if the spec has multiple `servers`, a `<RadioGroup>` auth picker if the spec has multiple `securitySchemes`, and a per-tool checkbox list (all selected by default, All / None shortcuts). `creating` runs one `useCreateConnector.mutateAsync` then loops selected tools through a direct `fetcher` call (not `useCreateTool` — the hook's `connectorId` is bound at render time and the freshly created id isn't available in the closure; the loop finishes with an explicit `qc.invalidateQueries({ queryKey: qk.tools(...) })`). `done` auto-redirects to the new connector's detail page after 1.5s; the timeout is stored in a `useRef` and cleared on dialog close so a user who Xs out doesn't get yanked mid-flight.
+
+Auth mapping (`security-map.ts`): `apiKey` header/query → API_KEY with the field name preserved; `http bearer` → API_KEY with `Authorization` + `Bearer ` prefix; `http basic` → API_KEY with `Basic ` prefix and a warning that the user must base64-encode `user:pass`; `oauth2 clientCredentials` → OAUTH2_CLIENT_CREDENTIALS with token URL and scopes lifted from the spec; other oauth2 flows → API_KEY skeleton + warning ("studio only supports client-credentials"); `mutualTLS` → MTLS (client uploads cert via Rotate credentials after import); anything unknown → API_KEY skeleton + warning. **All credential values are intentionally empty** (`kvpSchema.value.min(1)` in `connector.ts` is violated by design, so the dialog does NOT run `connectorSchema.safeParse` — the user rotates creds via the existing flow after import). The one exception is OAuth `token_url`, which is required and validated: when the spec has no `flows.clientCredentials.tokenUrl` an editable **OAuth token URL** field appears in the preview and blocks submit until it's a valid URL. The sentinel placeholder `OAUTH_TOKEN_URL_PLACEHOLDER` is exported from `security-map.ts` so producer (parser) and consumer (dialog) stay in sync.
+
+Param mapping (`param-map.ts`): OpenAPI schema types map 1-1 to studio `ParamType` (string/integer/number/boolean/array/object); `enum` (any type) collapses to the underlying type or `string`; arrays get `items` mapped recursively; missing type warns and defaults to `string`. Nested body objects surface as a single `object`-typed param with a warning — users refine in the tool editor. `Authorization`, `Content-Type`, `Accept` headers are silently skipped (handled by auth config and runtime). Cookie params are silently skipped (not supported). Unsupported HTTP verbs (OPTIONS/HEAD/TRACE) are skipped without a tool.
+
+Ref resolution (`ref-resolver.ts`): only `#/components/...` internal refs; external refs (`http://…`) return `{ type: "object" }` + warning; circular refs cut after one substitution with a warning; depth cap of 20 as a safety valve.
+
+Swagger 2.0 is explicitly rejected with a message pointing at Swagger Editor's one-click convert. If `paths` is empty the Create button disables and a note explains what's missing. Every non-fatal issue accumulates in a collapsible **N warnings** panel in the preview.
+
+Help doc: `docs/configure/connectors-openapi-import.md`.
 
 ### Connector health card
 `src/components/connectors/ConnectorHealth.tsx`, rendered on the connector detail page. Calls `/logs?include_stats=true&summary_only=true&top_n=5` over a 24-hour lookback. Renders four stat tiles (success rate colored by threshold, calls, p95 latency, failures) and the top-5 failure patterns. Zero new server surface — uses the existing `useConnectorLogs` hook. If Meta ever changes the `stats` shape, update `src/types/connector-logs.ts`.
@@ -336,6 +351,7 @@ Any new client hook that hits a new Meta path MUST be handled in `handleMetaDemo
 - `src/components/shell/EntityGate.tsx` — the eligibility-first gate that decides whether the dashboard shows a spinner, the ToS block, or the actual content
 - `src/lib/client/dev-drawer.ts` — module-level store keeping the header Settings toggle and the drawer in sync
 - `src/lib/demo/router.ts` + `src/lib/demo/store.ts` + `src/lib/demo/fixtures.ts` — the demo-mode surface. Extend `handleMetaDemo` when adding new Meta endpoints or the demo will 404 them.
+- `src/lib/openapi/{parse,security-map,param-map,ref-resolver}.ts` — the deterministic client-side OpenAPI parser. Deterministic mapping tables live here; if you touch the connector or tool schemas, keep these in sync.
 - `src/app/api/session/route.ts` — session lifecycle (login, demo login, logout, PATCH). Home of the `isSameOrigin` check with the `WABIZ_PUBLIC_HOST` → `X-Forwarded-Host` → `Host` precedence.
 
 ## Plan file

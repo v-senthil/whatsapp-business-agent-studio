@@ -309,7 +309,9 @@ function Features() {
       "Author skills as prompts, wire connectors to your APIs, and expose them as tools the agent can call. Everything is versioned in JSON so you can export a config and reproduce a workspace anywhere.",
     bullets: [
       "22 curated skill templates across five categories",
-      "84 connector templates: Zoho, Google, and universally available APIs",
+      "Draft skills with AI from a plain-English intent",
+      "14 connector templates for common SaaS APIs (Shopify, Stripe, HubSpot, Salesforce, Zendesk, Slack, and more)",
+      "Import a connector plus one tool per operation from any OpenAPI 3.x spec (YAML or JSON)",
       "Path / query / header / body params typed end-to-end",
       "Every config exportable as versioned JSON",
     ],
@@ -326,7 +328,7 @@ function Features() {
       icon: FlaskConical,
       title: "Evals + scenarios",
       body:
-        "Run eval cases against your agent, poll status live, and replay saved conversations as regression suites.",
+        "Run Meta eval cases with live status polling. Save any test-chat conversation as a scenario, then replay it side-by-side with the current config, per-turn match / differs / error badges.",
     },
     {
       icon: TestTube2,
@@ -439,14 +441,14 @@ function Workflow() {
       icon: Rocket,
       title: "Onboard a WhatsApp phone",
       body:
-        "Pick a WABA, pick a phone, click onboard. The studio provisions the agent through Meta and lands you on a guided checklist.",
+        "Pick a WABA, pick a phone, click onboard. The studio provisions the agent through Meta and shows a live six-step checklist (eligibility, business info, first skill, first connector, rollout) so you always know what's next.",
     },
     {
       n: "03",
       icon: Zap,
       title: "Configure skills, knowledge, connectors",
       body:
-        "Author skills, upload knowledge, wire connectors to your existing APIs (with 48 Zoho and 22 Google product templates ready to go), or import a config JSON you already have.",
+        "Author skills, upload knowledge, wire connectors to your existing APIs (14 SaaS templates to start from, or bring your own OpenAPI spec), or import a config JSON you already have.",
     },
     {
       n: "04",
@@ -524,9 +526,10 @@ function PlatformDeepDive() {
           title="Reusable building blocks"
           points={[
             "22 skill templates across Onboarding, Support, Sales, Escalation, and Utility.",
-            "84 connector templates: 48 Zoho products, 22 Google APIs (Workspace, Ads, Cloud), and 14 universally available services.",
+            "14 prefilled connector templates for common SaaS APIs (Shopify, Stripe, HubSpot, Salesforce, Zendesk, Slack, and more), with proper auth scaffolds.",
+            "Or bring your own: import a connector plus every operation as a tool from any OpenAPI 3.x YAML / JSON spec.",
             "CSV import / export for skills, FAQs, websites, allowlist.",
-            "Save any chat as a scenario, replay them as regression tests.",
+            "Save any chat as a scenario; replay it side-by-side against the current config with per-turn match / differs badges.",
           ]}
         />
         <DeepDiveCard
@@ -537,6 +540,16 @@ function PlatformDeepDive() {
             "Connector health dashboards with p95 latency and top failure patterns.",
             "Live agent event polling: trigger, watch, react.",
             "Thread control for graceful human handoff.",
+          ]}
+        />
+        <DeepDiveCard
+          icon={Sparkles}
+          title="Built-in AI assist"
+          points={[
+            "Draft skills from a plain-English intent on the new-skill page.",
+            "Drop in a doc, get FAQs, skills, and connector suggestions with one-click apply.",
+            "Pluggable providers: local Claude Agent SDK or any OpenAI-compatible endpoint (Ollama, LM Studio, Together, and more).",
+            "AI keys live server-side; the browser only ever sees whether one is configured.",
           ]}
         />
       </div>
@@ -640,7 +653,7 @@ function FaqSection() {
     },
     {
       q: "How do I test changes safely before going live?",
-      a: "Use the built-in test chat, save any promising conversation as a scenario, and replay saved scenarios side-by-side against your current config. Combine with the Meta eval suite for structured regression testing.",
+      a: "Use the built-in test chat, save any promising conversation as a scenario, and replay it side-by-side against the current config. Each turn is marked match, differs, or error so you can spot regressions at a glance. Combine with the Meta eval suite for structured runs.",
     },
   ];
 
