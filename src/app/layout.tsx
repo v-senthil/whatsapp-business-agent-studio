@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "@/app/globals.css";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
@@ -26,6 +27,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </TooltipProvider>
           </QueryProvider>
         </ThemeProvider>
+        <Script
+          src="//gc.zgo.at/count.js"
+          strategy="afterInteractive"
+          data-goatcounter="https://scsenthil.goatcounter.com/count"
+        />
       </body>
     </html>
   );
