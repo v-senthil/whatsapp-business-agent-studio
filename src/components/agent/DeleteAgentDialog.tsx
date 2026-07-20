@@ -30,14 +30,33 @@ export function DeleteAgentDialog({ entityId, agentId, open, onOpenChange, onSuc
   const [confirmText, setConfirmText] = React.useState("");
   const del = useDeleteAgent(entityId);
 
+  const confirmed = confirmText.trim() === entityId;
+
+  // Stable refs so effects can depend on primitive booleans without re-firing
+  // when parents pass inline closures / react-query changes mutation identity.
+  const delRef = React.useRef(del);
+  delRef.current = del;
+  const onOpenChangeRef = React.useRef(onOpenChange);
+  onOpenChangeRef.current = onOpenChange;
+  const onSuccessRef = React.useRef(onSuccess);
+  onSuccessRef.current = onSuccess;
+
+  // Reset local state whenever the dialog closes.
   React.useEffect(() => {
     if (!open) {
       setConfirmText("");
-      del.reset();
+      delRef.current.reset();
     }
-  }, [open, del]);
+  }, [open]);
 
-  const confirmed = confirmText.trim() === entityId;
+  // Close the dialog once the mutation succeeds — fires even if the click
+  // handler's continuation is disturbed by re-renders from query invalidation.
+  React.useEffect(() => {
+    if (del.isSuccess && open) {
+      onOpenChangeRef.current(false);
+      onSuccessRef.current?.();
+    }
+  }, [del.isSuccess, open]);
 
   async function submit() {
     try {
@@ -47,8 +66,7 @@ export function DeleteAgentDialog({ entityId, agentId, open, onOpenChange, onSuc
       } else {
         toast.info("Nothing to remove on this phone.");
       }
-      onOpenChange(false);
-      onSuccess?.();
+      // Close is handled by the isSuccess effect above.
     } catch {
       // ErrorState renders inside the dialog
     }
@@ -74,9 +92,9 @@ export function DeleteAgentDialog({ entityId, agentId, open, onOpenChange, onSuc
         </Alert>
 
         {agentId ? (
-          <div className="rounded-md border p-3 text-sm">
+          <div className="min-w-0 rounded-md border p-3 text-sm">
             <div className="font-medium">Agent ID</div>
-            <div className="mt-1 truncate font-mono text-xs text-muted-foreground" title={agentId}>
+            <div className="mt-1 break-all font-mono text-xs text-muted-foreground">
               {agentId}
             </div>
           </div>

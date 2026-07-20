@@ -439,9 +439,9 @@ function Workflow() {
     {
       n: "02",
       icon: Rocket,
-      title: "Onboard a WhatsApp phone",
+      title: "Onboard, or delete, a WhatsApp agent",
       body:
-        "Pick a WABA, pick a phone, click onboard. The studio provisions the agent through Meta and shows a live six-step checklist (eligibility, business info, first skill, first connector, rollout) so you always know what's next.",
+        "Pick a WABA, pick a phone, click onboard. The studio provisions the agent through Meta and shows a live six-step checklist (eligibility, business info, first skill, first connector, rollout) so you always know what's next. Need to start over? A guarded Delete agent action removes the agent (and disconnects the integration when it's the last one on the WABA).",
     },
     {
       n: "03",

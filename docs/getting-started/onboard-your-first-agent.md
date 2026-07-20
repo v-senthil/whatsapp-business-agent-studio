@@ -41,6 +41,8 @@ A phone number can host at most one agent per channel. Today the app only suppor
 
 The overview header also has **Export config** and **Import config** buttons for the whole agent configuration. See [Config export and import](../advanced/config-export-import.md).
 
+Need to remove an agent instead of configuring it? See [Delete an agent](delete-agent.md).
+
 ## Troubleshooting
 
 - **Eligibility shows as ineligible**, contact your Meta partner. The phone number needs to be granted access to the Business Agent Platform.
