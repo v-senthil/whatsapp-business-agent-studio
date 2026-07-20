@@ -72,6 +72,13 @@ export async function handleMetaDemo(
     return ok({ agent_id });
   }
 
+  if (verb === "delete_agent" && method === "DELETE") {
+    const idx = state.settings.findIndex((s) => s.channel === "whatsapp");
+    if (idx === -1) return ok({ deleted_agent_id: null });
+    const [removed] = state.settings.splice(idx, 1);
+    return ok({ deleted_agent_id: removed.agent_id });
+  }
+
   if (verb === "agent_test" && method === "POST") {
     const b = body as { user_msg?: string; conversation_id?: string };
     const conversation_id = b.conversation_id ?? nextDemoId(state, "demo-conv");

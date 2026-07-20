@@ -110,6 +110,51 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
 
+  /{entity_id}/delete_agent:
+    parameters:
+      - $ref: "#/components/parameters/EntityId"
+      - $ref: "#/components/parameters/ApiVersion2"
+    delete:
+      tags: [Onboarding]
+      operationId: deleteAgent
+      summary: Remove the Meta Business Agent from a WhatsApp phone number.
+      description: >-
+        Deletes the agent configuration for the specified phone number. When the last
+        agent on the WhatsApp Business Account is removed, the Meta Business Agent
+        integration is disconnected.
+      responses:
+        "200":
+          description: Agent deleted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteAgentResponse"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401":
+          description: Unauthorized.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "403":
+          description: Forbidden.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "429":
+          description: Too many requests.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "500":
+          description: Server error.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
   /{entity_id}/agent_config/settings:
     parameters:
       - $ref: "#/components/parameters/EntityId"
@@ -1647,6 +1692,17 @@ components:
         agent_id:
           type: string
           description: The ID of the new agent settings entity.
+
+    DeleteAgentResponse:
+      type: object
+      required: [deleted_agent_id]
+      properties:
+        deleted_agent_id:
+          type: string
+          nullable: true
+          description: >-
+            The ID of the agent settings that was removed, or null if there was
+            nothing to remove for this phone number.
 
     Rollout:
       type: object

@@ -2,7 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetcher, metaUrl } from "@/lib/client/fetcher";
 import { qk } from "@/lib/client/query-keys";
-import type { AgentSettings } from "@/types/meta";
+import type { AgentSettings, DeleteAgentResponse } from "@/types/meta";
 
 export function useSettings(entityId: string, agentId?: string) {
   return useQuery({
@@ -35,6 +35,15 @@ export function useOnboardAgent(entityId: string) {
   return useMutation({
     mutationFn: (channel: string) =>
       fetcher<{ agent_id: string }>(metaUrl(entityId, "agent_onboarding", { channel }), { method: "POST" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.entity(entityId), exact: false }),
+  });
+}
+
+export function useDeleteAgent(entityId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      fetcher<DeleteAgentResponse>(metaUrl(entityId, "delete_agent"), { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.entity(entityId), exact: false }),
   });
 }

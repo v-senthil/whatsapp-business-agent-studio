@@ -1,15 +1,16 @@
 "use client";
-import { use } from "react";
+import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { CheckCircle2, Loader2, Sparkles } from "lucide-react";
+import { CheckCircle2, Loader2, Sparkles, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LoadingButton } from "@/components/common/LoadingButton";
 import { ErrorState } from "@/components/common/ErrorState";
 import { JsonViewer } from "@/components/common/JsonViewer";
+import { DeleteAgentDialog } from "@/components/agent/DeleteAgentDialog";
 import { useOnboardAgent, useSettings } from "@/lib/client/hooks/useSettings";
 import type { AgentSettings } from "@/types/meta";
 
@@ -28,6 +29,7 @@ export default function OnboardingPage({ params }: { params: Promise<{ entityId:
   const router = useRouter();
   const settings = useSettings(entityId);
   const onboard = useOnboardAgent(entityId);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const list = settingsToList(settings.data);
   const existing = list.find((s) => (s.channel ?? "").toLowerCase() === "whatsapp");
@@ -77,6 +79,9 @@ export default function OnboardingPage({ params }: { params: Promise<{ entityId:
           <CardFooter className="gap-2">
             <Button asChild><Link href={`/dashboard/${entityId}/settings`}>Configure settings</Link></Button>
             <Button asChild variant="outline"><Link href={`/dashboard/${entityId}/test`}>Test chat</Link></Button>
+            <Button variant="destructive" onClick={() => setDeleteOpen(true)} className="ml-auto">
+              <Trash2 className="h-4 w-4" /> Delete agent
+            </Button>
           </CardFooter>
         </Card>
       ) : (
@@ -111,6 +116,14 @@ export default function OnboardingPage({ params }: { params: Promise<{ entityId:
           <AlertDescription>Proceeding will create a WhatsApp agent regardless.</AlertDescription>
         </Alert>
       )}
+
+      <DeleteAgentDialog
+        entityId={entityId}
+        agentId={existing?.agent_id}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onSuccess={() => router.push(`/dashboard/${entityId}`)}
+      />
     </div>
   );
 }

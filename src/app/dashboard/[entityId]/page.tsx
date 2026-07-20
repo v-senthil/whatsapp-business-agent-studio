@@ -1,7 +1,7 @@
 "use client";
-import { use } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
-import { AlertCircle, Loader2, ShieldAlert, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertCircle, Loader2, ShieldAlert, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,11 +12,13 @@ import { CopyButton } from "@/components/common/CopyButton";
 import { AgentConfigActions } from "@/components/config/AgentConfigActions";
 import { OnboardingChecklist } from "@/components/overview/OnboardingChecklist";
 import { RecentActivity } from "@/components/overview/RecentActivity";
+import { DeleteAgentDialog } from "@/components/agent/DeleteAgentDialog";
 
 export default function EntityOverviewPage({ params }: { params: Promise<{ entityId: string }> }) {
   const { entityId } = use(params);
   const eligibility = useEligibility(entityId);
   const settings = useSettings(entityId);
+  const [deleteTarget, setDeleteTarget] = useState<string | undefined>(undefined);
 
   const settingsList = Array.isArray(settings.data)
     ? settings.data
@@ -104,6 +106,7 @@ export default function EntityOverviewPage({ params }: { params: Promise<{ entit
             {settingsList.length > 0 ? (
               settingsList.map((s, i) => {
                 const it = s as { agent_id?: string; channel?: string };
+                const isWhatsApp = (it.channel ?? "").toLowerCase() === "whatsapp";
                 return (
                   <div key={it.agent_id ?? `agent-${i}`} className="flex items-center gap-3 rounded-md border p-3">
                     <div className="min-w-0 flex-1">
@@ -116,6 +119,17 @@ export default function EntityOverviewPage({ params }: { params: Promise<{ entit
                       </div>
                     </div>
                     <Badge variant="secondary" className="shrink-0">Active</Badge>
+                    {isWhatsApp && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="shrink-0 text-destructive hover:text-destructive"
+                        onClick={() => setDeleteTarget(it.agent_id)}
+                        aria-label="Remove agent"
+                      >
+                        <Trash2 className="h-4 w-4" /> Remove
+                      </Button>
+                    )}
                   </div>
                 );
               })
@@ -142,6 +156,13 @@ export default function EntityOverviewPage({ params }: { params: Promise<{ entit
       </div>
 
       <RecentActivity entityId={entityId} />
+
+      <DeleteAgentDialog
+        entityId={entityId}
+        agentId={deleteTarget}
+        open={deleteTarget !== undefined}
+        onOpenChange={(v) => { if (!v) setDeleteTarget(undefined); }}
+      />
     </div>
   );
 }

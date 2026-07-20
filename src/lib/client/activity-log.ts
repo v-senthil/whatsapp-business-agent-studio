@@ -132,6 +132,7 @@ function describe(method: string, path: string, body: unknown): CallMeta | null 
   if (path === "agent_test")           return { resource: "Test message", action: "Sent" };
   if (path === "agent_event")          return { resource: "Agent event", action: "Submitted", detail };
   if (path === "agent_onboarding")     return { resource: "Agent", action: "Onboarded" };
+  if (path === "delete_agent")         return { resource: "Agent", action: "Removed" };
   if (path.startsWith("agent-eval/run"))       return { resource: "Eval", action: "Triggered" };
 
   return { resource: path, action };

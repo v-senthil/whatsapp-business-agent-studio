@@ -53,3 +53,7 @@ export interface OnboardingResponse {
   agent_id: string;
   [key: string]: unknown;
 }
+
+export interface DeleteAgentResponse {
+  deleted_agent_id: string | null;
+}

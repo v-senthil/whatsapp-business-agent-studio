@@ -30,6 +30,7 @@ All Agent Platform calls include `X-API-Version: 2.0.0` (added by the proxy). Au
 **Per-phone (Agent Platform)**
 - `GET /{entity_id}/agent_eligibility`
 - `POST /{entity_id}/agent_onboarding?channel=whatsapp` → `{ agent_id }`
+- `DELETE /{entity_id}/delete_agent` → `{ deleted_agent_id: string | null }` (removes the agent from the phone; when the last agent on the WABA is removed, the integration is disconnected)
 - `GET|PUT /{entity_id}/agent_config/settings?agent_id=…` — rollout, handoff, followup, ai_audience
 - `GET|PUT|DELETE /{entity_id}/agent_config/business_info`
 - `GET|POST /{entity_id}/agent_config/skills[?agent_id=…]`, `GET|PUT|DELETE /skills/{skill_id}`

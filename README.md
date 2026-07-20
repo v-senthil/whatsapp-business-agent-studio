@@ -15,7 +15,7 @@ A visual builder for WhatsApp Business AI agents on the [Meta Business Agent Pla
 ### Core
 
 - **Discover** WABAs and phone numbers on a Meta business (paste a business ID) via Graph API
-- **Onboard** one WhatsApp AI agent per phone number
+- **Onboard** one WhatsApp AI agent per phone number, and **Delete** it when you need a clean slate (removes the agent, disconnects the integration when it's the last one on the WABA)
 - **Configure** rollout, human handoff, follow-up interval, and AI audience (`EVERYONE` / `ALLOWLISTED_ONLY`)
 - **Fill in** business info: description, contact, payment, returns, purchase, delivery
 - **Author skills** — free-form instructions the model follows in specific scenarios
